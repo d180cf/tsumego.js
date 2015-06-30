@@ -1,0 +1,9 @@
+﻿....OX
+...OOX
+.OOOXX
+OOXXX
+XXX
+
+A1 A2 A3 B1 B2 C1 C2 D1
+
+A4

@@ -1,0 +1,1 @@
+﻿It's a simplistic tsumego solver in JS based on ideas explained by Martin Muller in his numerous papers. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to ~10) and the target are set manually.
