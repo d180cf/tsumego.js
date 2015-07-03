@@ -1,0 +1,8 @@
+﻿{
+  "files": [ "solver.ts" ],
+  "compilerOptions": {
+    "out": "tsumego.js",
+    "target": "es5",
+    "sourceMap": true
+  }
+}

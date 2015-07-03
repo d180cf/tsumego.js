@@ -8,3 +8,13 @@ XO..OOOX
 ```
 
 It's an example of a problem that this solver can handle: it can figure out that if O plays first, it lives without a ko.
+
+The library is written in TypeScript. To compile it and test do the following in the project folder:
+
+```
+npm install -g typescript
+tsc
+node server
+```
+
+Then open http://localhost:8080/ and open there the dev console.
