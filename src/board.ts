@@ -1,4 +1,4 @@
-﻿import {parse, abs, min, max, xy2s, xts} from './utils';
+﻿/// <reference path="utils.ts" />
 
 interface StrConfig {
     black?: (string) => string;
@@ -8,7 +8,7 @@ interface StrConfig {
     gids?: boolean;
 }
 
-export default class Board {
+class Board {
     size: uint;
     table: GIndex[];
     nlibs: uint[] = [0];

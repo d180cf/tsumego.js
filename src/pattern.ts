@@ -1,6 +1,6 @@
-﻿import Board from './board';
+﻿/// <reference path="board.ts" />
 
-export default class Pattern {
+class Pattern {
     data: string;
 
     static tms = [

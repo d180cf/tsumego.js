@@ -1,6 +1,4 @@
-﻿import Board from './board';
-import Pattern from './pattern';
-import {isWin, c2s} from './utils';
+﻿/// <reference path="pattern.ts" />
 
 const infty = 100500;
 
@@ -32,7 +30,7 @@ function best(s1: Result, s2: Result, c: Color): Result {
     return (r1 - r2) * c > 0 ? s1 : s2;
 }
 
-export function solve(
+function solve(
     path: Board[],
     color: Color,
     nkotreats: number,
