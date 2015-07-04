@@ -62,10 +62,7 @@ class Board {
         this.table = new Array(size * size);
 
         const place = (tag: string, color: number) => {
-            const tag1 = sgf.tags[1];
-            if (!tag1) return;
-
-            const stones = tag1.filter(t => t.name == tag)[0];
+            const stones = sgf.tags[0].filter(t => t.name == tag)[0];
             if (!stones) return;
 
             stones.vals.forEach(xy => {
@@ -346,8 +343,8 @@ class Board {
         }
 
         return '(;FF[4]SZ[' + this.size + ']'
-            + take(';AB', c => c > 0)
-            + take(';AW', c => c < 0) + ')';
+            + take('AB', c => c > 0)
+            + take('AW', c => c < 0) + ')';
     }
 
     toString(config?: string|StrConfig): string {

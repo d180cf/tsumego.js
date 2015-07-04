@@ -18,8 +18,8 @@ function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
 function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     const brd = new Board(source);
     const sgf = SGF.parse(source);
-    const aim = f2xy(sgf.tags[0].filter(t => t.name == 'CT')[0].vals[0]);
-    const rzn = sgf.tags[1].filter(t=> t.name == 'RZ')[0].vals.map(f2xy);
+    const aim = f2xy(sgf.tags[0].filter(t => t.name == 'MA')[0].vals[0]);
+    const rzn = sgf.tags[0].filter(t=> t.name == 'SQ')[0].vals.map(f2xy);
     return [brd, rzn, aim];
 }
 
