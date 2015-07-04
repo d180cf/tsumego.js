@@ -36,7 +36,7 @@ ut.group($ => {
     });
 
     $.test($ => {
-        const root = SGF.parse('(;FF[4]\n)');
+        const root = SGF.parse('(;FF\n[4]\n)');
         $(root).equal({
             steps: [{ FF: ['4'] }],
             vars: []

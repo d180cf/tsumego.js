@@ -122,10 +122,7 @@ const source = location.hash.slice(1);
     path = [board.fork()];
     console.log('invoke $(...)');
     console.log('\n\n' + board.hash() + '\n\n' + bts(board));
-    window.addEventListener('load', () => {
-        document.body.innerText += 'Ready. See console.';
-        document.title = source;
-    });
+    document.title = source;
 }).catch(err => {
     console.error(err);
 });

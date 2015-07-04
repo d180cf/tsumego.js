@@ -27,7 +27,7 @@ module SGF {
     /** Parses an SGF input and returns its AST. */
     export function parse(source: string): Node {
         /** "[bb]" -> "bb" */
-        var val = $(/\[.*?\]/).map(s => s.slice(+1, -1));
+        var val = $([/\s*/, /\[.*?\]/]).take(1).map(s => s.slice(+1, -1));
 
         /** "AB[ce][dd][ff]" -> ["AB", ["ce", "dd", "ff"]] */
         var tag = $([/\s*/, /\w+/, val.rep()]).map(r => r.slice(1));
