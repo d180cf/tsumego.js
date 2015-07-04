@@ -1,4 +1,5 @@
-﻿/// <reference path="../tsumego.d.ts" />
+﻿/// <reference path="ut.ts" />
+/// <reference path="../tsumego.d.ts" />
 
 ut.group($ => {
     $.test($ => {
