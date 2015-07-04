@@ -9,7 +9,7 @@ module SGF {
      *      [2] = cc
      *
      */
-    interface Tag {
+    export interface Tag {
         name: string;
         [valueIndex: number]: string;
     }
@@ -21,14 +21,15 @@ module SGF {
      *      [0] = B[aa];W[bb]
      *      [0] = B[ab]W[cb]
      */
-    interface Node {
+    export interface Node {
         tags: Tag[];
         [variationIndex: number]: Node;
     }
 
     import $ = SDP.$;
 
-    function parse(source: string): Node {
+    /** Parses an SGF input and returns its AST. */
+    export function parse(source: string): Node {
         var val = $(/\[.*?\]/).map(s => s.slice(+1, -1));
 
         var tag = $([/\s*;/, /\w+/, $(val, 0)]).map(r => {

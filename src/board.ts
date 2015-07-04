@@ -1,4 +1,5 @@
 ﻿/// <reference path="utils.ts" />
+/// <reference path="sgf.ts" />
 
 interface StrConfig {
     black?: (string) => string;

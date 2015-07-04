@@ -1,4 +1,5 @@
-﻿module SDP {
+﻿/** Generic LL(*) parser. */
+module SDP {
     export class Pattern<T> {
         constructor(private _text, private _exec) {
 
