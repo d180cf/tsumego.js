@@ -1,6 +1,8 @@
 ﻿/// <reference path="rdp.ts" />
 
 module SGF {
+    const $ = SDP.$;
+
     /** Tag AW[bb][cb][cc] gets decomposed into:
      *
      *      [name] = AW
@@ -24,17 +26,15 @@ module SGF {
     export interface Node {
         tags: Tag[];
         [variationIndex: number]: Node;
-    }
-
-    import $ = SDP.$;
+    }    
 
     /** Parses an SGF input and returns its AST. */
     export function parse(source: string): Node {
         var val = $(/\[.*?\]/).map(s => s.slice(+1, -1));
 
         var tag = $([/\s*;/, /\w+/, $(val, 0)]).map(r => {
-            const t: Tag = r[3];
-            t.name = r[2];
+            const t: Tag = r[2];
+            t.name = r[1];
             return t;
         });
 

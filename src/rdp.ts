@@ -1,7 +1,7 @@
 ﻿/** Generic LL(*) parser. */
 module SDP {
     export class Pattern<T> {
-        constructor(private _text, private _exec) {
+        constructor(private _text: string, private _exec: Function) {
 
         }
 
@@ -13,14 +13,14 @@ module SDP {
         exec(str: string): T;
 
         exec(str, pos?) {
-            const r = this._exec(str, pos || 0);
-            return typeof pos === 'number' ? r :
-                r[1] == str.length ? r[0] :
-                    null;
+            const r = this._exec.call(null, str, pos || 0);
+            if (typeof pos === 'number') return r;
+            if (r && r[1] == str.length) return r[0];
+            return null;
         }
 
         map<U>(fn: (value: T) => U): Pattern<U> {
-            return $(this + '', (str, pos) => {
+            return $(this._text, (str, pos) => {
                 const r = this.exec(str, pos);
                 return r ? [fn(r[0]), r[1]] : null;
             });
@@ -36,7 +36,7 @@ module SDP {
 
     export function $(x, n?): Pattern<any> {
         if (x instanceof Pattern) return x;
-        if (typeof x === 'function') return new Pattern(n, x);
+        if (typeof n === 'function') return new Pattern(x, n);
         if (x instanceof RegExp) return rgx(x);
         if (typeof x === 'string') return txt(x);
         if (x instanceof Array) return seq(...x);
