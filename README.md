@@ -7,9 +7,9 @@ XO..OOOX
 .XXX....
 ```
 
-It's an example of a problem (goproblems/18629) that this solver can handle: it can figure out that if O plays first, it lives without a ko.
+It's an example of a [problem](http://www.goproblems.com/18629) that this solver can handle: it can figure out that if O (white) plays first, it lives without a ko.
 
-The library is written in TypeScript. To compile it and test do the following in the project folder:
+The library is written in [TypeScript](https://github.com/Microsoft/TypeScript). To compile it and test do the following in the project folder:
 
 ```
 npm install -g typescript
