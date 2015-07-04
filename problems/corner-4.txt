@@ -1,8 +1,0 @@
-..OX
-..OX
-OOOX
-XXXX
-    
-A1 A2 B1 B2
-
-A3

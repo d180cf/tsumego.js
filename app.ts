@@ -12,6 +12,11 @@ function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
     const rzone = strRZone.split(/\s+/).map(parse);
     const aim = parse(strAim);
 
+    console.log(board.toString('SGF')
+        .replace(/\)$/, 'SQ' + rzone.map(xy => '[' + xy2f(xy) + ']').join('') + ')')
+        .replace(/\b(AW|AB|SQ)\b/g, '\n $1')
+        .replace('\n', 'MA[' + xy2f(aim) + ']\n\n'));
+
     return [board, rzone, aim];
 }
 

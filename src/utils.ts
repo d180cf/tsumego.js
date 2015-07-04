@@ -42,6 +42,9 @@ const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
 /** `cd` -> { x: 2, y: 3 } */
 const f2xy = (s: string) => <XYIndex>{ x: s2n(s, 0), y: s2n(s, 1) };
 
+/** { x: 2, y: 3 } -> `cd` */
+const xy2f = (xy: XYIndex) => n2s(xy.x) + n2s(xy.y);
+
 function xy2s(xy: XYIndex, s?: Color): string {
     var ss = s > 0 ? _y('X') : s < 0 ? _r('O') : '';
     var cc = xy ? xts(xy.x) + yts(xy.y) : '--';
