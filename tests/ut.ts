@@ -10,7 +10,7 @@
 
     export function group(init: ($: GroupContext) => void) {
         init({
-            test: test => test(x => new ValueContext(x))
+            test: test => test(expect)
         });
     }
 
@@ -21,17 +21,21 @@
             e[i] = f;
         throw e;
     }
-    
+
+    function expect<T>(x: T) {
+        return new ValueContext(x);
+    }
+
     export class ValueContext<T> {
         constructor(private value: T) {
         }
 
         /** Checks strict === equality. */
         equal(y: T) {
-            assert(this.value === y, 'lhs doesnt equal rhs', {
-                lhs: this.value,
-                rhs: y
-            });
+            if (typeof y === 'object')
+                expect(JSON.stringify(this.value)).equal(JSON.stringify(y))
+            else
+                assert(this.value === y, `${this.value} doesnt equal ${y}`);
         }
     }
 }

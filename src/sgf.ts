@@ -13,7 +13,7 @@ module SGF {
      */
     export interface Tag {
         name: string;
-        [valueIndex: number]: string;
+        vals: { [i: number]: string };
     }
 
     /** 
@@ -24,27 +24,21 @@ module SGF {
      *      [0] = B[ab]W[cb]
      */
     export interface Node {
-        tags: Tag[];
-        [variationIndex: number]: Node;
+        tags: Tag[][];
+        vars: { [i: number]: Node };
     }    
 
     /** Parses an SGF input and returns its AST. */
     export function parse(source: string): Node {
+        /** [bb] */
         var val = $(/\[.*?\]/).map(s => s.slice(+1, -1));
-
-        var tag = $([/\s*;/, /\w+/, $(val, 0)]).map(r => {
-            const t: Tag = r[2];
-            t.name = r[1];
-            return t;
-        });
-
+        /** FF[4] */
+        var tag = $([/\s*/, /\w+/, val.rep()]).map(r => <Tag>{ name: r[1], vals: r[2] });
+        /** ;FF[4]SZ[19] */
+        var tags = $([/\s*;/, tag.rep()]).take(1);
+        /** this is how sgf refers to itself */
         var sub = $('sgf', (s, i) => sgf.exec(s, i));
-
-        var sgf = $([/\s*\(/, $(tag, 0), $(sub, 0), ')']).map(r => {
-            const n: Node = r[3];
-            n.tags = r[2];
-            return n;
-        });
+        var sgf = $([/\s*\(/, tags.rep(), sub.rep(), /\)\s*/]).map(r => <Node>{ tags: r[1], vars: r[2] });
 
         return sgf.exec(source);
     }
