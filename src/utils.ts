@@ -33,8 +33,13 @@ function yts(y: YIndex): string {
     return y + 1 + '';
 }
 
+/** 0 -> `a`, 3 -> `d` */
 const n2s = (n: number) => String.fromCharCode(n + 0x61);
+
+/** `d` -> 43 `a` -> 0 */
 const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
+
+/** `cd` -> { x: 2, y: 3 } */
 const f2xy = (s: string) => <XYIndex>{ x: s2n(s, 0), y: s2n(s, 1) };
 
 function xy2s(xy: XYIndex, s?: Color): string {

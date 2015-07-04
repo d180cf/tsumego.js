@@ -31,10 +31,22 @@ module SDP {
             return this.map(r => r[i]);
         }
 
+        /** [["A", 1], ["B", 2]] -> { A: 1, B: 2 } */
+        fold<U>(k: number, v: number) {
+            return this.map((r: any) => {
+                const m: { [key: string]: U } = {};
+
+                for (const p of r)
+                    m[p[k]] = p[v];
+
+                return m;
+            });
+        }
+
         rep(min = 0) {
             return $(min + '*' + this, (str, pos) => {
-                const res = [];
-                let r: [any, number];
+                const res: T[] = [];
+                let r: [T, number];
 
                 while (r = this.exec(str, pos)) {
                     res.push(r[0]);

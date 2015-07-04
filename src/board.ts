@@ -56,23 +56,23 @@ class Board {
     private initFromSGF(source: string) {
         const sgf = SGF.parse(source);
         if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
-        const size = +sgf.tags[0].filter(t => t.name == 'SZ')[0].vals[0];
+        const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
+        const size = +setup['SZ'];
 
         this.size = size;
         this.table = new Array(size * size);
 
         const place = (tag: string, color: number) => {
-            const stones = sgf.tags[0].filter(t => t.name == tag)[0];
+            const stones = setup[tag];
             if (!stones) return;
 
-            stones.vals.forEach(xy => {
-                const parse = i => xy.charCodeAt(i) - 'a'.charCodeAt(0);
-                const x = parse(0);
-                const y = parse(1);
+            for (const xy of stones) {
+                const x = s2n(xy, 0);
+                const y = s2n(xy, 1);
 
                 if (!this.play(x, y, color))
                     throw new Error(tag + '[' + xy + '] cannot be added.');
-            });
+            }
         };
 
         place('AW', -1);

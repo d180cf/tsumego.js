@@ -18,8 +18,9 @@ function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
 function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     const brd = new Board(source);
     const sgf = SGF.parse(source);
-    const aim = f2xy(sgf.tags[0].filter(t => t.name == 'MA')[0].vals[0]);
-    const rzn = sgf.tags[0].filter(t=> t.name == 'SQ')[0].vals.map(f2xy);
+    const setup = sgf.steps[0];
+    const aim = f2xy(setup['MA'][0]);
+    const rzn = setup['SQ'].map(f2xy);
     return [brd, rzn, aim];
 }
 
@@ -107,7 +108,7 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
 
 var board, rzone, aim, path: Board[];
 
-send('GET', location.hash.slice(1)).then(res => {
+send('GET', '/problems/' + location.hash.slice(1)).then(res => {
     [board, rzone, aim] = (/^\(/.test(res) ? parseSGF : parseShapeData)(res);
     path = [board.fork()];
     console.log('invoke $(...)');
