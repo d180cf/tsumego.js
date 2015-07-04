@@ -17,4 +17,14 @@ tsc
 node server
 ```
 
-Then open http://localhost:8080/ and open there the dev console.
+Then open http://localhost:8080/#18629.sgf and see the dev console. The testbench will load the given SGF and solve it:
+
+```sgf
+(;FF[4]SZ[8]MA[eb]
+
+ AB[ha][ab][hb][bc][ec][fc][gc][hc][bd][cd][dd]
+ AW[ga][bb][eb][fb][gb][cc][dc]
+ SQ[aa][ba][ca][da][ea][fa][ab][bb][cb][db][ac][cc][dc][ad])
+ ```
+
+ Note, that MA sets the target to capture and SQ sets all possible moves that the solver will consider.
