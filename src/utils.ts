@@ -33,6 +33,8 @@ function yts(y: YIndex): string {
     return y + 1 + '';
 }
 
+const n2s = (n: number) => String.fromCharCode(n + 0x61);
+
 function xy2s(xy: XYIndex, s?: Color): string {
     var ss = s > 0 ? _y('X') : s < 0 ? _r('O') : '';
     var cc = xy ? xts(xy.x) + yts(xy.y) : '--';

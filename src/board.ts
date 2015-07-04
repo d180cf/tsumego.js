@@ -62,7 +62,13 @@ class Board {
         this.table = new Array(size * size);
 
         const place = (tag: string, color: number) => {
-            const stones = sgf.tags[1].filter(t => t.name == tag)[0].vals.map(xy => {
+            const tag1 = sgf.tags[1];
+            if (!tag1) return;
+
+            const stones = tag1.filter(t => t.name == tag)[0];
+            if (!stones) return;
+
+            stones.vals.forEach(xy => {
                 const parse = i => xy.charCodeAt(i) - 'a'.charCodeAt(0);
                 const x = parse(0);
                 const y = parse(1);
@@ -327,6 +333,23 @@ class Board {
         return board.chash = h;
     }
 
+    toStringSGF() {
+        const take = (pf: string, fn: (g: number) => boolean) => {
+            let list = '';
+
+            for (let y = 0; y < this.size; y++)
+                for (let x = 0; x < this.size; x++)
+                    if (fn(this.at(x, y)))
+                        list += '[' + n2s(x) + n2s(y) + ']';
+
+            return list && pf + list;
+        }
+
+        return '(;FF[4]SZ[' + this.size + ']'
+            + take(';AB', c => c > 0)
+            + take(';AW', c => c < 0) + ')';
+    }
+
     toString(config?: string|StrConfig): string {
         var $ = this, t = $.table, n = $.size, g = $.nlibs;
         var i, x, y, c, e, s = '', bs: XYIndex[] = [], ws: XYIndex[] = [];
@@ -334,15 +357,7 @@ class Board {
         var cB = 'X', cW = 'O';
 
         if (config == 'SGF') {
-            for (y = 0; y < n; y++) {
-                for (x = 0; x < n; x++) {
-                    c = $.at(x, y);
-                    if (c > 0) bs.push({ x: x, y: y });
-                    if (c < 0) ws.push({ x: x, y: y });
-                }
-            }
-
-            return bs.map(xy2s).join(' ') + ';' + ws.map(xy2s).join(' ');
+            return this.toStringSGF();
         } else {
             let cfg: StrConfig = config || {};
 
