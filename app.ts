@@ -113,12 +113,19 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
 
 var board, rzone, aim, path: Board[];
 
-send('GET', '/problems/' + location.hash.slice(1)).then(res => {
-    [board, rzone, aim] = (/^\(/.test(res) ? parseSGF : parseShapeData)(res);
+const source = location.hash.slice(1);
+
+(source.slice(0, 1) == '(' ?
+    Promise.resolve(source) :
+    send('GET', '/problems/' + source)).then(res => {
+    [board, rzone, aim] = (res.slice(0, 1) == '(' ? parseSGF : parseShapeData)(res);
     path = [board.fork()];
     console.log('invoke $(...)');
     console.log('\n\n' + board.hash() + '\n\n' + bts(board));
-    document.body.innerText += 'Ready. See console.';
+    window.addEventListener('load', () => {
+        document.body.innerText += 'Ready. See console.';
+        document.title = source;
+    });
 }).catch(err => {
     console.error(err);
 });
