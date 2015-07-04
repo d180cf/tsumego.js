@@ -2,6 +2,39 @@
 
 ut.group($ => {
     $.test($ => {
+        const root = SGF.parse('()');
+        $(root).equal({ tags: [], vars: [] });
+    });
+
+    $.test($ => {
+        const root = SGF.parse('(;)');
+        $(root).equal({ tags: [[]], vars: [] });
+    });
+
+    $.test($ => {
+        const root = SGF.parse('(;;)');
+        $(root).equal({ tags: [[], []], vars: [] });
+    });
+
+    $.test($ => {
+        const root = SGF.parse('(())');
+        $(root).equal({
+            tags: [],
+            vars: [{ tags: [], vars: [] }]
+        });
+    });
+
+    $.test($ => {
+        const root = SGF.parse('(()())');
+        $(root).equal({
+            tags: [],
+            vars: [
+                { tags: [], vars: [] },
+                { tags: [], vars: [] }]
+        });
+    });
+
+    $.test($ => {
         const root = SGF.parse(`
            (;FF[4]GM[1]SZ[19]
              GN[Copyright goproblems.com]
@@ -53,19 +86,13 @@ ut.group($ => {
             vars: [
                 {
                     tags: [
-                        [
-                            { name: "B", vals: ["af"] }
-                        ],
-                        [
-                            { name: "W", vals: ["ah"] }
-                        ]
+                        [{ name: "B", vals: ["af"] }],
+                        [{ name: "W", vals: ["ah"] }]
                     ],
                     vars: [
                         {
                             tags: [
-                                [
-                                    { name: "B", vals: ["ce"] }
-                                ],
+                                [{ name: "B", vals: ["ce"] }],
                                 [
                                     { name: "W", vals: ["ag"] },
                                     { name: "C", vals: ["only one eye this way"] }
@@ -75,12 +102,8 @@ ut.group($ => {
                         },
                         {
                             tags: [
-                                [
-                                    { name: "B", vals: ["ag"] }
-                                ],
-                                [
-                                    { name: "W", vals: ["ce"] }
-                                ]
+                                [{ name: "B", vals: ["ag"] }],
+                                [{ name: "W", vals: ["ce"] }]
                             ],
                             vars: []
                         }
@@ -88,35 +111,21 @@ ut.group($ => {
                 },
                 {
                     tags: [
-                        [
-                            { name: "B", vals: ["ah"] }
-                        ],
-                        [
-                            { name: "W", vals: ["af"] }
-                        ]
+                        [{ name: "B", vals: ["ah"] }],
+                        [{ name: "W", vals: ["af"] }]
                     ],
                     vars: [
                         {
                             tags: [
-                                [
-                                    { name: "B", vals: ["ae"] }
-                                ],
-                                [
-                                    { name: "W", vals: ["bf"] }
-                                ],
-                                [
-                                    { name: "B", vals: ["ag"] }
-                                ],
-                                [
-                                    { name: "W", vals: ["bf"] }
-                                ]
+                                [{ name: "B", vals: ["ae"] }],
+                                [{ name: "W", vals: ["bf"] }],
+                                [{ name: "B", vals: ["ag"] }],
+                                [{ name: "W", vals: ["bf"] }]
                             ],
                             vars: [
                                 {
                                     tags: [
-                                        [
-                                            { name: "B", vals: ["af"] }
-                                        ],
+                                        [{ name: "B", vals: ["af"] }],
                                         [
                                             { name: "W", vals: ["ce"] },
                                             { name: "C", vals: ["oops! you can't take this stone"] }
@@ -126,12 +135,8 @@ ut.group($ => {
                                 },
                                 {
                                     tags: [
-                                        [
-                                            { name: "B", vals: ["ce"] }
-                                        ],
-                                        [
-                                            { name: "W", vals: ["af"] }
-                                        ],
+                                        [{ name: "B", vals: ["ce"] }],
+                                        [{ name: "W", vals: ["af"] }],
                                         [
                                             { name: "B", vals: ["bg"] },
                                             { name: "C", vals: ["RIGHT black plays under the stones and lives"] }
@@ -143,12 +148,8 @@ ut.group($ => {
                         },
                         {
                             tags: [
-                                [
-                                    { name: "B", vals: ["bf"] }
-                                ],
-                                [
-                                    { name: "W", vals: ["ae"] }
-                                ]
+                                [{ name: "B", vals: ["bf"] }],
+                                [{ name: "W", vals: ["ae"] }]
                             ],
                             vars: []
                         }
@@ -156,12 +157,8 @@ ut.group($ => {
                 },
                 {
                     tags: [
-                        [
-                            { name: "B", vals: ["ae"] }
-                        ],
-                        [
-                            { name: "W", vals: ["ag"] }
-                        ]
+                        [{ name: "B", vals: ["ae"] }],
+                        [{ name: "W", vals: ["ag"] }]
                     ],
                     vars: []
                 }

@@ -10,7 +10,10 @@
 
     export function group(init: ($: GroupContext) => void) {
         init({
-            test: test => test(expect)
+            test: test => {
+                console.log('running test...');
+                test(expect);
+            }
         });
     }
 
