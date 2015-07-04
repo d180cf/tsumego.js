@@ -39,7 +39,7 @@ module SGF {
         var sub = $('sgf', (s, i) => sgf.exec(s, i));
 
         /** "(;FF[4]SZ[19] (;W[aa];B[ab]) (;B[cd]))" -> Node */
-        var sgf = $([/\s*\(/, step.rep(), sub.rep(), /\)\s*/]).map(r => <Node>{ steps: r[1], vars: r[2] });
+        var sgf = $([/\s*\(/, step.rep(), sub.rep(), /\s*\)\s*/]).map(r => <Node>{ steps: r[1], vars: r[2] });
 
         return sgf.exec(source);
     }

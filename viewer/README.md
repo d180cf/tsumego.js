@@ -1,1 +1,1 @@
-﻿This "viewer" was written before I realized that if I use SGF as the input and output format, I'll be able to use GoGui to inspect it.
+﻿This "viewer" was written before I realized that if I use SGF as the input and output format, I'll be able to use GoGui to inspect it. Most likely this viewer will go away soon.

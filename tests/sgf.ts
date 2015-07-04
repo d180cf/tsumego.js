@@ -36,6 +36,14 @@ ut.group($ => {
     });
 
     $.test($ => {
+        const root = SGF.parse('(;FF[4]\n)');
+        $(root).equal({
+            steps: [{ FF: ['4'] }],
+            vars: []
+        });
+    });
+
+    $.test($ => {
         const root = SGF.parse(`
            (;FF[4]GM[1]SZ[19]
              GN[Copyright goproblems.com]
