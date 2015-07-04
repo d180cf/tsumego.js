@@ -16,32 +16,64 @@ class Board {
     gcols: Color[] = [0];
     chash: string;
 
-    constructor(size: uint, sgf?: string|string[]) {
-        var $ = this, i;
+    constructor(size: uint);
+    constructor(size: uint, setup: string);
+    constructor(size: uint, rows: string[]);
+    constructor(sgf: string);
 
-        $.size = size;
-        $.table = new Array(size * size);
+    constructor(size, setup?) {
+        if (typeof size === 'string')
+            this.initFromSGF(size);
+        else {
+            var $ = this, i;
 
-        for (i = 0; i < $.table.length; i++)
-            $.table[i] = 0;
+            $.size = size;
+            $.table = new Array(size * size);
 
-        if (typeof sgf === 'string') {
-            sgf.split(';').map(function (str, col) {
-                str.split(' ').map(parse).map(function (xy) {
-                    let x = xy.x, y = xy.y, c = col ? -1 : +1;
-                    if (!$.play(x, y, c))
-                        throw new Error('Invalid SGF.');
+            for (i = 0; i < $.table.length; i++)
+                $.table[i] = 0;
+
+            if (typeof setup === 'string') {
+                setup.split(';').map(function (str, col) {
+                    str.split(' ').map(parse).map(function (xy) {
+                        let x = xy.x, y = xy.y, c = col ? -1 : +1;
+                        if (!$.play(x, y, c))
+                            throw new Error('Invalid setup.');
+                    });
                 });
-            });
-        } else if (sgf instanceof Array) {
-            sgf.map(function (str, y) {
-                str.split('').map(function (ch, x) {
-                    let c = { 'X': +1, 'O': -1 }[ch];
-                    if (c && !$.play(x, y, c))
-                        throw new Error('Invalid SGF.');
+            } else if (setup instanceof Array) {
+                setup.map(function (str, y) {
+                    str.split('').map(function (ch, x) {
+                        let c = { 'X': +1, 'O': -1 }[ch];
+                        if (c && !$.play(x, y, c))
+                            throw new Error('Invalid setup.');
+                    });
                 });
-            });
+            }
         }
+    }
+
+    private initFromSGF(source: string) {
+        const sgf = SGF.parse(source);
+        if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
+        const size = +sgf.tags[0].filter(t => t.name == 'SZ')[0].vals[0];
+
+        this.size = size;
+        this.table = new Array(size * size);
+
+        const place = (tag: string, color: number) => {
+            const stones = sgf.tags[1].filter(t => t.name == tag)[0].vals.map(xy => {
+                const parse = i => xy.charCodeAt(i) - 'a'.charCodeAt(0);
+                const x = parse(0);
+                const y = parse(1);
+
+                if (!this.play(x, y, color))
+                    throw new Error(tag + '[' + xy + '] cannot be added.');
+            });
+        };
+
+        place('AW', -1);
+        place('AB', +1);
     }
 
     fork(): Board {

@@ -13,7 +13,7 @@ module SGF {
      */
     export interface Tag {
         name: string;
-        vals: { [i: number]: string };
+        vals: string[];
     }
 
     /** 
@@ -25,7 +25,7 @@ module SGF {
      */
     export interface Node {
         tags: Tag[][];
-        vars: { [i: number]: Node };
+        vars: Node[];
     }    
 
     /** Parses an SGF input and returns its AST. */
