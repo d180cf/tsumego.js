@@ -34,6 +34,8 @@ function yts(y: YIndex): string {
 }
 
 const n2s = (n: number) => String.fromCharCode(n + 0x61);
+const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
+const f2xy = (s: string) => <XYIndex>{ x: s2n(s, 0), y: s2n(s, 1) };
 
 function xy2s(xy: XYIndex, s?: Color): string {
     var ss = s > 0 ? _y('X') : s < 0 ? _r('O') : '';

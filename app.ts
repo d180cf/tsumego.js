@@ -15,6 +15,14 @@ function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
     return [board, rzone, aim];
 }
 
+function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
+    const brd = new Board(source);
+    const sgf = SGF.parse(source);
+    const aim = f2xy(sgf.tags[0].filter(t => t.name == 'CT')[0].vals[0]);
+    const rzn = sgf.tags[1].filter(t=> t.name == 'RZ')[0].vals.map(f2xy);
+    return [brd, rzn, aim];
+}
+
 function bts(board: Board): string {
     return board.toString({
         black: _y,
@@ -99,11 +107,8 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
 
 var board, rzone, aim, path: Board[];
 
-const pid = location.hash.slice(1) || '/problems/18629.txt';
-const url = location.href.replace(/\/[^/]*$/, pid);
-
-send('GET', url).then(res => {
-    [board, rzone, aim] = parseShapeData(res);
+send('GET', location.hash.slice(1)).then(res => {
+    [board, rzone, aim] = (/^\(/.test(res) ? parseSGF : parseShapeData)(res);
     path = [board.fork()];
     console.log('invoke $(...)');
     console.log('\n\n' + board.hash() + '\n\n' + bts(board));
