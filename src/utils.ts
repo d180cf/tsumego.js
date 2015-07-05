@@ -45,6 +45,9 @@ const f2xy = (s: string) => <XYIndex>{ x: s2n(s, 0), y: s2n(s, 1) };
 /** { x: 2, y: 3 } -> `cd` */
 const xy2f = (xy: XYIndex) => n2s(xy.x) + n2s(xy.y);
 
+/** -1, { x: 2, y: 3 } -> `W[cd]` */
+const xyc2f = (c: Color, xy: XYIndex) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
+
 function xy2s(xy: XYIndex, s?: Color): string {
     var ss = s > 0 ? _y('X') : s < 0 ? _r('O') : '';
     var cc = xy ? xts(xy.x) + yts(xy.y) : '--';

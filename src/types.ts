@@ -14,14 +14,6 @@ interface Result {
     color: int;
     repd: number;
     /**
-     * Tells whether the result is caused by a lost ko fight.
-     * The solution can be found in assumption that one side
-     * has a certain number of ko treats, but if even after
-     * spending these ko treats the result still depends on
-     * a lost ko fight, this flag will be set.
-     */
-    ko?: boolean;
-    /**
      * The winning move.
      * If the only solution is a loss, no move is stored.
      */

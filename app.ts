@@ -67,6 +67,68 @@ function solve2(path: Board[], color: Color, nkotreats: number = 0, observer?) {
     return rs;
 }
 
+/** Constructs the proof tree in the SGF format.
+    The tree's root is a winning move and its
+    branches are all possible answers of the opponent. */
+function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
+    const {move} = solve(path, color, nkt, rzone, aim, tt);
+    if (!move)
+        return null;
+
+    const b = path[path.length - 1].fork();
+    if (!b.play(move.x, move.y, color)) {
+        debugger;
+        throw new Error('Impossible move: ' + xy2s(move));
+    }
+
+    // check for repetitions
+    let d = path.length - 1;
+    while (d >= 0 && path[d].hash() != b.hash())
+        d--;
+
+    // check if -color can make this move
+    if (d >= 0) {
+        if (color * nkt > 0)
+            nkt -= color;
+        else {
+            debugger;
+            throw new Error('The play doesnt have ko treats for this repetition.');
+        }
+    }
+
+    let vars = '';
+
+    if (b.at(aim.x, aim.y) && depth < 2) {
+        for (const m of rzone) {
+            const bm = b.fork();
+            if (!bm.play(m.x, m.y, -color))
+                continue;
+
+            // check for repetitions
+            let d = path.length - 1;
+            while (d >= 0 && path[d].hash() != bm.hash())
+                d--;
+
+            // check if -color can make this move
+            if (d >= 0) {
+                if (color * nkt < 0)
+                    nkt += color;
+                else
+                    continue;
+            }
+
+            path.push(bm);
+            const p = proof(path, color, nkt, depth + 1);
+            path.pop();
+
+            if (p)
+                vars += '\n ' + '  '['repeat'](depth + 1) + '(;' + xyc2f(-color, m) + p + ')';
+        }
+    }
+
+    return ';' + xyc2f(color, move) + vars;
+}
+
 function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
     let indent: string[] = [];
     let tree = [], leaf = tree, stack = [];
@@ -111,16 +173,18 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
     return rs;
 }
 
-var board, rzone, aim, path: Board[];
+var board: Board, rzone: XYIndex[], aim, path: Board[];
 
 const source = location.hash.slice(1);
+let sgfdata = '';
 
 (source.slice(0, 1) == '(' ?
     Promise.resolve(source) :
     send('GET', '/problems/' + source)).then(res => {
     [board, rzone, aim] = (res.slice(0, 1) == '(' ? parseSGF : parseShapeData)(res);
     path = [board.fork()];
-    console.log('invoke $(...)');
+    console.log(res);
+    sgfdata = res;
     console.log('\n\n' + board.hash() + '\n\n' + bts(board));
     document.title = source;
 }).catch(err => {
@@ -148,11 +212,17 @@ window['$'] = data => {
                     console.log('\n\n' + b.hash() + '\n\n' + bts(b));
                 }
             } else {
-                const {move} = solveWithLogging(path, c, !xy ? 0 : +xy);
+                const {move} = solve2(path, c, !xy ? 0 : +xy);
 
                 if (!move) {
                     console.log(col, 'passes');
                 } else {
+                    console.log({
+                        proof: sgfdata.replace(
+                            /\)\s*$/,
+                            '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))')
+                    });
+
                     b.play(move.x, move.y, c);
                     path.push(b);
                     console.log('\n\n' + b.hash() + '\n\n' + bts(b));
