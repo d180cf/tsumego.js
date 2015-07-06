@@ -133,7 +133,10 @@ module tsumego {
             for (y = 0; y < n; y++) {
                 for (x = 0; x < n; x++) {
                     if (!t[i])
-                        if ($.at(x - 1, y) == s || $.at(x + 1, y) == s || $.at(x, y - 1) == s || $.at(x, y + 1) == s)
+                        if ($.at(x - 1, y) == s ||
+                            $.at(x + 1, y) == s ||
+                            $.at(x, y - 1) == s ||
+                            $.at(x, y + 1) == s)
                             r++;
 
                     i++;
@@ -145,7 +148,6 @@ module tsumego {
 
         inBounds(x: XIndex, y: YIndex): boolean {
             var n = this.size;
-
             return x >= 0 && x < n && y >= 0 && y < n;
         }
 
@@ -154,9 +156,7 @@ module tsumego {
             var i, r = 0;
 
             if (t[y * n + x] || !this.inBounds(x, y))
-                return;
-
-            $._hash = null;
+                return;            
 
             // stone id
 
@@ -253,6 +253,7 @@ module tsumego {
             t[y * n + x] = gs;
             g[gi] = $.countLibs(gs);
             $.gcols[gi] = gs;
+            $._hash = null;
 
             return r + 1;
         }
