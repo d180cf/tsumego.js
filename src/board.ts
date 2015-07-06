@@ -377,7 +377,7 @@ class Board {
             }
 
             for (x = 0; x <= xmax; x++)
-                hc += ' ' + xts(x);
+                hc += ' ' + x2s(x);
 
             hc += '  ';
 
