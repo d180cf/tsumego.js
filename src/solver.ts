@@ -120,7 +120,7 @@ module tsumego {
             // if the solution doesn't depend on a ko above the current node,
             // it can be stored and later used unconditionally as it doesn't
             // depend on a path that leads to the node; this stands true if all
-            // such solutions are stoed and never removed from the table; this
+            // such solutions are stored and never removed from the table; this
             // can be proved by trying to construct a path from a node in the
             // proof tree to the root node
             if (result.repd > depth) {
