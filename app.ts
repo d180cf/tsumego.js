@@ -1,6 +1,8 @@
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
 
+declare const eidogo: any;
+
 function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
     data = data.trim().split('\n').map(s => s.trim()).filter(s => !!s).join('\n') + '\n';
 
@@ -13,8 +15,8 @@ function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
     const aim = parse(strAim);
 
     console.log(board.toString('SGF')
-        .replace(/\)$/, 'SQ' + rzone.map(xy => '[' + xy2f(xy) + ']').join('') + ')')
-        .replace(/\b(AW|AB|SQ)\b/g, '\n $1')
+        .replace(/\)$/, 'DD' + rzone.map(xy => '[' + xy2f(xy) + ']').join('') + ')')
+        .replace(/\b(AW|AB|DD)\b/g, '\n $1')
         .replace('\n', 'MA[' + xy2f(aim) + ']\n\n'));
 
     return [board, rzone, aim];
@@ -25,7 +27,7 @@ function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     const sgf = SGF.parse(source);
     const setup = sgf.steps[0];
     const aim = f2xy(setup['MA'][0]);
-    const rzn = setup['SQ'].map(f2xy);
+    const rzn = setup['DD'].map(f2xy);
     return [brd, rzn, aim];
 }
 
@@ -175,7 +177,7 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
 
 var board: Board, rzone: XYIndex[], aim, path: Board[];
 
-const source = location.hash.slice(1);
+const source = location.search.slice(1);
 let sgfdata = '';
 
 (source.slice(0, 1) == '(' ?
@@ -187,9 +189,31 @@ let sgfdata = '';
     sgfdata = res;
     console.log('\n\n' + board.hash() + '\n\n' + bts(board));
     document.title = source;
+    renderSGF(res);
 }).catch(err => {
     console.error(err);
 });
+
+function renderSGF(sgf: string) {
+    window['egp'] = new eidogo.Player({
+        container: 'board',
+        theme: 'standard',
+        sgf: sgf, // EidoGo cannot display 8x8 boards
+        mode: 'play', // "play" or "view"
+        //shrinkToFit: true,
+        showComments: true,
+        showPlayerInfo: false,
+        showGameInfo: true,
+        showTools: true,
+        showOptions: true,
+        markCurrent: true,
+        markVariations: true,
+        markNext: false,
+        enableShortcuts: false,
+        showNavTree: true,
+        problemMode: false
+    });
+}
 
 window['$'] = data => {
     const cmd = data.toString().trim().split(' ');
