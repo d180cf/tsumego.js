@@ -36,7 +36,6 @@ module tsumego {
         path: Node[],
         color: Color,
         nkotreats: number,
-        rzone: XYIndex[],
         tt: Cache,
         expand: Generator<Node>,
         status: Estimator<Node>)
@@ -81,7 +80,7 @@ module tsumego {
                 let result = ttlookup(board, color, nkotreats);
 
                 if (!result) {
-                    let {leafs, mindepth} = expand(path, rzone, color, nkotreats);
+                    let {leafs, mindepth} = expand(path, color, nkotreats);
 
                     for (let {b: b, m: m, ko: ko} of leafs) {
                         let s: Result;

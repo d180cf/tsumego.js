@@ -16,7 +16,7 @@ module tsumego {
     }
 
     export interface Generator<Node> {
-        (path: Node[], rzone: XYIndex[], color, nkt: number): {
+        (path: Node[], color, nkt: number): {
             leafs: Leaf<Node>[];
             mindepth: number
         };
@@ -24,58 +24,60 @@ module tsumego {
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function basic(path: Board[], rzone: XYIndex[], color, nkt: number) {
-            const depth = path.length;
-            const board = path[depth - 1];
-            const leafs: Leaf<Board>[] = [];
+        export function Basic(rzone: XYIndex[]): Generator<Board> {
+            return (path: Board[], color, nkt: number) => {
+                const depth = path.length;
+                const board = path[depth - 1];
+                const leafs: Leaf<Board>[] = [];
 
-            let mindepth = infty;
-            let forked: Board;
+                let mindepth = infty;
+                let forked: Board;
 
-            for (let m of rzone) {
-                if (!Pattern.isEye(board, m.x, m.y, color)) {
-                    const b = forked || board.fork();
-                    const r = b.play(m.x, m.y, color);
+                for (let m of rzone) {
+                    if (!Pattern.isEye(board, m.x, m.y, color)) {
+                        const b = forked || board.fork();
+                        const r = b.play(m.x, m.y, color);
 
-                    if (!r) {
-                        forked = b;
-                        continue;
-                    }
+                        if (!r) {
+                            forked = b;
+                            continue;
+                        }
 
-                    forked = null;
+                        forked = null;
 
-                    const d = findrepd(path, b);
-                    const ko = d < depth;
+                        const d = findrepd(path, b);
+                        const ko = d < depth;
 
-                    if (d < mindepth)
-                        mindepth = d;
+                        if (d < mindepth)
+                            mindepth = d;
 
-                    // the move makes sense if it doesn't repeat
-                    // a previous position or the current player
-                    // has a ko treat elsewhere on the board and
-                    // can use it to repeat the local position
-                    if (!ko || color * nkt > 0) {
-                        leafs.push({
-                            b: b,
-                            m: m,
-                            r: r,
-                            ko: ko,
-                            n1: b.totalLibs(color),
-                            n2: b.totalLibs(-color),
-                        });
+                        // the move makes sense if it doesn't repeat
+                        // a previous position or the current player
+                        // has a ko treat elsewhere on the board and
+                        // can use it to repeat the local position
+                        if (!ko || color * nkt > 0) {
+                            leafs.push({
+                                b: b,
+                                m: m,
+                                r: r,
+                                ko: ko,
+                                n1: b.totalLibs(color),
+                                n2: b.totalLibs(-color),
+                            });
+                        }
                     }
                 }
-            }
 
-            leafs.sort((a, b) => {
-                return (+a.ko - +b.ko)          // moves that require a ko treat are considered last
-                    || (b.r - a.r)              // then maximize the number of captured stones
-                    || (b.n1 - a.n1)            // then maximize the number of liberties
-                    || (a.n2 - b.n2)            // then minimize the number of the opponent's liberties
-                    || (Math.random() - 0.5);   // otherwise try moves in a random order
-            });
+                leafs.sort((a, b) => {
+                    return (+a.ko - +b.ko)          // moves that require a ko treat are considered last
+                        || (b.r - a.r)              // then maximize the number of captured stones
+                        || (b.n1 - a.n1)            // then maximize the number of liberties
+                        || (a.n2 - b.n2)            // then minimize the number of the opponent's liberties
+                        || (Math.random() - 0.5);   // otherwise try moves in a random order
+                });
 
-            return { leafs: leafs, mindepth: mindepth };
+                return { leafs: leafs, mindepth: mindepth };
+            };
         }
     }
 }

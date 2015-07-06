@@ -28,8 +28,8 @@ module testbench {
     function solve(path: Board[], color: Color, nkotreats: number = 0, stats = true) {
         let t0 = +new Date;
 
-        let rs = tsumego.solve(path, color, nkotreats, rzone, tt,
-            tsumego.generators.basic,
+        let rs = tsumego.solve(path, color, nkotreats, tt,
+            tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
 
         let t1 = +new Date;
