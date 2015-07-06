@@ -17,7 +17,7 @@ tsc
 node server
 ```
 
-Then open http://localhost:8080/#18629.sgf and see the dev console. The testbench will load the given SGF and solve it:
+Then open http://localhost:8080/?18629.sgf and see the dev console. The testbench will load the given SGF and solve it:
 
 ```sgf
 (;FF[4]SZ[9]MA[eb]
