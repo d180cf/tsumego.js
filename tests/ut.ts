@@ -29,10 +29,11 @@
     }
 
     function assert(x: boolean, m = 'assertion failed', f = {}) {
-        if (x) return;
+        if (x) return;        
         const e = new Error(m);
         for (const i in f)
             e[i] = f;
+        debugger;
         throw e;
     }
 

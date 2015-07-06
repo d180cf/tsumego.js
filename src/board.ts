@@ -3,10 +3,11 @@
 
 class Board {
     size: uint;
-    table: GIndex[];
-    nlibs: uint[] = [0];
-    gcols: Color[] = [0];
-    _hash: string;
+
+    private table: GIndex[];
+    private nlibs: uint[] = [0];
+    private gcols: Color[] = [0];
+    private _hash: string;
 
     constructor(size: uint);
     constructor(size: uint, rows: string[]);
@@ -79,7 +80,7 @@ class Board {
         return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
     }
 
-    adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
+    private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
         var $ = this, g = $.nlibs;
 
         var sl = $.at(x - 1, y);
@@ -100,7 +101,7 @@ class Board {
             g[abs(sb)] += q;
     }
 
-    remove(s: GIndex): uint {
+    private remove(s: GIndex): uint {
         var $ = this, t = $.table, n = $.size, g = $.nlibs;
         var i = 0, x, y, r = 0;
 
@@ -120,7 +121,7 @@ class Board {
         return r;
     }
 
-    countLibs(s: GIndex): uint {
+    private countLibs(s: GIndex): uint {
         var $ = this, t = $.table, n = $.size;
         var i = 0, x, y, r = 0;
 
@@ -147,7 +148,7 @@ class Board {
         var $ = this, n = $.size, t = $.table, g = $.nlibs;
         var i, r = 0;
 
-        if (t[y * n + x])
+        if (t[y * n + x] || !this.inBounds(x, y))
             return;
 
         $._hash = null;
@@ -251,14 +252,24 @@ class Board {
         return r + 1;
     }
 
-    totalLibs(color: Color): uint {
-        var $ = this, ns = $.nlibs, cs = $.gcols, i, n = 0;
+    totalLibs(c: Color): uint {
+        var $ = this, t = $.table, n = $.size;
+        var i = 0, x, y, r = 0;
 
-        for (i = 0; i < ns.length; i++)
-            if (cs[i] * color > 0)
-                n += ns[i];
+        for (y = 0; y < n; y++) {
+            for (x = 0; x < n; x++) {
+                if (!t[i])
+                    if ($.at(x - 1, y) * c > 0 ||
+                        $.at(x + 1, y) * c > 0 ||
+                        $.at(x, y - 1) * c > 0 ||
+                        $.at(x, y + 1) * c > 0)
+                        r++;
 
-        return n;
+                i++;
+            }
+        }
+
+        return r;
     }
 
     nInAtari(color: Color): uint {
@@ -315,7 +326,7 @@ class Board {
         return this._hash;
     }
 
-    toStringSGF() {
+    private toStringSGF() {
         const take = (pf: string, fn: (g: number) => boolean) => {
             let list = '';
 
@@ -332,7 +343,7 @@ class Board {
             + take('AW', c => c < 0) + ')';
     }
 
-    toStringTXT() {
+    private toStringTXT() {
         let xmax = 0, ymax = 0;
 
         for (let x = 0; x < this.size; x++)

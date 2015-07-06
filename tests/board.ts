@@ -75,4 +75,61 @@ ut.group($ => {
             ' 9 O O O -'
         ].join('\n'));
     });
+
+    $.test($ => {
+        const b = new Board(5);
+
+        $(b.totalLibs(+1)).equal(0);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(0, 0, +1);
+
+        $(b.totalLibs(+1)).equal(2);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(1, 0, +1);
+
+        $(b.totalLibs(+1)).equal(3);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(4, 0, +1);
+
+        $(b.totalLibs(+1)).equal(5);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(3, 0, +1);
+
+        $(b.totalLibs(+1)).equal(5);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(2, 0, +1);
+
+        $(b.totalLibs(+1)).equal(5);
+        $(b.totalLibs(-1)).equal(0);
+
+        b.play(0, 1, -1);
+
+        $(b.totalLibs(+1)).equal(4);
+        $(b.totalLibs(-1)).equal(2);
+
+        b.play(1, 1, -1);
+
+        $(b.totalLibs(+1)).equal(3);
+        $(b.totalLibs(-1)).equal(3);
+
+        b.play(4, 1, -1);
+
+        $(b.totalLibs(+1)).equal(2);
+        $(b.totalLibs(-1)).equal(5);
+
+        b.play(3, 1, -1);
+
+        $(b.totalLibs(+1)).equal(1);
+        $(b.totalLibs(-1)).equal(5);
+
+        b.play(2, 1, -1);
+
+        $(b.totalLibs(+1)).equal(0);
+        $(b.totalLibs(-1)).equal(10);
+    });
 });
