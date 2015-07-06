@@ -100,7 +100,7 @@ function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
 
     let vars = '';
 
-    if (b.at(aim.x, aim.y) && depth < 2) {
+    if (b.at(aim.x, aim.y)) {
         for (const m of rzone) {
             const bm = b.fork();
             if (!bm.play(m.x, m.y, -color))
@@ -208,7 +208,7 @@ function renderSGF(sgf: string) {
         showOptions: true,
         markCurrent: true,
         markVariations: true,
-        markNext: false,
+        markNext: true,
         enableShortcuts: false,
         showNavTree: true,
         problemMode: false
@@ -241,11 +241,12 @@ window['$'] = data => {
                 if (!move) {
                     console.log(col, 'passes');
                 } else {
-                    console.log(
-                        sgfdata.replace(
-                            /\)\s*$/,
-                            '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))')
-                    );
+                    const sgfp = sgfdata.replace(
+                        /\)\s*$/,
+                        '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
+
+                    console.log('sgfp =', sgfp);
+                    window['sgfp'] = sgfp;
 
                     b.play(move.x, move.y, c);
                     path.push(b);
