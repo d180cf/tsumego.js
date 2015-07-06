@@ -2,8 +2,12 @@
 /// <reference path="movegen.ts" />
 
 module tsumego {
-    interface Estimator {
-        (board: Board): number;
+    interface Estimator<Node> {
+        (board: Node): number;
+    }
+
+    interface HasheableNode {
+        hash(): string;
     }
 
     function best(s1: Result, s2: Result, c: Color): Result {
@@ -26,25 +30,25 @@ module tsumego {
             return s1.repd < s2.repd ? s1 : s2;
 
         return (r1 - r2) * c > 0 ? s1 : s2;
-    }
+    }    
 
-    export function solve(
-        path: Board[],
+    export function solve<Node extends HasheableNode>(
+        path: Node[],
         color: Color,
         nkotreats: number,
         rzone: XYIndex[],
         tt: Cache,
-        expand: Generator,
-        status: Estimator)
+        expand: Generator<Node>,
+        status: Estimator<Node>)
 
         : Result {
 
-        function __solve(path: Board[], color: Color, nkotreats: number): Result {
-            function tthash(b: Board, c: Color): string {
+        function __solve(path: Node[], color: Color, nkotreats: number): Result {
+            function tthash(b: Node, c: Color): string {
                 return c2s(c) + ':' + b.hash();
             }
 
-            function ttlookup(b: Board, c: Color, n: number): Result {
+            function ttlookup(b: Node, c: Color, n: number): Result {
                 const h = tthash(b, c);
                 const s = tt[h];
 
@@ -57,7 +61,7 @@ module tsumego {
                 }
             }
 
-            function ttstore(b: Board, c: Color, n: number, r: Result) {
+            function ttstore(b: Node, c: Color, n: number, r: Result) {
                 const h = tthash(b, c);
                 const s = tt[h] || { wmin: -infty, bmax: +infty, move: r.move };
 

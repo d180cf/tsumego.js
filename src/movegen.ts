@@ -6,8 +6,8 @@ module tsumego {
         return infty;
     }
 
-    interface Leaf {
-        b: Board;
+    interface Leaf<Node> {
+        b: Node;
         m: XYIndex;
         r: number;
         n1: number;
@@ -15,8 +15,11 @@ module tsumego {
         ko: boolean;
     }
 
-    export interface Generator {
-        (path: Board[], rzone: XYIndex[], color, nkt: number): { leafs: Leaf[], mindepth: number };
+    export interface Generator<Node> {
+        (path: Node[], rzone: XYIndex[], color, nkt: number): {
+            leafs: Leaf<Node>[];
+            mindepth: number
+        };
     }
 
     export module generators {
@@ -24,7 +27,7 @@ module tsumego {
         export function basic(path: Board[], rzone: XYIndex[], color, nkt: number) {
             const depth = path.length;
             const board = path[depth - 1];
-            const leafs: Leaf[] = [];
+            const leafs: Leaf<Board>[] = [];
 
             let mindepth = infty;
             let forked: Board;
