@@ -182,7 +182,7 @@ let sgfdata = '';
 
 (source.slice(0, 1) == '(' ?
     Promise.resolve(source) :
-    send('GET', '/problems/' + source)).then(res => {
+    send('GET', '/problems/' + source + '.sgf')).then(res => {
     [board, rzone, aim] = (res.slice(0, 1) == '(' ? parseSGF : parseShapeData)(res);
     path = [board.fork()];
     console.log(res);
@@ -241,11 +241,11 @@ window['$'] = data => {
                 if (!move) {
                     console.log(col, 'passes');
                 } else {
-                    console.log({
-                        proof: sgfdata.replace(
+                    console.log(
+                        sgfdata.replace(
                             /\)\s*$/,
                             '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))')
-                    });
+                    );
 
                     b.play(move.x, move.y, c);
                     path.push(b);
