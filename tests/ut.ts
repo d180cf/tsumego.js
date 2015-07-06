@@ -20,7 +20,7 @@
                     let indent = '';
                     while (err) {
                         indent = '  ' + indent;
-                        console.log(indent + err.message);
+                        console.error(err);
                         err = err.reason;
                     }
                 }
@@ -67,7 +67,7 @@
     module match {
         export function primitive<T extends string|number|void>(pattern: T) {
             return (value: T) => {
-                assert(value === pattern, `${value} !== ${pattern}`);
+                assert(value === pattern, `${stringify(value)} !== ${stringify(pattern)}`);
             };
         }
 
@@ -107,5 +107,18 @@
         const err = new Error(message);
         err['reason'] = reason;
         return err;
+    }
+
+    function stringify(value) {
+        return typeof value === 'string' ? stringifyString(value) :
+            value + '';
+    }
+
+    function stringifyString(string: string) {
+        const escaped = string
+            .replace(/"/gm, '\\"')
+            .replace(/\n/gm, '\\n');
+
+        return '"' + escaped + '"';
     }
 }

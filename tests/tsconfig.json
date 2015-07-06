@@ -1,7 +1,7 @@
-﻿{
-  "files": [ "src/solver.ts" ],
+{
+  "files": [ "all.ts" ],
   "compilerOptions": {
-    "out": "tsumego.js",
+    "out": "tests.js",
     "target": "es5",
     "sourceMap": true
   }
