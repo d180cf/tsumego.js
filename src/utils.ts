@@ -1,19 +1,5 @@
 ﻿/// <reference path="types.ts" />
 
-const _x = (n: number, s: string) => s; // '\x1b[' + n + ';1m' + s + '\x1b[0m';
-
-/** bring white font */
-const _w = (s: string) => _x(37, s);
-
-/** bring red font */
-const _r = (s: string) => _x(31, s);
-
-/** bring yellow font */
-const _y = (s: string) => _x(33, s);
-
-/** bring cyan font */
-const _c = (s: string) => _x(36, s);
-
 function c2s(c: Color): string {
     return c > 0 ? 'X' : 'O';
 }
@@ -25,13 +11,9 @@ function parse(si: string): XYIndex {
     };
 }
 
-function xts(x: XIndex): string {
-    return String.fromCharCode(65 + x);
-}
-
-function yts(y: YIndex): string {
-    return y + 1 + '';
-}
+const x2s = (x: number) => String.fromCharCode(0x61 + x);
+const y2s = (y: number) => x2s(y);
+const xy2s = (xy: XYIndex) => x2s(xy.x) + y2s(xy.y);
 
 /** 0 -> `a`, 3 -> `d` */
 const n2s = (n: number) => String.fromCharCode(n + 0x61);
@@ -47,12 +29,6 @@ const xy2f = (xy: XYIndex) => n2s(xy.x) + n2s(xy.y);
 
 /** -1, { x: 2, y: 3 } -> `W[cd]` */
 const xyc2f = (c: Color, xy: XYIndex) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
-
-function xy2s(xy: XYIndex, s?: Color): string {
-    var ss = s > 0 ? _y('X') : s < 0 ? _r('O') : '';
-    var cc = xy ? xts(xy.x) + yts(xy.y) : '--';
-    return cc;
-}
 
 function min(a: number, b: number): number {
     return a < b ? a : b;

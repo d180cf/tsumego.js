@@ -3,25 +3,6 @@
 
 declare const eidogo: any;
 
-function parseShapeData(data: string): [Board, XYIndex[], XYIndex] {
-    data = data.trim().split('\n').map(s => s.trim()).filter(s => !!s).join('\n') + '\n';
-
-    const strBoard = /([.XO]+\n)+/img.exec(data)[0].trim();
-    const strRZone = /([a-z]\d+\s*?){2,}\n/img.exec(data)[0].trim();
-    const strAim = /^[a-z]\d+\n/img.exec(data)[0].trim();
-
-    const board = new Board(8, strBoard.split('\n'));
-    const rzone = strRZone.split(/\s+/).map(parse);
-    const aim = parse(strAim);
-
-    console.log(board.toString('SGF')
-        .replace(/\)$/, 'DD' + rzone.map(xy => '[' + xy2f(xy) + ']').join('') + ')')
-        .replace(/\b(AW|AB|DD)\b/g, '\n $1')
-        .replace('\n', 'MA[' + xy2f(aim) + ']\n\n'));
-
-    return [board, rzone, aim];
-}
-
 function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     const brd = new Board(source);
     const sgf = SGF.parse(source);
@@ -31,21 +12,13 @@ function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     return [brd, rzn, aim];
 }
 
-function bts(board: Board): string {
-    return board.toString({
-        black: _y,
-        white: _r,
-        compact: true
-    });
-}
-
 function printb(board: Board, solution: string[]) {
     var b = board.fork();
     solution.map(function (xyc) {
         var pc = xyc.slice(-1);
         var xy = parse(xyc);
         b.play(xy[0], xy[1], pc == 'X' ? +1 : -1);
-        console.log(bts(b), '\n');
+        console.log(b + '', '\n');
     });
 }
 
@@ -53,7 +26,7 @@ function s2s(c: Color, s: Result) {
     let isDraw = s.color == 0;
     let isLoss = s.color * c < 0;
 
-    return _w(c2s(c)) + ' ' + _c(isLoss ? 'loses' : (isDraw ? 'draws' : 'wins') + ' with ' + xy2s(s.move));
+    return c2s(c) + ' ' + (isLoss ? 'loses' : (isDraw ? 'draws' : 'wins') + ' with ' + xy2s(s.move));
 }
 
 /** shared transposition table for black and white */
@@ -141,7 +114,7 @@ function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
         console.log(output);
     }
 
-    log('solving for', _w(c2s(color)), 'with', nkotreats, 'ko treats...');
+    log('solving for', c2s(color), 'with', nkotreats, 'ko treats...');
 
     let nodes = 0;
 
@@ -183,11 +156,11 @@ let sgfdata = '';
 (source.slice(0, 1) == '(' ?
     Promise.resolve(source) :
     send('GET', '/problems/' + source + '.sgf')).then(res => {
-    [board, rzone, aim] = (res.slice(0, 1) == '(' ? parseSGF : parseShapeData)(res);
+    [board, rzone, aim] = parseSGF(res);
     path = [board.fork()];
     console.log(res);
     sgfdata = res;
-    console.log('\n\n' + board.hash() + '\n\n' + bts(board));
+    console.log('\n\n' + board.hash() + '\n\n' + board);
     document.title = source;
     renderSGF(res);
 }).catch(err => {
@@ -233,7 +206,7 @@ window['$'] = data => {
                     console.log(col, 'cannot play at', xy);
                 } else {
                     path.push(b);
-                    console.log('\n\n' + b.hash() + '\n\n' + bts(b));
+                    console.log('\n\n' + b.hash() + '\n\n' + b);
                 }
             } else {
                 const {move} = solve2(path, c, !xy ? 0 : +xy);
@@ -245,12 +218,10 @@ window['$'] = data => {
                         /\)\s*$/,
                         '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
 
-                    console.log('sgfp =', sgfp);
-                    window['sgfp'] = sgfp;
-
                     b.play(move.x, move.y, c);
                     path.push(b);
-                    console.log('\n\n' + b.hash() + '\n\n' + bts(b));
+                    console.log('\n\n' + b.hash() + '\n\n' + b);
+                    renderSGF(sgfp);
                 }
             }
             break;
@@ -260,14 +231,14 @@ window['$'] = data => {
                     path.pop();
                     board = path[path.length - 1];
                 }
-                console.log('\n\n' + board.hash() + '\n\n' + bts(board));
+                console.log('\n\n' + board.hash() + '\n\n' + board);
             } else {
                 console.log('nothing to undo');
             }
             break;
         case 'path':
             for (let b of path)
-                console.log('\n\n' + b.hash() + '\n\n' + bts(b));
+                console.log('\n\n' + b.hash() + '\n\n' + b);
             break;
         default:
             console.log('unknown command');
