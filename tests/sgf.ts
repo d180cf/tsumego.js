@@ -1,7 +1,4 @@
-﻿/// <reference path="ut.ts" />
-/// <reference path="../tsumego.d.ts" />
-
-ut.group($ => {
+﻿ut.group($ => {
     $.test($ => {
         const root = SGF.parse('()');
         $(root).equal({ steps: [], vars: [] });
