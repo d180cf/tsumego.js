@@ -39,7 +39,7 @@ function solve(
     tt: Cache,
     observer?: Observer)
 
-    : Result {    
+    : Result {
 
     function __solve(path: Board[], color: Color, nkotreats: number): Result {
         function findrepd(b: Board): number {
@@ -92,35 +92,42 @@ function solve(
             if (!result) {
                 let leafs: { b: Board, m: XYIndex, r: number, n1: number, n2: number, ko: boolean }[] = [];
 
+                let forked: Board;
+
                 for (let m of rzone) {
                     if (!Pattern.isEye(board, m.x, m.y, color)) {
-                        const b = board.fork();
+                        const b = forked || board.fork();
                         const r = b.play(m.x, m.y, color);
 
-                        if (r > 0) {
-                            const d = findrepd(b);
-                            const ko = d < depth;
+                        if (!r) {
+                            forked = b;
+                            continue;
+                        }
 
-                            if (observer)
-                                observer.move(board, b, m);
+                        forked = null;
 
-                            if (d < mindepth)
-                                mindepth = d;
+                        const d = findrepd(b);
+                        const ko = d < depth;
 
-                            // the move makes sense if it doesn't repeat
-                            // a previous position or the current player
-                            // has a ko treat elsewhere on the board and
-                            // can use it to repeat the local position
-                            if (!ko || color * nkotreats > 0) {
-                                leafs.push({
-                                    b: b,
-                                    m: m,
-                                    r: r,
-                                    ko: ko,
-                                    n1: b.totalLibs(color),
-                                    n2: b.totalLibs(-color),
-                                });
-                            }
+                        if (observer)
+                            observer.move(board, b, m);
+
+                        if (d < mindepth)
+                            mindepth = d;
+
+                        // the move makes sense if it doesn't repeat
+                        // a previous position or the current player
+                        // has a ko treat elsewhere on the board and
+                        // can use it to repeat the local position
+                        if (!ko || color * nkotreats > 0) {
+                            leafs.push({
+                                b: b,
+                                m: m,
+                                r: r,
+                                ko: ko,
+                                n1: b.totalLibs(color),
+                                n2: b.totalLibs(-color),
+                            });
                         }
                     }
                 }
