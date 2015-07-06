@@ -2,6 +2,8 @@
 /// <reference path="src/solver.ts" />
 
 module testbench {
+    import Board = tsumego.Board;
+
     declare const eidogo: any;
 
     function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
