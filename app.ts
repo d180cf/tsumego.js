@@ -23,7 +23,7 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    const tt: Cache = {};
+    const tt = new tsumego.TT;
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, stats = true) {
         let t0 = +new Date;

@@ -43,7 +43,3 @@ interface Solution {
      */
     move?: XYIndex;
 }
-
-interface Cache {
-    [hash: string]: Solution;
-}

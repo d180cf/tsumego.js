@@ -1,13 +1,10 @@
 ﻿/// <reference path="pattern.ts" />
 /// <reference path="movegen.ts" />
+/// <reference path="tt.ts" />
 
 module tsumego {
     interface Estimator<Node> {
         (board: Node): number;
-    }
-
-    interface HasheableNode {
-        hash(): string;
     }
 
     function best(s1: Result, s2: Result, c: Color): Result {
@@ -30,59 +27,31 @@ module tsumego {
             return s1.repd < s2.repd ? s1 : s2;
 
         return (r1 - r2) * c > 0 ? s1 : s2;
-    }    
+    }
 
     export function solve<Node extends HasheableNode>(
         path: Node[],
         color: Color,
-        nkotreats: number,
-        tt: Cache,
+        nkt: number,
+        tt: TT,
         expand: Generator<Node>,
         status: Estimator<Node>)
 
         : Result {
 
-        function __solve(path: Node[], color: Color, nkotreats: number): Result {
-            function tthash(b: Node, c: Color): string {
-                return c2s(c) + ':' + b.hash();
-            }
+        function __solve(path: Node[], color: Color, nkt: number): Result {
 
-            function ttlookup(b: Node, c: Color, n: number): Result {
-                const h = tthash(b, c);
-                const s = tt[h];
-
-                if (s) {
-                    if (n >= s.bmax)
-                        return { color: +1, move: s.move, repd: infty };
-
-                    if (n <= s.wmin)
-                        return { color: -1, move: s.move, repd: infty };
-                }
-            }
-
-            function ttstore(b: Node, c: Color, n: number, r: Result) {
-                const h = tthash(b, c);
-                const s = tt[h] || { wmin: -infty, bmax: +infty, move: r.move };
-
-                if (r.color > 0 && n < s.bmax)
-                    s.bmax = n, s.move = r.move;
-
-                if (r.color < 0 && n > s.wmin)
-                    s.wmin = n, s.move = r.move;
-
-                tt[h] = s;
-            }
 
             function _solve(color: Color): Result {
                 const depth = path.length;
                 const board = path[depth - 1];
 
-                let result = ttlookup(board, color, nkotreats);
+                let result = tt.get(board, color, nkt);
 
                 if (!result) {
-                    let {leafs, mindepth} = expand(path, color, nkotreats);
+                    let {leafs, mindepth} = expand(path, color, nkt);
 
-                    for (let {b: b, m: m, ko: ko} of leafs) {
+                    for (const {b, m, ko} of leafs) {
                         let s: Result;
 
                         if (status(b) > 0) {
@@ -90,13 +59,13 @@ module tsumego {
                             s = { color: +1, repd: infty };
                         } else if (!ko) {
                             path.push(b);
-                            let s_move = _solve(-color); // the opponent makes a move
+                            const s_move = _solve(-color); // the opponent makes a move
 
                             if (s_move && isWin(s_move.color, -color)) {
                                 s = s_move;
                             } else {
-                                let s_pass = _solve(color); // the opponent passes
-                                let s_asis: Result = { color: status(b), repd: infty };
+                                const s_pass = _solve(color); // the opponent passes
+                                const s_asis: Result = { color: status(b), repd: infty };
 
                                 // the opponent can either make a move or pass if it thinks
                                 // that making a move is a loss, while the current player
@@ -111,13 +80,13 @@ module tsumego {
                             // last, by this moment all previous moves have been searched
                             // and resulted in a loss; hence the only option here is to spend
                             // a ko treat and repeat the position
-                            let s_move = __solve([board, b], -color, nkotreats - color);
+                            const s_move = __solve([board, b], -color, nkt - color);
 
                             if (s_move && isWin(s_move.color, -color)) {
                                 s = s_move;
                             } else {
-                                let s_pass = __solve([board, b], color, nkotreats - color);
-                                let s_asis: Result = { color: status(b), repd: infty };
+                                const s_pass = __solve([board, b], color, nkt - color);
+                                const s_asis: Result = { color: status(b), repd: infty };
 
                                 s = best(s_move, best(s_asis, s_pass, color), -color);
                             }
@@ -163,11 +132,11 @@ module tsumego {
                     // can be proved by trying to construct a path from a node in the
                     // proof tree to the root node
                     if (result.repd > depth) {
-                        ttstore(board, color, nkotreats, {
+                        tt.set(board, color, {
                             color: result.color,
                             move: result.move,
                             repd: infty
-                        });
+                        }, nkt);
                     }
                 }
 
@@ -177,6 +146,6 @@ module tsumego {
             return _solve(color);
         }
 
-        return __solve(path, color, nkotreats);
+        return __solve(path, color, nkt);
     }
 }
