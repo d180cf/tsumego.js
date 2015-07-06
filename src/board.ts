@@ -1,20 +1,12 @@
 ﻿/// <reference path="utils.ts" />
 /// <reference path="sgf.ts" />
 
-interface StrConfig {
-    black?: (string) => string;
-    white?: (string) => string;
-    compact?: boolean;
-    libs?: boolean;
-    gids?: boolean;
-}
-
 class Board {
     size: uint;
     table: GIndex[];
     nlibs: uint[] = [0];
     gcols: Color[] = [0];
-    chash: string;
+    _hash: string;
 
     constructor(size: uint);
     constructor(size: uint, setup: string);
@@ -83,7 +75,7 @@ class Board {
         var $ = this, board = new Board(0);
 
         board.size = $.size;
-        board.chash = $.chash;
+        board._hash = $._hash;
         board.table = $.table.slice(0);
         board.nlibs = $.nlibs.slice(0);
         board.gcols = $.gcols.slice(0);
@@ -167,7 +159,7 @@ class Board {
         if (t[y * n + x])
             return;
 
-        $.chash = null;
+        $._hash = null;
 
         // stone id
 
@@ -310,24 +302,26 @@ class Board {
     }
 
     hash(): string {
-        var board = this, t = board.table, h = board.chash, i, n = t.length;
+        if (!this._hash) {
+            const n = this.size;
+            let h = '', len = 0;
 
-        if (!h) {
-            h = board.toString({ compact: true }).trim()
-                .replace(/\x20/gm, '')
-                .replace(/\n/gm, '|');
+            for (let y = 0; y < n; y++) {
+                let rx = h.length;
 
-            /*
-            for (i = 0; i < n; i++) {
-                if (t[i]) {
-                    h = ((h << 17) & 0xffffffff) | ((h >> (32 - 17)) & ((1 << 17) - 1));
-                    h ^= 0xffffffff & (((t[i] > 0 ? 1 : 2) << 9) | i);
+                for (let x = 0; x < n; x++) {
+                    const b = this.at(x, y);
+                    h += b > 0 ? 'X' : b < 0 ? 'O' : '-';
+                    if (b) len = rx = h.length;
                 }
+
+                h = h.slice(0, rx) + ';';
             }
-            */
+
+            this._hash = n + 'x' + n + '(' + h.slice(0, len) + ')';
         }
 
-        return board.chash = h;
+        return this._hash;
     }
 
     toStringSGF() {
@@ -347,71 +341,41 @@ class Board {
             + take('AW', c => c < 0) + ')';
     }
 
-    toString(config?: string|StrConfig): string {
-        var $ = this, t = $.table, n = $.size, g = $.nlibs;
-        var i, x, y, c, e, s = '', bs: XYIndex[] = [], ws: XYIndex[] = [];
-        var hc = '  ', vc;
-        var cB = 'X', cW = 'O';
+    toStringTXT() {
+        let xmax = 0, ymax = 0;
 
-        if (config == 'SGF') {
-            return this.toStringSGF();
-        } else {
-            let cfg: StrConfig = config || {};
+        for (let x = 0; x < this.size; x++)
+            for (let y = 0; y < this.size; y++)
+                if (this.at(x, y))
+                    xmax = max(x, xmax),
+                    ymax = max(y, ymax);
 
-            if (cfg.black)
-                cB = cfg.black(cB);
-            if (cfg.white)
-                cW = cfg.white(cW);
+        let hc = '  ';
 
-            let xmax = 0, ymax = 0;
+        for (let x = 0; x <= xmax; x++)
+            hc += ' ' + String.fromCharCode(0x41 + x);
 
-            if (cfg.compact) {
-                for (x = 0; x < n; x++)
-                    for (y = 0; y < n; y++)
-                        if ($.at(x, y))
-                            xmax = max(x, xmax),
-                            ymax = max(y, ymax);
-            } else {
-                xmax = n - 1;
-                ymax = n - 1;
+        let s = hc;
+
+        for (let y = 0; y <= ymax; y++) {
+            s += '\n';
+            const vc = y < 9 ? ' ' + (y + 1) : (y + 1);
+
+            s += vc;
+
+            for (let x = 0; x <= xmax; x++) {
+                const c = this.at(x, y);
+                s += ' ';
+                s += c > 0 ? 'X' : c < 0 ? 'O' : '-';
             }
-
-            for (x = 0; x <= xmax; x++)
-                hc += ' ' + x2s(x);
-
-            hc += '  ';
-
-            if (!cfg.compact)
-                s += hc;
-
-            for (y = 0; y <= ymax; y++) {
-                s += '\n';
-                vc = y < 9 ? ' ' + (y + 1) : (y + 1);
-
-                if (!cfg.compact)
-                    s += vc;
-
-                for (x = 0; x <= xmax; x++) {
-                    c = $.at(x, y);
-                    e = '.';
-
-                    if (cfg.libs)
-                        s += ' ' + (g[abs(c)] || e);
-                    else if (cfg.gids)
-                        s += ' ' + (abs(c) || e);
-                    else
-                        s += ' ' + (c > 0 ? cB : c < 0 ? cW : e);
-
-                }
-
-                if (!cfg.compact)
-                    s += ' ' + vc;
-            }
-
-            if (!cfg.compact)
-                s += '\n' + hc;
         }
 
         return s;
+    }
+
+    toString(mode?: string): string {
+        return mode == 'SGF' ?
+            this.toStringSGF() :
+            this.toStringTXT();
     }
 }

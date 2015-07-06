@@ -52,7 +52,10 @@
     }
 
     function match(pattern) {
-        if (typeof pattern === 'number' || typeof pattern === 'string' || pattern === null || pattern === undefined)
+        if (typeof pattern === 'string')
+            return match.text(pattern);
+
+        if (typeof pattern === 'number' || pattern === null || pattern === undefined)
             return match.primitive(pattern);
 
         if (typeof pattern === 'object' && pattern.constructor === Object)
@@ -65,9 +68,21 @@
     }
 
     module match {
-        export function primitive<T extends string|number|void>(pattern: T) {
+        export function text(pattern: string) {
+            return (value: string) => {
+                if (value !== pattern) {
+                    assert(false, 'The two strings do not match:'
+                        + '\n lhs: ' + stringify(value)
+                        + '\n lhs: ' + stringify(pattern)
+                        + '\ndiff: ' + strdiff(value, pattern));
+                }
+            };
+        }
+
+        export function primitive<T extends number|void>(pattern: T) {
             return (value: T) => {
-                assert(value === pattern, `${stringify(value)} !== ${stringify(pattern)}`);
+                if (value !== pattern)
+                    assert(false, `${value} !== ${pattern}`);
             };
         }
 
@@ -120,5 +135,21 @@
             .replace(/\n/gm, '\\n');
 
         return '"' + escaped + '"';
+    }
+
+    function strdiff(lhs: string, rhs: string) {
+        for (let i = 0; i < lhs.length || i < rhs.length; i++)
+            if (lhs.charAt(i) !== rhs.charAt(i))
+                return '.slice(' + i + ') = '
+                    + stringify(truncate(lhs, i, i + 5))
+                    + ' vs '
+                    + stringify(truncate(rhs, i, i + 5));
+
+        return '(identical)';
+    }
+
+    function truncate(s: string, i, j: number) {
+        const w = s.slice(i, j);
+        return j < s.length ? w : w + '...';
     }
 }
