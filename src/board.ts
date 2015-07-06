@@ -9,40 +9,32 @@ class Board {
     _hash: string;
 
     constructor(size: uint);
-    constructor(size: uint, setup: string);
     constructor(size: uint, rows: string[]);
     constructor(sgf: string);
 
     constructor(size, setup?) {
         if (typeof size === 'string')
             this.initFromSGF(size);
-        else {
-            var $ = this, i;
-
-            $.size = size;
-            $.table = new Array(size * size);
-
-            for (i = 0; i < $.table.length; i++)
-                $.table[i] = 0;
-
-            if (typeof setup === 'string') {
-                setup.split(';').map(function (str, col) {
-                    str.split(' ').map(parse).map(function (xy) {
-                        let x = xy.x, y = xy.y, c = col ? -1 : +1;
-                        if (!$.play(x, y, c))
-                            throw new Error('Invalid setup.');
-                    });
-                });
-            } else if (setup instanceof Array) {
-                setup.map(function (str, y) {
-                    str.split('').map(function (ch, x) {
-                        let c = { 'X': +1, 'O': -1 }[ch];
-                        if (c && !$.play(x, y, c))
-                            throw new Error('Invalid setup.');
-                    });
-                });
-            }
+        else if (typeof size === 'number') {
+            this.init(size);
+            if (setup instanceof Array)
+                this.initFromTXT(setup);
         }
+    }
+
+    private init(size: number) {
+        this.size = size;
+        this.table = new Array(size * size);
+    }
+
+    private initFromTXT(rows: string[]) {
+        rows.map((row, y) => {
+            row.split('').map((chr, x) => {
+                let c = chr == 'X' ? +1 : chr == 'O' ? -1 : 0;
+                if (c && !this.play(x, y, c))
+                    throw new Error('Invalid setup.');
+            });
+        });
     }
 
     private initFromSGF(source: string) {
@@ -51,8 +43,7 @@ class Board {
         const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
         const size = +setup['SZ'];
 
-        this.size = size;
-        this.table = new Array(size * size);
+        this.init(size);
 
         const place = (tag: string, color: number) => {
             const stones = setup[tag];

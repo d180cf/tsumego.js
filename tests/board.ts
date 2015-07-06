@@ -48,4 +48,31 @@ ut.group($ => {
 
         $(board.hash()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
     });
+
+    $.test($ => {
+        const board = new Board(9, [
+            '-X--',
+            'XOO-',
+            'XXO-',
+            '-XO-',
+            '-X-O',
+            '--XO',
+            '-XO-',
+            '-XOO',
+            'OOO-'
+        ]);
+
+        $(board + '').equal([
+            '   A B C D',
+            ' 1 - X - -',
+            ' 2 X O O -',
+            ' 3 X X O -',
+            ' 4 - X O -',
+            ' 5 - X - O',
+            ' 6 - - X O',
+            ' 7 - X O -',
+            ' 8 - X O O',
+            ' 9 O O O -'
+        ].join('\n'));
+    });
 });

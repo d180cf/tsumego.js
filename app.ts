@@ -12,16 +12,6 @@ function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
     return [brd, rzn, aim];
 }
 
-function printb(board: Board, solution: string[]) {
-    var b = board.fork();
-    solution.map(function (xyc) {
-        var pc = xyc.slice(-1);
-        var xy = parse(xyc);
-        b.play(xy[0], xy[1], pc == 'X' ? +1 : -1);
-        console.log(b + '', '\n');
-    });
-}
-
 function s2s(c: Color, s: Result) {
     let isDraw = s.color == 0;
     let isLoss = s.color * c < 0;
@@ -102,50 +92,6 @@ function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
     }
 
     return ';' + xyc2f(color, move) + vars;
-}
-
-function solveWithLogging(path: Board[], color: Color, nkotreats = 0) {
-    let indent: string[] = [];
-    let tree = [], leaf = tree, stack = [];
-
-    function log(...args: any[]) {
-        let prefix = indent.join('');
-        let output = [...args].join(' ').split('\n').map(s => prefix + s).join('\n');
-        console.log(output);
-    }
-
-    log('solving for', c2s(color), 'with', nkotreats, 'ko treats...');
-
-    let nodes = 0;
-
-    let rs = solve2(path, color, nkotreats, {
-        move: () => {
-            nodes++;
-        },
-        solving: (board, color) => {
-            let next = [board, color, null, null, null];
-            leaf.push(next);
-            stack.push(leaf);
-            leaf = next;
-        },
-        solved: (board, color, br) => {
-            if (leaf[0] !== board)
-                debugger;
-
-            leaf[2] = br.color;
-            leaf[3] = br.move && br.move.x;
-            leaf[4] = br.move && br.move.y;
-            leaf = stack.pop();
-        }
-    });
-
-    console.log('nodes:', nodes);
-
-    let json = JSON.stringify(tree[0], (k, v) => v instanceof Board ? v.hash() : v, 4);
-
-    //fs.writeFileSync('./viewer/tree.js', 'tree = ' + json, 'utf8');
-    
-    return rs;
 }
 
 var board: Board, rzone: XYIndex[], aim, path: Board[];
