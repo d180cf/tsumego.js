@@ -2,10 +2,14 @@
 /// <reference path="sgf.ts" />
 
 module tsumego {
+    /** A block is a solidly connected set of stones.
+        Stones in a block cannot be separated. */
+    type BlockId = int;
+
     export class Board {
         size: uint;
 
-        private table: GIndex[];
+        private table: BlockId[];
         private nlibs: uint[] = [0];
         private gcols: Color[] = [0];
         private _hash: string;
@@ -102,7 +106,7 @@ module tsumego {
                 g[abs(sb)] += q;
         }
 
-        private remove(s: GIndex): uint {
+        private remove(s: BlockId): uint {
             var $ = this, t = $.table, n = $.size, g = $.nlibs;
             var i = 0, x, y, r = 0;
 
@@ -122,7 +126,7 @@ module tsumego {
             return r;
         }
 
-        private countLibs(s: GIndex): uint {
+        private countLibs(s: BlockId): uint {
             var $ = this, t = $.table, n = $.size;
             var i = 0, x, y, r = 0;
 

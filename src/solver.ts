@@ -29,6 +29,10 @@ module tsumego {
         return (r1 - r2) * c > 0 ? s1 : s2;
     }
 
+    function wins(result: number, color: number): boolean {
+        return color > 0 ? result > 0 : result < 0;
+    }
+
     export function solve<Node extends HasheableNode>(path: Node[], color: Color, nkt: number, tt: TT,
         expand: Generator<Node>, status: Estimator<Node>): Result {
 
@@ -62,7 +66,7 @@ module tsumego {
                     path.push(b);
                     const s_move = _solve(path, -color, nkt, ko); // the opponent makes a move
 
-                    if (s_move && isWin(s_move.color, -color)) {
+                    if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
                         const s_pass = _solve(path, color, nkt, ko); // the opponent passes
@@ -90,7 +94,7 @@ module tsumego {
                 // there can be another move that gives the same result
                 // uncondtiionally, so it might make sense to continue
                 // searching in such cases
-                if (isWin(s.color, color)) {
+                if (wins(s.color, color)) {
                     result = {
                         color: color,
                         repd: s.repd,

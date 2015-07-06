@@ -6,7 +6,21 @@ module testbench {
 
     declare const eidogo: any;
 
-    function parseSGF(source: string): [Board, XYIndex[], XYIndex] {
+    const x2s = (x: number) => String.fromCharCode(0x61 + x);
+    const y2s = (y: number) => x2s(y);
+    const xy2s = (xy: Coords) => x2s(xy.x) + y2s(xy.y);
+    const c2s = (c: Color) => c > 0 ? 'X' : 'O';
+
+    /** { x: 2, y: 3 } -> `cd` */
+    const xy2f = (xy: Coords) => n2s(xy.x) + n2s(xy.y);
+
+    /** -1, { x: 2, y: 3 } -> `W[cd]` */
+    const xyc2f = (c: Color, xy: Coords) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
+
+    /** `cd` -> { x: 2, y: 3 } */
+    const f2xy = (s: string) => <Coords>{ x: s2n(s, 0), y: s2n(s, 1) };
+
+    function parseSGF(source: string): [Board, Coords[], Coords] {
         const brd = new Board(source);
         const sgf = SGF.parse(source);
         const setup = sgf.steps[0];
@@ -105,7 +119,7 @@ module testbench {
         return ';' + xyc2f(color, move) + vars;
     }
 
-    var board: Board, rzone: XYIndex[], aim, path: Board[];
+    var board: Board, rzone: Coords[], aim, path: Board[];
 
     const source = location.search.slice(1);
     let sgfdata = '';
@@ -143,6 +157,13 @@ module testbench {
             showNavTree: true,
             problemMode: false
         });
+    }
+
+    function parse(si: string): Coords {
+        return {
+            x: si.charCodeAt(0) - 65,
+            y: +/\d+/.exec(si)[0] - 1
+        };
     }
 
     window['$'] = data => {

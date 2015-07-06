@@ -8,7 +8,7 @@ module tsumego {
 
     interface Leaf<Node> {
         b: Node;
-        m: XYIndex;
+        m: Coords;
         r: number;
         n1: number;
         n2: number;
@@ -24,7 +24,7 @@ module tsumego {
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: XYIndex[]): Generator<Board> {
+        export function Basic(rzone: Coords[]): Generator<Board> {
             return (path: Board[], color, nkt: number) => {
                 const depth = path.length;
                 const board = path[depth - 1];
