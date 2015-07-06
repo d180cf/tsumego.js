@@ -29,20 +29,11 @@ module tsumego {
         return (r1 - r2) * c > 0 ? s1 : s2;
     }
 
-    export function solve<Node extends HasheableNode>(
-        path: Node[],
-        color: Color,
-        nkt: number,
-        tt: TT,
-        expand: Generator<Node>,
-        status: Estimator<Node>)
+    export function solve<Node extends HasheableNode>(path: Node[], color: Color, nkt: number, tt: TT,
+        expand: Generator<Node>, status: Estimator<Node>): Result {
 
-        : Result {
-
-        function __solve(path: Node[], color: Color, nkt: number): Result {
-
-
-            function _solve(color: Color): Result {
+        function solveWith(path: Node[], color: Color, nkt: number): Result {
+            function solveFor(color: Color): Result {
                 const depth = path.length;
                 const board = path[depth - 1];
 
@@ -59,12 +50,12 @@ module tsumego {
                             s = { color: +1, repd: infty };
                         } else if (!ko) {
                             path.push(b);
-                            const s_move = _solve(-color); // the opponent makes a move
+                            const s_move = solveFor(-color); // the opponent makes a move
 
                             if (s_move && isWin(s_move.color, -color)) {
                                 s = s_move;
                             } else {
-                                const s_pass = _solve(color); // the opponent passes
+                                const s_pass = solveFor(color); // the opponent passes
                                 const s_asis: Result = { color: status(b), repd: infty };
 
                                 // the opponent can either make a move or pass if it thinks
@@ -80,12 +71,12 @@ module tsumego {
                             // last, by this moment all previous moves have been searched
                             // and resulted in a loss; hence the only option here is to spend
                             // a ko treat and repeat the position
-                            const s_move = __solve([board, b], -color, nkt - color);
+                            const s_move = solveWith([board, b], -color, nkt - color);
 
                             if (s_move && isWin(s_move.color, -color)) {
                                 s = s_move;
                             } else {
-                                const s_pass = __solve([board, b], color, nkt - color);
+                                const s_pass = solveWith([board, b], color, nkt - color);
                                 const s_asis: Result = { color: status(b), repd: infty };
 
                                 s = best(s_move, best(s_asis, s_pass, color), -color);
@@ -143,9 +134,9 @@ module tsumego {
                 return result;
             }
 
-            return _solve(color);
+            return solveFor(color);
         }
 
-        return __solve(path, color, nkt);
+        return solveWith(path, color, nkt);
     }
 }
