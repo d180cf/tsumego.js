@@ -33,7 +33,6 @@ module tsumego {
         color: Color,
         nkotreats: number,
         rzone: XYIndex[],
-        aim: XYIndex,
         tt: Cache,
         expand: Generator,
         status: Estimator)
@@ -94,7 +93,7 @@ module tsumego {
                                 s = s_move;
                             } else {
                                 let s_pass = _solve(color); // the opponent passes
-                                let s_asis: Result = { color: b.at(aim.x, aim.y) ? -1 : +1, repd: infty };
+                                let s_asis: Result = { color: status(b), repd: infty };
 
                                 // the opponent can either make a move or pass if it thinks
                                 // that making a move is a loss, while the current player
@@ -115,7 +114,7 @@ module tsumego {
                                 s = s_move;
                             } else {
                                 let s_pass = __solve([board, b], color, nkotreats - color);
-                                let s_asis: Result = { color: b.at(aim.x, aim.y) ? -1 : +1, repd: infty };
+                                let s_asis: Result = { color: status(b), repd: infty };
 
                                 s = best(s_move, best(s_asis, s_pass, color), -color);
                             }
