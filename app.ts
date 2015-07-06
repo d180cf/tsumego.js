@@ -25,13 +25,21 @@ module testbench {
     /** shared transposition table for black and white */
     const tt: Cache = {};
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0) {
+    function solve(path: Board[], color: Color, nkotreats: number = 0, stats = true) {
         let t0 = +new Date;
-        let rs = tsumego.solve(path, color, nkotreats, rzone, aim, tt);
+
+        let rs = tsumego.solve(path, color, nkotreats, rzone, aim, tt,
+            tsumego.generators.basic,
+            b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
+
         let t1 = +new Date;
-        console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
-        console.log(s2s(color, rs));
-        console.log('tt:', Object.keys(tt).length);
+
+        if (stats) {
+            console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
+            console.log(s2s(color, rs));
+            console.log('tt:', Object.keys(tt).length);
+        }
+
         return rs;
     }
 
@@ -39,7 +47,7 @@ module testbench {
         The tree's root is a winning move and its
         branches are all possible answers of the opponent. */
     function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
-        const {move} = tsumego.solve(path, color, nkt, rzone, aim, tt);
+        const {move} = solve(path, color, nkt, false);
         if (!move)
             return null;
 

@@ -16,7 +16,7 @@ module tests {
                 [ao][bp][bo][bn][co][fm][fl][gn][gl][gk][hm][im]
                 [il][md][nf][ne][nd][og][of][od][oc][ob][oa][pg]
                 [pe][pc][pb])
-        `);
+            `);
 
             const eyes = {};
 

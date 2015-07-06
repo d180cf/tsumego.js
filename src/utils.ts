@@ -1,5 +1,7 @@
 ﻿/// <reference path="types.ts" />
 
+const infty = 100500;
+
 function c2s(c: Color): string {
     return c > 0 ? 'X' : 'O';
 }

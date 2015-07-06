@@ -1,7 +1,10 @@
 ﻿/// <reference path="pattern.ts" />
+/// <reference path="movegen.ts" />
 
 module tsumego {
-    const infty = 100500;
+    interface Estimator {
+        (board: Board): number;
+    }
 
     function best(s1: Result, s2: Result, c: Color): Result {
         let r1 = s1 && s1.color;
@@ -25,87 +28,15 @@ module tsumego {
         return (r1 - r2) * c > 0 ? s1 : s2;
     }
 
-    function findrepd(path: Board[], b: Board): number {
-        for (let i = path.length - 1; i > 0; i--)
-            if (b.hash() == path[i - 1].hash())
-                return i;
-        return infty;
-    }
-
-    interface Leaf {
-        b: Board;
-        m: XYIndex;
-        r: number;
-        n1: number;
-        n2: number;
-        ko: boolean;
-    }
-
-    function expand(path: Board[], rzone: XYIndex[], color, nkt: number) {
-        const depth = path.length;
-        const board = path[depth - 1];
-        const leafs: Leaf[] = [];
-
-        let mindepth = infty;
-        let forked: Board;
-
-        for (let m of rzone) {
-            if (!Pattern.isEye(board, m.x, m.y, color)) {
-                const b = forked || board.fork();
-                const r = b.play(m.x, m.y, color);
-
-                if (!r) {
-                    forked = b;
-                    continue;
-                }
-
-                forked = null;
-
-                const d = findrepd(path, b);
-                const ko = d < depth;
-
-                if (d < mindepth)
-                    mindepth = d;
-
-                // the move makes sense if it doesn't repeat
-                // a previous position or the current player
-                // has a ko treat elsewhere on the board and
-                // can use it to repeat the local position
-                if (!ko || color * nkt > 0) {
-                    leafs.push({
-                        b: b,
-                        m: m,
-                        r: r,
-                        ko: ko,
-                        n1: b.totalLibs(color),
-                        n2: b.totalLibs(-color),
-                    });
-                }
-            }
-        }
-
-        leafs.sort((a, b) => {
-            return (+a.ko - +b.ko)          // moves that require a ko treat are considered last
-                || (b.r - a.r)              // then maximize the number of captured stones
-                || (b.n1 - a.n1)            // then maximize the number of liberties
-                || (a.n2 - b.n2)            // then minimize the number of the opponent's liberties
-                || (Math.random() - 0.5);   // otherwise try moves in a random order
-        });
-
-        return { leafs: leafs, mindepth: mindepth };
-    }
-
-    function status(b: Board, t: XYIndex) {
-        return b.at(t.x, t.y) < 0 ? -1 : +1;
-    }
-
     export function solve(
         path: Board[],
         color: Color,
         nkotreats: number,
         rzone: XYIndex[],
         aim: XYIndex,
-        tt: Cache)
+        tt: Cache,
+        expand: Generator,
+        status: Estimator)
 
         : Result {
 
@@ -152,7 +83,7 @@ module tsumego {
                     for (let {b: b, m: m, ko: ko} of leafs) {
                         let s: Result;
 
-                        if (status(b, aim) > 0) {
+                        if (status(b) > 0) {
                             // black wins by capturing the white's stones
                             s = { color: +1, repd: infty };
                         } else if (!ko) {
