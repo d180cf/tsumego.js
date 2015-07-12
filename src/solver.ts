@@ -7,16 +7,16 @@ module tsumego {
         (board: Node): number;
     }
 
-    interface Player {
+    export interface Player {
         /** c plays at (x, y) */
-        play(x, y, c: number): void;
+        play(x: number, y: number, c: number): void;
         /** c passes */
         pass(c: number): void;
         /** c wins by playing at (x, y) */
-        undo(x, y, c: number): void;
+        undo(x: number, y: number, c: number): void;
     }
 
-    class Solver<Node extends HasheableNode> {
+    export class Solver<Node extends HasheableNode> {
         private path: Node[] = [];
 
         /** tags[i] contains tags for path[i] */
@@ -38,7 +38,7 @@ module tsumego {
         }
 
         private get current() {
-            const d = this.path.length - 1;
+            const d = this.path.length;
             const t = this.tags[d - 1];
             return { node: this.path[d - 1], color: t.color, nkt: t.nkt, next: t.next, move: t.move, mindepth: t.mindepth };
         }
@@ -47,7 +47,7 @@ module tsumego {
             private tt: TT,
             private expand: Generator<Node>,
             private status: Estimator<Node>,
-            private player: Player) {
+            private player?: Player) {
             for (const b of path) {
                 this.path.push(b);
                 this.tags.push(null);
@@ -89,14 +89,20 @@ module tsumego {
                 const {node, move} = next.splice(0, 1)[0];
                 this.path.push(node);
                 this.tags.push({ color: -color, nkt: nkt, move: move });
-                this.player.play(move.x, move.y, color);
+
+                if (this.player)
+                    this.player.play(move.x, move.y, color);
+
                 return { color: 0, repd: 0 };
             }
 
             if (move) {
                 this.path.push(node);
                 this.tags.push({ color: -color, node: node, nkt: nkt });
-                this.player.pass(color);
+
+                if (this.player)
+                    this.player.pass(color);
+
                 return { color: 0, repd: 0 };
             }
 
@@ -114,7 +120,9 @@ module tsumego {
 
             this.path.pop();
             this.tags.pop();
-            this.player.undo(res.move && res.move.x, res.move && res.move.y, res.color);
+
+            if (this.player)
+                this.player.undo(res.move && res.move.x, res.move && res.move.y, res.color);
 
             if (this.current.color * res.color > 0)
                 return this.exit(res);
@@ -124,7 +132,7 @@ module tsumego {
     }
 
     export function solve<Node extends HasheableNode>(path: Node[], color: Color, nkt: number, tt: TT,
-        expand: Generator<Node>, status: Estimator<Node>, player: Player): Result {
+        expand: Generator<Node>, status: Estimator<Node>, player?: Player): Result {
         const s = new Solver(path, color, nkt, tt, expand, status, player);
         let r, t: Result;
         while (t = s.next())

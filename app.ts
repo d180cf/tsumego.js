@@ -1,10 +1,15 @@
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
+/// <reference path="eidogo/eidogo.d.ts" />
+
+interface Element {
+    onclick: (ev: MouseEvent) => any;
+}
 
 module testbench {
     import Board = tsumego.Board;
 
-    declare const eidogo: any;
+    declare var egp: eidogo.Player;
 
     const x2s = (x: number) => String.fromCharCode(0x61 + x);
     const y2s = (y: number) => x2s(y);
@@ -39,16 +44,29 @@ module testbench {
     /** shared transposition table for black and white */
     const tt = new tsumego.TT;
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0, stats = true) {
+    function solve(path: Board[], color: Color, nkotreats: number = 0, debug = true) {
         let t0 = +new Date;
 
-        let rs = tsumego.solve(path, color, nkotreats, tt,
+        const player: tsumego.Player = {
+            play: (x, y, c) => egp.createMove(xy2f({ x: x, y: y })),
+            pass: (c) => egp.createMove(),
+            undo: (x, y, c) => egp.back()
+        };
+
+        const solver = new tsumego.Solver(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
-            b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
+            b => b.at(aim.x, aim.y) < 0 ? -1 : +1, debug && player);
+
+        let rs, ts: Result;
+
+        if (!debug)
+            while (ts = solver.next()) rs = ts;
+        else
+            document.querySelector('#next').onclick = () => solver.next();
 
         let t1 = +new Date;
 
-        if (stats) {
+        if (debug) {
             console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
             console.log(s2s(color, rs));
             console.log('tt:', Object.keys(tt).length);
@@ -61,7 +79,7 @@ module testbench {
         The tree's root is a winning move and its
         branches are all possible answers of the opponent. */
     function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
-        const {move} = solve(path, color, nkt, false);
+        const {move} = solve(path, color, nkt);
         if (!move)
             return null;
 
@@ -139,7 +157,7 @@ module testbench {
     });
 
     function renderSGF(sgf: string) {
-        window['egp'] = new eidogo.Player({
+        egp = new eidogo.Player({
             container: 'board',
             theme: 'standard',
             sgf: sgf, // EidoGo cannot display 8x8 boards
