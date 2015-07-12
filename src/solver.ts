@@ -27,6 +27,8 @@ module tsumego {
             nkt: number;
             /** which move led to this position */
             move?: Coords;
+            /** whether the player has passed already */
+            passed?: boolean;
             /** possible continuations */
             next?: { node: Node, move: Coords, nkt: number }[];
             /** the earliest node repeated by the continuations */
@@ -38,9 +40,7 @@ module tsumego {
         }
 
         private get current() {
-            const d = this.path.length;
-            const t = this.tags[d - 1];
-            return { node: this.path[d - 1], color: t.color, nkt: t.nkt, next: t.next, move: t.move, mindepth: t.mindepth };
+            return this.tags[this.depth - 1];
         }
 
         constructor(path: Node[], color: Color, nkt: number,
@@ -60,14 +60,18 @@ module tsumego {
         }
 
         next(): Result {
-            const {color, nkt, node} = this.current;
+            if (!this.current)
+                return null;
+
+            const node = this.path[this.depth - 1];
+            const {color, nkt, move} = this.current;
             const ttres = this.tt.get(node, color, nkt);
 
             if (ttres)
                 return this.exit(ttres);
 
             if (this.status(node) > 0)
-                return this.exit({ color: +1, repd: infty });
+                return this.exit({ color: +1, move: move, repd: infty });
 
             const {leafs, mindepth} = this.expand(this.path, color, nkt);
             const t = this.tags[this.depth - 1];
@@ -83,10 +87,11 @@ module tsumego {
         }
 
         private pick(): Result {
-            const {next, color, nkt, move, node} = this.current;
+            const node = this.path[this.depth - 1];
+            const {color, nkt, passed, move, next} = this.current;
 
             if (next.length > 0) {
-                const {node, move} = next.splice(0, 1)[0];
+                const {move, nkt, node} = next.splice(0, 1)[0];
                 this.path.push(node);
                 this.tags.push({ color: -color, nkt: nkt, move: move });
 
@@ -96,7 +101,13 @@ module tsumego {
                 return { color: 0, repd: 0 };
             }
 
-            if (move) {
+            if (!passed) {
+                const prev = this.tags[this.depth - 2];
+
+                if (prev && prev.passed)
+                    return this.exit({ color: this.status(node), repd: infty });
+
+                this.current.passed = true;
                 this.path.push(node);
                 this.tags.push({ color: -color, node: node, nkt: nkt });
 
@@ -106,11 +117,12 @@ module tsumego {
                 return { color: 0, repd: 0 };
             }
 
-            return this.exit({ color: this.status(node), repd: infty });
+            return this.exit({ color: -color, move: move, repd: infty });
         }
 
         private exit(res: Result): Result {
-            const {node, color, nkt, mindepth} = this.current;
+            const node = this.path[this.depth - 1];
+            const {color, nkt, mindepth} = this.current;
 
             if (color * res.color < 0)
                 res.repd = mindepth;
@@ -123,6 +135,9 @@ module tsumego {
 
             if (this.player)
                 this.player.undo(res.move && res.move.x, res.move && res.move.y, res.color);
+
+            if (!this.current)
+                return res;
 
             if (this.current.color * res.color > 0)
                 return this.exit(res);
