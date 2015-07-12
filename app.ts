@@ -49,7 +49,7 @@ module testbench {
 
         const player: tsumego.Player = {
             play: (x, y, c) => egp.createMove(xy2f({ x: x, y: y })),
-            pass: (c) => egp.createMove(),
+            pass: (c) => egp.pass(),
             undo: (x, y, c) => egp.back()
         };
 
@@ -61,8 +61,12 @@ module testbench {
 
         if (!debug)
             while (ts = solver.next()) rs = ts;
-        else
-            document.querySelector('#next').onclick = () => solver.next();
+        else {
+            document.querySelector('#next').onclick = () => {
+                const r = solver.next();
+                console.log('.next()', '->', r);
+            };
+        }
 
         let t1 = +new Date;
 

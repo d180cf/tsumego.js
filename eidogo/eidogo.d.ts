@@ -6,7 +6,7 @@ declare module eidogo {
         createMove(xy: string);
 
         /** makes a pass */
-        createMove();
+        pass();
 
         /** undo the last move */
         back();
