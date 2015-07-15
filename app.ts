@@ -44,7 +44,7 @@ module testbench {
     /** shared transposition table for black and white */
     const tt = new tsumego.TT;
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0, debug = true) {
+    function solve(path: Board[], color: Color, nkotreats: number = 0, debug = false) {
         let t0 = +new Date;
 
         const player: tsumego.Player = {
@@ -62,9 +62,11 @@ module testbench {
         if (!debug)
             while (ts = solver.next()) rs = ts;
         else {
-            document.querySelector('#next').onclick = () => {
-                const r = solver.next();
-                console.log('.next()', '->', r);
+            document.onkeydown = event => {
+                if (event.which == 39) {
+                    const r = solver.next();
+                    console.log('.next()', '->', r);
+                }
             };
         }
 
@@ -209,7 +211,7 @@ module testbench {
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                     }
                 } else {
-                    const {move} = solve(path, c, !xy ? 0 : +xy);
+                    const {move} = solve(path, c, !xy ? 0 : +xy, location.hash == '#debug');
 
                     if (!move) {
                         console.log(col, 'passes');
