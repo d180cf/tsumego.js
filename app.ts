@@ -2,10 +2,6 @@
 /// <reference path="src/solver.ts" />
 /// <reference path="eidogo/eidogo.d.ts" />
 
-interface Element {
-    onclick: (ev: MouseEvent) => any;
-}
-
 module testbench {
     import Board = tsumego.Board;
 

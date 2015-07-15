@@ -145,13 +145,4 @@ module tsumego {
             return this.pick();
         }
     }
-
-    export function solve<Node extends HasheableNode>(path: Node[], color: Color, nkt: number, tt: TT,
-        expand: Generator<Node>, status: Estimator<Node>, player?: Player): Result {
-        const s = new Solver(path, color, nkt, tt, expand, status, player);
-        let r, t: Result;
-        while (t = s.next())
-            r = t;
-        return r;
-    }
 }
