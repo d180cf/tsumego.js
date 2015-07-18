@@ -5,6 +5,9 @@ declare module eidogo {
         unsavedChanges: boolean;
         cursor: Cursor;
 
+        /** 'B' | 'W' */
+        currentColor: string;
+
         /** A mysterious method which needs to be called
             after adding a comment for the current node :) */
         refresh(): void;

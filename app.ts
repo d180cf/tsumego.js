@@ -7,10 +7,8 @@ module testbench {
 
     declare var egp: eidogo.Player;
 
-    const x2s = (x: number) => String.fromCharCode(0x61 + x);
-    const y2s = (y: number) => x2s(y);
-    const xy2s = (xy: Coords) => x2s(xy.x) + y2s(xy.y);
-    const c2s = (c: Color) => c > 0 ? 'X' : 'O';
+    const xy2s = ({x, y}: Coords) => String.fromCharCode(0x41 + x) + (y + 1);
+    const c2s = (c: Color) => c > 0 ? 'B' : 'W';
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: Coords) => n2s(xy.x) + n2s(xy.y);
@@ -40,14 +38,36 @@ module testbench {
     /** shared transposition table for black and white */
     const tt = new tsumego.TT;
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0, debug = false) {
+    function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;
 
+        const solver = new tsumego.Solver(path, color, nkotreats, tt,
+            tsumego.generators.Basic(rzone),
+            b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
+
+        const t = solver.current;
+        while (!t.res)
+            solver.next();
+        const rs = t.res;
+
+        let t1 = +new Date;
+
+        if (log) {
+            console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
+            console.log(s2s(color, rs));
+            console.log('tt:', Object.keys(tt).length);
+        }
+
+        return rs;
+    }
+
+    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
         let log = true;
 
         const player: tsumego.Player = {
             play: (x, y, c) => {
                 if (!log) return;
+                egp.currentColor = c > 0 ? 'B' : 'W';
                 egp.createMove(xy2f({ x: x, y: y }));
             },
             pass: (c) => {
@@ -57,7 +77,7 @@ module testbench {
             undo: (x, y, c) => {
                 if (!log) return;
                 egp.unsavedChanges = true;
-                egp.cursor.node.C = c2s(c) + ' wins by ' + xy2f({ x: x, y: y });
+                egp.cursor.node.C = c2s(c) + ' wins by ' + xy2s({ x: x, y: y });
                 egp.refresh();
                 egp.back();
             }
@@ -65,63 +85,48 @@ module testbench {
 
         const solver = new tsumego.Solver(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
-            b => b.at(aim.x, aim.y) < 0 ? -1 : +1, debug && player);
+            b => b.at(aim.x, aim.y) < 0 ? -1 : +1, player);
 
-        let rs: Result;
+        window['solver'] = solver;
 
-        if (!debug) {
+        const stepOver = () => {
+            const b = solver.path[solver.depth - 1];
             const t = solver.current;
+            log = false;
             while (!t.res)
                 solver.next();
-            rs = t.res;
-        } else {
-            console.log('debug mode');
-            window['solver'] = solver;
+            log = true;
+            console.log(s2s(t.color, t.res) + ':\n' + b);
+            solver.next();
+        };
 
-            const stepOver = () => {
-                const b = solver.path[solver.depth - 1];
-                const t = solver.current;
-                log = false;
-                while (!t.res)
-                    solver.next();
-                log = true;                
-                console.log(s2s(t.color, t.res) + ':\n' + b);
+        const stepOut = () => {
+            const n = solver.depth;
+            while (solver.depth >= n)
                 solver.next();
-            };
+        };
 
-            const stepOut = () => {
-                const n = solver.depth;
-                while (solver.depth >= n)
-                    solver.next();
-            };
+        document.onkeydown = event => {
+            event.preventDefault();
+            switch (event.which) {
+                case 121: // F10
+                    stepOver();
+                    break;
+                case 122: // F11
+                    if (!event.shiftKey) {
+                        solver.next();
+                    } else {
+                        // Shift+F11
+                        stepOut();
+                    }
+                    break;
+            }
+        };
 
-            document.onkeydown = event => {
-                event.preventDefault();
-                switch (event.which) {
-                    case 121: // F10
-                        stepOver();
-                        break;
-                    case 122: // F11
-                        if (!event.shiftKey) {
-                            solver.next();
-                        } else {
-                            // Shift+F11
-                            stepOut();
-                        }
-                        break;
-                }
-            };
-        }
-
-        let t1 = +new Date;
-
-        if (debug) {
-            console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
-            console.log(s2s(color, rs));
-            console.log('tt:', Object.keys(tt).length);
-        }
-
-        return rs;
+        console.log('debug mode:', c2s(color), 'to play with', nkotreats, 'external ko treats\n',
+            'F11 - step into\n',
+            'F10 - step over\n',
+            'Shift+F11 - step out\n');
     }
 
     /** Constructs the proof tree in the SGF format.
@@ -191,9 +196,7 @@ module testbench {
     const source = location.search.slice(1);
     let sgfdata = '';
 
-    (source.slice(0, 1) == '(' ?
-        Promise.resolve(source) :
-        send('GET', '/problems/' + source + '.sgf')).then(res => {
+    (source.slice(0, 1) == '(' ? Promise.resolve(source) : send('GET', '/problems/' + source + '.sgf')).then(res => {
         [board, rzone, aim] = parseSGF(res);
         path = [board.fork()];
         console.log(res);
@@ -201,6 +204,14 @@ module testbench {
         console.log('\n\n' + board.hash() + '\n\n' + board);
         document.title = source;
         renderSGF(res);
+
+        const dbgsetup = /^#(B|W)([+-][1-9])$/.exec(location.hash);
+
+        if (dbgsetup) {
+            const color = dbgsetup[1] == 'W' ? -1 : +1;
+            const nkt = +dbgsetup[2];
+            dbgsolve(path, color, nkt);
+        }
     }).catch(err => {
         console.error(err);
     });
@@ -254,7 +265,7 @@ module testbench {
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                     }
                 } else {
-                    const {move} = solve(path, c, !xy ? 0 : +xy, location.hash == '#debug');
+                    const {move} = solve(path, c, !xy ? 0 : +xy, true);
 
                     if (!move) {
                         console.log(col, 'passes');
