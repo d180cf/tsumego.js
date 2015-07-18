@@ -3,7 +3,14 @@ declare module eidogo {
         new (options);
 
         unsavedChanges: boolean;
-        cursor: Cursor;
+
+        /** Points to the current SGF node? */
+        cursor: {
+            node: {
+                /** In SGF: `;C[Good for W]` */
+                C: string;
+            };
+        };
 
         /** 'B' | 'W' */
         currentColor: string;
@@ -21,21 +28,8 @@ declare module eidogo {
         /** undo the last move */
         back();
     }
-
-    /** Points to the current SGF node? */
-    export interface Cursor {
-        node: Node;
-    }
-
-    /** Represents an SGF node? */
-    export interface Node {
-        /** C{Good for W] */
-        C: string;
-    }
-
-    export interface Static {
-        Player: Player;
-    }
 }
 
-declare var eidogo: eidogo.Static;
+declare var eidogo: {
+    Player: eidogo.Player;
+};
