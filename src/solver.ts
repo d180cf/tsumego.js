@@ -17,10 +17,12 @@ module tsumego {
     }
 
     export class Solver<Node extends HasheableNode> {
-        private path: Node[] = [];
+        path: Node[] = [];
 
         /** tags[i] contains tags for path[i] */
-        private tags: {
+        tags: {
+            /** Present if the node is solved. */
+            res?: Result;
             /** who plays */
             color: Color;
             /** how many external ko treats */
@@ -35,11 +37,11 @@ module tsumego {
             mindepth?: number;
         }[] = [];
 
-        private get depth() {
+        get depth() {
             return this.path.length;
         }
 
-        private get current() {
+        get current() {
             return this.tags[this.depth - 1];
         }
 
@@ -59,22 +61,32 @@ module tsumego {
             };
         }
 
-        next(): Result {
+        next(): void {
             if (!this.current)
-                return null;
+                return;
 
             const node = this.path[this.depth - 1];
-            const {color, nkt, move} = this.current;
+            const {color, nkt, move, res} = this.current;
+
+            if (res) {
+                this.exit();
+                return;
+            }
+
             const ttres = this.tt.get(node, color, nkt);
 
-            if (ttres)
-                return this.exit(ttres);
+            if (ttres) {
+                this.current.res = ttres;
+                return;
+            }
 
-            if (this.status(node) > 0)
-                return this.exit({ color: +1, move: move, repd: infty });
+            if (this.status(node) > 0) {
+                this.current.res = { color: +1, move: move, repd: infty };
+                return;
+            }
 
             const {leafs, mindepth} = this.expand(this.path, color, nkt);
-            const t = this.tags[this.depth - 1];
+            const t = this.current;
 
             t.next = leafs.map($ => ({
                 node: $.b,
@@ -83,10 +95,10 @@ module tsumego {
             }));
 
             t.mindepth = mindepth;
-            return this.pick();
+            this.pick();
         }
 
-        private pick(): Result {
+        private pick(): void {
             const node = this.path[this.depth - 1];
             const {color, nkt, passed, move, next} = this.current;
 
@@ -98,14 +110,16 @@ module tsumego {
                 if (this.player)
                     this.player.play(move.x, move.y, color);
 
-                return { color: 0, repd: 0 };
+                return;
             }
 
             if (!passed) {
                 const prev = this.tags[this.depth - 2];
 
-                if (prev && prev.passed)
-                    return this.exit({ color: this.status(node), repd: infty });
+                if (prev && prev.passed) {
+                    this.current.res = { color: this.status(node), repd: infty };
+                    return;
+                }
 
                 this.current.passed = true;
                 this.path.push(node);
@@ -114,15 +128,15 @@ module tsumego {
                 if (this.player)
                     this.player.pass(color);
 
-                return { color: 0, repd: 0 };
+                return;
             }
 
-            return this.exit({ color: -color, move: move, repd: infty });
+            this.current.res = { color: -color, move: move, repd: infty };
         }
 
-        private exit(res: Result): Result {
+        private exit(): void {
             const node = this.path[this.depth - 1];
-            const {color, nkt, mindepth} = this.current;
+            const {color, nkt, mindepth, res} = this.current;
 
             if (color * res.color < 0)
                 res.repd = mindepth;
@@ -133,16 +147,20 @@ module tsumego {
             this.path.pop();
             this.tags.pop();
 
-            if (this.player)
-                this.player.undo(res.move && res.move.x, res.move && res.move.y, res.color);
+            if (this.player) {
+                const move = res.move;
+                this.player.undo(move && move.x, move && move.y, res.color);
+            }
 
             if (!this.current)
-                return res;
+                return;
 
-            if (this.current.color * res.color > 0)
-                return this.exit(res);
+            if (this.current.color * res.color > 0) {
+                this.current.res = res;
+                return;
+            }
 
-            return this.pick();
+            this.pick();
         }
     }
 }
