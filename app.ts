@@ -43,25 +43,72 @@ module testbench {
     function solve(path: Board[], color: Color, nkotreats: number = 0, debug = false) {
         let t0 = +new Date;
 
+        let log = true;
+
         const player: tsumego.Player = {
-            play: (x, y, c) => egp.createMove(xy2f({ x: x, y: y })),
-            pass: (c) => egp.pass(),
-            undo: (x, y, c) => egp.back()
+            play: (x, y, c) => {
+                if (!log) return;
+                egp.createMove(xy2f({ x: x, y: y }));
+            },
+            pass: (c) => {
+                if (!log) return;
+                egp.pass();
+            },
+            undo: (x, y, c) => {
+                if (!log) return;
+                egp.unsavedChanges = true;
+                egp.cursor.node.C = c2s(c) + ' wins by ' + xy2f({ x: x, y: y });
+                egp.refresh();
+                egp.back();
+            }
         };
 
         const solver = new tsumego.Solver(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1, debug && player);
 
-        let rs, ts: Result;
+        let rs: Result;
 
-        if (!debug)
-            while (ts = solver.next()) rs = ts;
-        else {
+        if (!debug) {
+            const t = solver.current;
+            while (!t.res)
+                solver.next();
+            rs = t.res;
+        } else {
+            console.log('debug mode');
+            window['solver'] = solver;
+
+            const stepOver = () => {
+                const b = solver.path[solver.depth - 1];
+                const t = solver.current;
+                log = false;
+                while (!t.res)
+                    solver.next();
+                log = true;                
+                console.log(s2s(t.color, t.res) + ':\n' + b);
+                solver.next();
+            };
+
+            const stepOut = () => {
+                const n = solver.depth;
+                while (solver.depth >= n)
+                    solver.next();
+            };
+
             document.onkeydown = event => {
-                if (event.which == 39) {
-                    const r = solver.next();
-                    console.log('.next()', '->', r);
+                event.preventDefault();
+                switch (event.which) {
+                    case 121: // F10
+                        stepOver();
+                        break;
+                    case 122: // F11
+                        if (!event.shiftKey) {
+                            solver.next();
+                        } else {
+                            // Shift+F11
+                            stepOut();
+                        }
+                        break;
                 }
             };
         }
