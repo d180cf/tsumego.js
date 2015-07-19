@@ -61,7 +61,7 @@ module testbench {
         return rs;
     }
 
-    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
+    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0, stopat?: number) {
         let log = true;
 
         const player: tsumego.Player = {
@@ -117,7 +117,7 @@ module testbench {
                 next();
         };
 
-        document.onkeydown = event => {            
+        document.onkeydown = event => {
             switch (event.which) {
                 case 121: // F10
                     event.preventDefault();
@@ -140,6 +140,14 @@ module testbench {
             'F11 - step into\n',
             'F10 - step over\n',
             'Shift+F11 - step out\n');
+
+        if (stopat > 0) {
+            console.log('skipping first', stopat, 'steps...');
+            while (stopat > 0) {
+                next();
+                stopat--;
+            }
+        }
     }
 
     /** Constructs the proof tree in the SGF format.
@@ -218,12 +226,12 @@ module testbench {
         document.title = source;
         renderSGF(res);
 
-        const dbgsetup = /^#(B|W)([+-]\d+)$/.exec(location.hash);
+        try {
+            const [, bw, nkt, bp] = /^#(B|W)([+-]\d+)(?:;bp=(\d+))?$/.exec(location.hash);
 
-        if (dbgsetup) {
-            const color = dbgsetup[1] == 'W' ? -1 : +1;
-            const nkt = +dbgsetup[2];
-            dbgsolve(path, color, nkt);
+            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt, +bp);
+        } catch (_) {
+            // ignore
         }
     }).catch(err => {
         console.error(err);
