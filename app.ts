@@ -100,7 +100,13 @@ module testbench {
                 throw Error('Already solved.');
             solver.next();
             tick++;
-            document.title = 'tick: ' + tick;
+
+            const bp = ';bp=' + tick;
+            const rx = /;bp=\d+/;
+
+            location.href = rx.test(location.hash) ?
+                location.href.replace(rx, bp) :
+                location.href + bp;
         };
 
         const stepOver = () => {
