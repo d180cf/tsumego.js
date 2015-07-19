@@ -1,4 +1,8 @@
-﻿module ut {
+﻿interface Error {
+    stack: string;
+}
+
+module ut {
     export interface TestContext {
         /** Example: $(1 + 2).equal(3); */
         <T>(value: T): ValueContext<T>;
@@ -11,7 +15,18 @@
     export function group(init: ($: GroupContext) => void) {
         init({
             test: test => {
-                const name = /\/tests\/(.+)$/i.exec(Error()['stack'].split('\n')[3])[1];
+                const name = (() => {
+                    try {
+                        const stack = Error().stack.split('\n');
+                        
+                        return typeof location === 'object' ?
+                            /\/tests\/(.+)$/i.exec(stack[3])[1] :
+                            /\\tests\\(.+?:\d+)/i.exec(stack[4])[1];
+                    } catch (_) {
+                        return 'test';
+                    }
+                })();
+
                 try {
                     test(expect);
                     console.log(name, 'passed');
@@ -20,7 +35,7 @@
                     let indent = '';
                     while (err) {
                         indent = '  ' + indent;
-                        console.error(err);
+                        console.error(err && err.stack || err);
                         err = err.reason;
                     }
                 }
@@ -153,4 +168,12 @@
         const w = s.slice(i, j);
         return j < s.length ? w : w + '...';
     }
+}
+
+declare const require: Function;
+
+try {
+    require('source-map-support').install();
+} catch (e) {
+    console.log(e);
 }

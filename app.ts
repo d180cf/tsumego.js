@@ -89,34 +89,47 @@ module testbench {
 
         window['solver'] = solver;
 
+        const root = solver.current;
+        let tick = 0;
+
+        const next = () => {
+            if (root.res)
+                throw Error('Already solved.');
+            solver.next();
+            tick++;
+            document.title = 'tick: ' + tick;
+        };
+
         const stepOver = () => {
             const b = solver.path[solver.depth - 1];
             const t = solver.current;
             log = false;
             while (!t.res)
-                solver.next();
+                next();
             log = true;
             console.log(s2s(t.color, t.res) + ':\n' + b);
-            solver.next();
+            next();
         };
 
         const stepOut = () => {
             const n = solver.depth;
             while (solver.depth >= n)
-                solver.next();
+                next();
         };
 
-        document.onkeydown = event => {
-            event.preventDefault();
+        document.onkeydown = event => {            
             switch (event.which) {
                 case 121: // F10
+                    event.preventDefault();
                     stepOver();
                     break;
                 case 122: // F11
                     if (!event.shiftKey) {
-                        solver.next();
+                        event.preventDefault();
+                        next();
                     } else {
                         // Shift+F11
+                        event.preventDefault();
                         stepOut();
                     }
                     break;
@@ -205,7 +218,7 @@ module testbench {
         document.title = source;
         renderSGF(res);
 
-        const dbgsetup = /^#(B|W)([+-][1-9])$/.exec(location.hash);
+        const dbgsetup = /^#(B|W)([+-]\d+)$/.exec(location.hash);
 
         if (dbgsetup) {
             const color = dbgsetup[1] == 'W' ? -1 : +1;
