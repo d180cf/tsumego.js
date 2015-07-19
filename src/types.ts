@@ -7,6 +7,10 @@ type YIndex = uint;
     Negative values = white. */
 type Color = int;
 
+module Color {
+    export const alias = (color: Color) => color > 0 ? 'B' : 'W';
+}
+
 /** (0, 0) corresponds to the top left corner. */
 interface Coords {
     /** Horizontal offset. */

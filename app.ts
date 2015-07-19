@@ -65,21 +65,24 @@ module testbench {
         let log = true;
 
         const player: tsumego.Player = {
-            play: (x, y, c) => {
+            play: (color, move) => {
                 if (!log) return;
-                egp.currentColor = c > 0 ? 'B' : 'W';
-                egp.createMove(xy2f({ x: x, y: y }));
+                egp.currentColor = color > 0 ? 'B' : 'W';
+
+                if (move)
+                    egp.createMove(xy2f(move));
+                else
+                    egp.pass();
             },
-            pass: (c) => {
+            undo: () => {
                 if (!log) return;
-                egp.pass();
+                egp.back();
             },
-            undo: (x, y, c) => {
+            done: (color, move, note) => {
                 if (!log) return;
                 egp.unsavedChanges = true;
-                egp.cursor.node.C = c2s(c) + ' wins by ' + xy2s({ x: x, y: y });
+                egp.cursor.node.C = [c2s(color), 'wins by', xy2s(move), note ? '(' + note + ')' : ''].join(' ');
                 egp.refresh();
-                egp.back();
             }
         };
 

@@ -8,12 +8,9 @@ module tsumego {
     }
 
     export interface Player {
-        /** c plays at (x, y) */
-        play(x: number, y: number, c: number): void;
-        /** c passes */
-        pass(c: number): void;
-        /** c wins by playing at (x, y) */
-        undo(x: number, y: number, c: number): void;
+        play(color: number, move: Coords): void;
+        undo(color: number, move: Coords): void;
+        done(color: number, move: Coords, comment: string): void;
     }
 
     export class Solver<Node extends HasheableNode> {
@@ -66,33 +63,23 @@ module tsumego {
                 return;
 
             const node = this.path[this.depth - 1];
-            const {color, nkt, move, res} = this.current;
+            const {color, nkt, res} = this.current;
 
             if (res) {
                 this.exit();
                 return;
             }
 
-            const ttres = this.tt.get(node, color, nkt);
-
-            if (ttres) {
-                this.current.res = ttres;
-                return;
-            }
-
-            if (this.status(node) > 0) {
-                this.current.res = { color: +1, move: move, repd: infty };
-                return;
-            }
-
             const {leafs, mindepth} = this.expand(this.path, color, nkt);
             const t = this.current;
 
-            t.next = leafs.map($ => ({
-                node: $.b,
-                move: $.m,
-                nkt: $.ko ? nkt - color : nkt
-            }));
+            t.next = leafs.map($ => {
+                return {
+                    node: $.b,
+                    move: $.m,
+                    nkt: $.ko ? nkt - color : nkt
+                };
+            }).reverse();
 
             t.mindepth = mindepth;
             this.pick();
@@ -103,35 +90,43 @@ module tsumego {
             const {color, nkt, passed, move, next} = this.current;
 
             if (next.length > 0) {
-                const {move, nkt, node} = next.splice(0, 1)[0];
+                const {move, nkt, node} = next.pop();
+                this.play(node, move, color, nkt);
+            } else if (passed) {
+                this.done({ color: -color, move: move, repd: infty }, Color.alias(color) + ' is out of moves');
+            } else {
+                const prev = this.tags[this.depth - 2];
+
+                if (prev && prev.passed) {
+                    this.done({ color: this.status(node), repd: infty }, 'both passed');
+                } else {
+                    this.current.passed = true;
+                    this.play(node, null, color, nkt);
+                }
+            }
+        }
+
+        private play(node: Node, move: Coords, color: Color, nkt: number): void {
+            const ttres = this.tt.get(node, -color, nkt);
+
+            if (ttres) {
+                this.done(ttres, 'TT');
+            } else if (this.status(node) > 0) {
+                this.done({ color: +1, move: move, repd: infty });
+            } else {
                 this.path.push(node);
                 this.tags.push({ color: -color, nkt: nkt, move: move });
 
                 if (this.player)
-                    this.player.play(move.x, move.y, color);
-
-                return;
+                    this.player.play(color, move);
             }
+        }
 
-            if (!passed) {
-                const prev = this.tags[this.depth - 2];
+        private done(r: Result, comment?: string) {
+            this.current.res = r;
 
-                if (prev && prev.passed) {
-                    this.current.res = { color: this.status(node), repd: infty };
-                    return;
-                }
-
-                this.current.passed = true;
-                this.path.push(node);
-                this.tags.push({ color: -color, node: node, nkt: nkt });
-
-                if (this.player)
-                    this.player.pass(color);
-
-                return;
-            }
-
-            this.current.res = { color: -color, move: move, repd: infty };
+            if (this.player)
+                this.player.done(r.color, r.move, comment);
         }
 
         private exit(): void {
@@ -149,14 +144,14 @@ module tsumego {
 
             if (this.player) {
                 const move = res.move;
-                this.player.undo(move && move.x, move && move.y, res.color);
+                this.player.undo(res.color, move);
             }
 
             if (!this.current)
                 return;
 
             if (this.current.color * res.color > 0) {
-                this.current.res = res;
+                this.done(res);
                 return;
             }
 
