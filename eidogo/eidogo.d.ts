@@ -4,6 +4,11 @@ declare module eidogo {
 
         unsavedChanges: boolean;
 
+        board: {
+            commit(): void;
+            render(): void;
+        };
+
         /** Points to the current SGF node? */
         cursor: {
             node: {
@@ -21,6 +26,9 @@ declare module eidogo {
 
         /** "fb" means x = 5, y = 1 */
         createMove(xy: string);
+
+        /** addMarker("ca", "SQ"); */
+        addMarker(xy: string, marker: string);
 
         /** makes a pass */
         pass();

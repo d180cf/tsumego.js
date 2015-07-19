@@ -8,9 +8,10 @@ module tsumego {
     }
 
     export interface Player {
-        play(color: number, move: Coords): void;
-        undo(color: number, move: Coords): void;
-        done(color: number, move: Coords, comment: string): void;
+        play(color: Color, move: Coords): void;
+        undo(color: Color, move: Coords): void;
+        done(color: Color, move: Coords, comment: string): void;
+        loss(color: Color, move: Coords, response: Coords): void;
     }
 
     export class Solver<Node extends HasheableNode> {
@@ -70,18 +71,22 @@ module tsumego {
                 return;
             }
 
-            const {leafs, mindepth} = this.expand(this.path, color, nkt);
             const t = this.current;
 
-            t.next = leafs.map($ => {
-                return {
-                    node: $.b,
-                    move: $.m,
-                    nkt: $.ko ? nkt - color : nkt
-                };
-            }).reverse();
+            if (!t.next) {
+                const {leafs, mindepth} = this.expand(this.path, color, nkt);
 
-            t.mindepth = mindepth;
+                t.next = leafs.map($ => {
+                    return {
+                        node: $.b,
+                        move: $.m,
+                        nkt: $.ko ? nkt - color : nkt
+                    };
+                }).reverse();
+
+                t.mindepth = mindepth;
+            }
+
             this.pick();
         }
 
@@ -110,7 +115,10 @@ module tsumego {
             const ttres = this.tt.get(node, -color, nkt);
 
             if (ttres) {
-                this.done(ttres, 'TT');
+                if (ttres.color * color > 0)
+                    this.done(ttres, 'cached result');
+                else if (this.player)
+                    this.player.loss(color, move, ttres.move);
             } else if (this.status(node) > 0) {
                 this.done({ color: +1, move: move, repd: infty });
             } else {

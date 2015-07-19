@@ -1,6 +1,6 @@
 ﻿/// <reference path="types.ts" />
 
-const infty = 100500;
+const infty = 777;
 
 /** 0 -> `a`, 3 -> `d` */
 const n2s = (n: number) => String.fromCharCode(n + 0x61);

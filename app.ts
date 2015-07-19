@@ -7,8 +7,10 @@ module testbench {
 
     declare var egp: eidogo.Player;
 
-    const xy2s = ({x, y}: Coords) => String.fromCharCode(0x41 + x) + (y + 1);
-    const c2s = (c: Color) => c > 0 ? 'B' : 'W';
+    const xy2s = (m: Coords) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
+    const c2s = Color.alias;
+    const cm2s = (c: Color, m: Coords) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: Coords) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: Coords) => n2s(xy.x) + n2s(xy.y);
@@ -81,7 +83,13 @@ module testbench {
             done: (color, move, note) => {
                 if (!log) return;
                 egp.unsavedChanges = true;
-                egp.cursor.node.C = [c2s(color), 'wins by', xy2s(move), note ? '(' + note + ')' : ''].join(' ');
+                egp.cursor.node.C = `${egp.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
+                egp.refresh();
+            },
+            loss: (color, move, response) => {
+                if (!log) return;
+                egp.unsavedChanges = true;
+                egp.cursor.node.C = `${egp.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
                 egp.refresh();
             }
         };
@@ -135,6 +143,8 @@ module testbench {
                 case 122: // F11
                     if (!event.shiftKey) {
                         event.preventDefault();
+                        if (event.ctrlKey)
+                            debugger;
                         next();
                     } else {
                         // Shift+F11
@@ -147,15 +157,14 @@ module testbench {
 
         console.log('debug mode:', c2s(color), 'to play with', nkotreats, 'external ko treats\n',
             'F11 - step into\n',
+            'Ctrl+F11 - step into and debug\n',
             'F10 - step over\n',
             'Shift+F11 - step out\n');
 
         if (stopat > 0) {
             console.log('skipping first', stopat, 'steps...');
-            while (stopat > 0) {
+            while (tick < stopat)
                 next();
-                stopat--;
-            }
         }
     }
 
@@ -240,7 +249,7 @@ module testbench {
 
             dbgsolve(path, bw == 'W' ? -1 : +1, +nkt, +bp);
         } catch (_) {
-            // ignore
+            console.log(_);
         }
     }).catch(err => {
         console.error(err);
