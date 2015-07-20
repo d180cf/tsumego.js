@@ -9,7 +9,7 @@ module tsumego {
 
     export interface Player {
         play(color: Color, move: Coords): void;
-        undo(color: Color, move: Coords): void;
+        undo(): void;
         done(color: Color, move: Coords, comment: string): void;
         loss(color: Color, move: Coords, response: Coords): void;
     }
@@ -60,9 +60,6 @@ module tsumego {
         }
 
         next(): void {
-            if (!this.current)
-                return;
-
             const node = this.path[this.depth - 1];
             const {color, nkt, res} = this.current;
 
@@ -152,7 +149,8 @@ module tsumego {
 
             if (this.player) {
                 const move = res.move;
-                this.player.undo(res.color, move);
+                this.done(res);
+                this.player.undo();
             }
 
             if (!this.current)

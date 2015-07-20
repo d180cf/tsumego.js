@@ -1,3 +1,4 @@
+/// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
 /// <reference path="eidogo/eidogo.d.ts" />
@@ -63,6 +64,14 @@ module testbench {
         return rs;
     }
 
+    class CancellationToken {
+        cancelled = false;
+    }
+
+    function sleep(ms: number) {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
     function dbgsolve(path: Board[], color: Color, nkotreats: number = 0, stopat?: number) {
         let log = true;
 
@@ -100,60 +109,76 @@ module testbench {
 
         window['solver'] = solver;
 
-        const root = solver.current;
         let tick = 0;
 
         const next = () => {
-            if (root.res)
-                throw Error('Already solved.');
             solver.next();
             tick++;
 
-            const bp = ';bp=' + tick;
-            const rx = /;bp=\d+/;
+            if (log) {
+                const bp = ';bp=' + tick;
+                const rx = /;bp=\d+/;
 
-            location.href = rx.test(location.hash) ?
-                location.href.replace(rx, bp) :
-                location.href + bp;
+                location.href = rx.test(location.hash) ?
+                    location.href.replace(rx, bp) :
+                    location.href + bp;
+            }
         };
 
-        const stepOver = () => {
+        const stepOver = (ct: CancellationToken) => {
             const b = solver.path[solver.depth - 1];
             const t = solver.current;
             log = false;
-            while (!t.res)
+
+            return new Promise((resolve, reject) => {
+                while (!t.res) {
+                    next();
+
+                    if (ct.cancelled)
+                        return void reject();
+                }
+
+                resolve();
+            }).then(() => {
+                log = true;
+                console.log(s2s(t.color, t.res) + ':\n' + b);
                 next();
-            log = true;
-            console.log(s2s(t.color, t.res) + ':\n' + b);
-            next();
+            });
         };
 
         const stepOut = () => {
+            log = false;
             const n = solver.depth;
             while (solver.depth >= n)
                 next();
+            log = true;
+            renderSGF(solver.path[solver.depth - 1].toString('SGF'));
         };
 
-        document.onkeydown = event => {
-            switch (event.which) {
-                case 121: // F10
-                    event.preventDefault();
-                    stepOver();
-                    break;
-                case 122: // F11
-                    if (!event.shiftKey) {
-                        event.preventDefault();
-                        if (event.ctrlKey)
-                            debugger;
-                        next();
-                    } else {
-                        // Shift+F11
-                        event.preventDefault();
-                        stepOut();
-                    }
-                    break;
+        keyboard.hook(keyboard.Key.F10, event => {
+            event.preventDefault();
+            const ct = new CancellationToken;
+            const hook = keyboard.hook(keyboard.Key.Esc, event => {
+                event.preventDefault();
+                console.log('cancelling...');
+                ct.cancelled = true;
+            });
+
+            stepOver(ct).catch().then(() => hook.dispose());
+        });
+
+        keyboard.hook(keyboard.Key.F11, event => {
+            if (!event.shiftKey) {
+                event.preventDefault();
+                if (event.ctrlKey)
+                    debugger;
+                next();
+            } else {
+                // Shift+F11
+                event.preventDefault();
+                stepOut();
             }
-        };
+        });
 
         console.log('debug mode:', c2s(color), 'to play with', nkotreats, 'external ko treats\n',
             'F11 - step into\n',
@@ -162,9 +187,14 @@ module testbench {
             'Shift+F11 - step out\n');
 
         if (stopat > 0) {
-            console.log('skipping first', stopat, 'steps...');
-            while (tick < stopat)
-                next();
+            setTimeout(() => {
+                console.log('skipping first', stopat, 'steps...');
+                log = false;
+                while (tick < stopat)
+                    next();
+                log = true;
+                renderSGF(solver.path[solver.depth - 1].toString('SGF'));
+            }, 100);
         }
     }
 
