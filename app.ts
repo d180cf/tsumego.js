@@ -1,12 +1,12 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
-/// <reference path="eidogo/eidogo.d.ts" />
+/// <reference path="wgo/wgo.d.ts" />
 
 module testbench {
     import Board = tsumego.Board;
 
-    declare var egp: eidogo.Player;
+    declare var goban: WGo.BasicPlayer;
 
     const xy2s = (m: Coords) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
     const c2s = Color.alias;
@@ -78,28 +78,28 @@ module testbench {
         const player: tsumego.Player = {
             play: (color, move) => {
                 if (!log) return;
-                egp.currentColor = color > 0 ? 'B' : 'W';
+                //goban.currentColor = color > 0 ? 'B' : 'W';
 
-                if (move)
-                    egp.createMove(xy2f(move));
-                else
-                    egp.pass();
+                //if (move)
+                //    goban.createMove(xy2f(move));
+                //else
+                //    goban.pass();
             },
             undo: () => {
                 if (!log) return;
-                egp.back();
+                //goban.back();
             },
             done: (color, move, note) => {
                 if (!log) return;
-                egp.unsavedChanges = true;
-                egp.cursor.node.C = `${egp.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                egp.refresh();
+                //goban.unsavedChanges = true;
+                //goban.cursor.node.C = `${goban.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
+                //goban.refresh();
             },
             loss: (color, move, response) => {
                 if (!log) return;
-                egp.unsavedChanges = true;
-                egp.cursor.node.C = `${egp.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
-                egp.refresh();
+                //goban.unsavedChanges = true;
+                //goban.cursor.node.C = `${goban.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
+                //goban.refresh();
             }
         };
 
@@ -285,24 +285,11 @@ module testbench {
     });
 
     function renderSGF(sgf: string) {
-        egp = new eidogo.Player({
-            container: 'board',
-            theme: 'standard',
-            sgf: sgf, // EidoGo cannot display 8x8 boards
-            mode: 'play', // "play" or "view"
-            //shrinkToFit: true,
-            showComments: true,
-            showPlayerInfo: false,
-            showGameInfo: true,
-            showTools: true,
-            showOptions: true,
-            markCurrent: true,
-            markVariations: true,
-            markNext: true,
-            enableShortcuts: false,
-            showNavTree: true,
-            problemMode: false
+        goban = new WGo.BasicPlayer(document.body, {
+            sgf: sgf
         });
+
+        goban.setCoordinates(true);
     }
 
     function parse(si: string): Coords {
