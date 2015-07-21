@@ -1,11 +1,13 @@
 declare var WGo: {
-    BasicPlayer: WGo.BasicPlayer
+    BasicPlayer: WGo.BasicPlayer;
+    B: WGo.Color;
+    W: WGo.Color;
 };
 
 declare module WGo {
-    export interface BasicPlayer {
+    interface BasicPlayer {
         new (target: HTMLElement, options: Options);
-
+        board: Board;
         setCoordinates(value: boolean): void;
     }
 
@@ -13,4 +15,16 @@ declare module WGo {
         /** SGF as a text string. */
         sgf?: string;
     }
+
+    interface Board {
+        addObject(object: Object);
+    }
+
+    interface Object {
+        x: number;
+        y: number;
+        c: Color;
+    }
+
+    type Color = number;    
 }

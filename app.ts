@@ -78,28 +78,30 @@ module testbench {
         const player: tsumego.Player = {
             play: (color, move) => {
                 if (!log) return;
-                //goban.currentColor = color > 0 ? 'B' : 'W';
 
-                //if (move)
-                //    goban.createMove(xy2f(move));
-                //else
-                //    goban.pass();
+                if (!move) {
+                    // TODO: make a pass; how?
+                } else {
+                    goban.board.addObject({
+                        x: move.x,
+                        y: move.y,
+                        c: color > 0 ? WGo.B : WGo.W
+                    });
+                }
             },
             undo: () => {
                 if (!log) return;
-                //goban.back();
+                // TODO: undo the last move; how?
             },
             done: (color, move, note) => {
                 if (!log) return;
-                //goban.unsavedChanges = true;
-                //goban.cursor.node.C = `${goban.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                //goban.refresh();
+                const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
+                // TODO: add comment to the current node; how?
             },
             loss: (color, move, response) => {
                 if (!log) return;
-                //goban.unsavedChanges = true;
-                //goban.cursor.node.C = `${goban.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
-                //goban.refresh();
+                const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
+                // TODO: add comment to the current node; how?
             }
         };
 
