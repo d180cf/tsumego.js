@@ -48,7 +48,7 @@ module testbench {
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
 
-        const t = solver.current;
+        const { tag: t } = solver.current;
         while (!t.res)
             solver.next();
         const rs = t.res;
@@ -126,8 +126,7 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const b = solver.path[solver.depth - 1];
-            const t = solver.current;
+            const {tag: t, node: b} = solver.current;
             log = false;
 
             return new Promise((resolve, reject) => {
@@ -152,7 +151,7 @@ module testbench {
             while (solver.depth >= n)
                 next();
             log = true;
-            renderSGF(solver.path[solver.depth - 1].toString('SGF'));
+            renderSGF(solver.current.node.toString('SGF'));
         };
 
         keyboard.hook(keyboard.Key.F10, event => {
@@ -193,7 +192,7 @@ module testbench {
                 while (tick < stopat)
                     next();
                 log = true;
-                renderSGF(solver.path[solver.depth - 1].toString('SGF'));
+                renderSGF(solver.current.node.toString('SGF'));
             }, 100);
         }
     }

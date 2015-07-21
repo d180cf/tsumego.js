@@ -15,10 +15,10 @@ module tsumego {
     }
 
     export class Solver<Node extends HasheableNode> {
-        path: Node[] = [];
+        private path: Node[] = [];
 
         /** tags[i] contains tags for path[i] */
-        tags: {
+        private tags: {
             /** Present if the node is solved. */
             res?: Result;
             /** who plays */
@@ -40,7 +40,8 @@ module tsumego {
         }
 
         get current() {
-            return this.tags[this.depth - 1];
+            const i = this.depth - 1;
+            return { tag: this.tags[i], node: this.path[i] };
         }
 
         constructor(path: Node[], color: Color, nkt: number,
@@ -60,15 +61,13 @@ module tsumego {
         }
 
         next(): void {
-            const node = this.path[this.depth - 1];
-            const {color, nkt, res} = this.current;
+            const {tag: t, node} = this.current;
+            const {res, color, nkt} = t;
 
             if (res) {
                 this.exit();
                 return;
             }
-
-            const t = this.current;
 
             if (!t.next) {
                 const {leafs, mindepth} = this.expand(this.path, color, nkt);
@@ -88,8 +87,7 @@ module tsumego {
         }
 
         private pick(): void {
-            const node = this.path[this.depth - 1];
-            const {color, nkt, passed, move, next} = this.current;
+            const {tag: {color, nkt, passed, move, next}, node} = this.current;
 
             if (next.length > 0) {
                 const {move, nkt, node} = next.pop();
@@ -102,7 +100,7 @@ module tsumego {
                 if (prev && prev.passed) {
                     this.done({ color: this.status(node), repd: infty }, 'both passed');
                 } else {
-                    this.current.passed = true;
+                    this.current.tag.passed = true;
                     this.play(node, null, color, nkt);
                 }
             }
@@ -128,15 +126,14 @@ module tsumego {
         }
 
         private done(r: Result, comment?: string) {
-            this.current.res = r;
+            this.current.tag.res = r;
 
             if (this.player)
                 this.player.done(r.color, r.move, comment);
         }
 
         private exit(): void {
-            const node = this.path[this.depth - 1];
-            const {color, nkt, mindepth, res} = this.current;
+            const {tag: {color, nkt, mindepth, res}, node} = this.current;
 
             if (color * res.color < 0)
                 res.repd = mindepth;
@@ -156,7 +153,7 @@ module tsumego {
             if (!this.current)
                 return;
 
-            if (this.current.color * res.color > 0) {
+            if (this.current.tag.color * res.color > 0) {
                 this.done(res);
                 return;
             }
