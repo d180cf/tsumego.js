@@ -7,133 +7,158 @@ module tsumego {
         (board: Node): number;
     }
 
-    function best(s1: Result, s2: Result, c: Color): Result {
-        let r1 = s1 && s1.color;
-        let r2 = s2 && s2.color;
-
-        if (!s1 && !s2)
-            return;
-
-        if (!s1)
-            return r2 * c > 0 ? s2 : s1;
-
-        if (!s2)
-            return r1 * c > 0 ? s1 : s2;
-
-        if (r1 * c > 0 && r2 * c > 0)
-            return s1.repd > s2.repd ? s1 : s2;
-
-        if (r1 * c < 0 && r2 * c < 0)
-            return s1.repd < s2.repd ? s1 : s2;
-
-        return (r1 - r2) * c > 0 ? s1 : s2;
+    export interface Player {
+        play(color: Color, move: Coords): void;
+        undo(): void;
+        done(color: Color, move: Coords, comment: string): void;
+        loss(color: Color, move: Coords, response: Coords): void;
     }
 
-    function wins(result: number, color: number): boolean {
-        return color > 0 ? result > 0 : result < 0;
-    }
+    export class Solver<Node extends HasheableNode> {
+        private path: Node[] = [];
 
-    export function solve<Node extends HasheableNode>(path: Node[], color: Color, nkt: number, tt: TT,
-        expand: Generator<Node>, status: Estimator<Node>): Result {
+        /** tags[i] contains tags for path[i] */
+        private tags: {
+            /** Present if the node is solved. */
+            res?: Result;
+            /** who plays */
+            color: Color;
+            /** how many external ko treats */
+            nkt: number;
+            /** which move led to this position */
+            move?: Coords;
+            /** whether the player has passed already */
+            passed?: boolean;
+            /** possible continuations */
+            next?: { node: Node, move: Coords, nkt: number }[];
+            /** the earliest node repeated by the continuations */
+            mindepth?: number;
+        }[] = [];
 
-        function _solve(path: Node[], color: Color, nkt: number, ko: boolean): Result {
-            if (ko) {
-                // since moves that require to spend a ko treat are considered
-                // last, by this moment all previous moves have been searched
-                // and resulted in a loss; hence the only option here is to spend
-                // a ko treat and repeat the position
-                nkt -= color;
-                path = path.slice(-2);
-            }
-
-            const depth = path.length;
-            const board = path[depth - 1];
-            const ttres = tt.get(board, color, nkt);
-
-            if (ttres)
-                return ttres;
-
-            let result: Result;
-            let {leafs, mindepth} = expand(path, color, nkt);
-
-            for (const {b, m, ko} of leafs) {
-                let s: Result;
-
-                if (status(b) > 0) {
-                    // black wins by capturing the white's stones
-                    s = { color: +1, repd: infty };
-                } else {
-                    path.push(b);
-                    const s_move = _solve(path, -color, nkt, ko); // the opponent makes a move
-
-                    if (s_move && wins(s_move.color, -color)) {
-                        s = s_move;
-                    } else {
-                        const s_pass = _solve(path, color, nkt, ko); // the opponent passes
-                        const s_asis: Result = { color: status(b), repd: infty };
-
-                        // the opponent can either make a move or pass if it thinks
-                        // that making a move is a loss, while the current player
-                        // can either pass again to count the result or make two
-                        // moves in a row
-                        s = best(s_move, best(s_asis, s_pass, color), -color);
-                    }
-
-                    path.pop();
-                }
-
-                // the min value of repd is counted only for the case
-                // if all moves result in a loss; if this happens, then
-                // the current player can say that the loss was caused
-                // by the absence of ko treats and point to the earliest
-                // repetition in the path
-                if (s.repd < mindepth)
-                    mindepth = s.repd;
-
-                // the winning move may depend on a repetition, while
-                // there can be another move that gives the same result
-                // uncondtiionally, so it might make sense to continue
-                // searching in such cases
-                if (wins(s.color, color)) {
-                    result = {
-                        color: color,
-                        repd: s.repd,
-                        move: m
-                    };
-
-                    break;
-                }
-            }
-
-            // if there is no winning move, record a loss
-            if (!result)
-                result = { color: -color, repd: mindepth };
-
-            if (ko) {
-                // the (dis)proof for the node may or may not intersect with
-                // previous nodes in the path (the information about this is
-                // not kept anywhere) and hence it has to be assumed that the
-                // solution intersects with the path and thus cannot be reused
-                result.repd = 0;
-            }
-
-            // if the solution doesn't depend on a ko above the current node,
-            // it can be stored and later used unconditionally as it doesn't
-            // depend on a path that leads to the node; this stands true if all
-            // such solutions are stored and never removed from the table; this
-            // can be proved by trying to construct a path from a node in the
-            // proof tree to the root node
-            if (result.repd > depth) {
-                tt.set(board, color, {
-                    color: result.color,
-                    move: result.move,
-                    repd: infty
-                }, nkt);
-            }
-
-            return result;
+        get depth() {
+            return this.path.length;
         }
 
-        return _solve(path, color, nkt, false);
+        get current() {
+            const i = this.depth - 1;
+            return { tag: this.tags[i], node: this.path[i] };
+        }
+
+        constructor(path: Node[], color: Color, nkt: number,
+            private tt: TT,
+            private expand: Generator<Node>,
+            private status: Estimator<Node>,
+            private player?: Player) {
+            for (const b of path) {
+                this.path.push(b);
+                this.tags.push(null);
+            }
+
+            this.tags[this.tags.length - 1] = {
+                color: color,
+                nkt: nkt
+            };
+        }
+
+        next(): void {
+            const {tag: t, node} = this.current;
+            const {res, color, nkt} = t;
+
+            if (res) {
+                this.exit();
+                return;
+            }
+
+            if (!t.next) {
+                const {leafs, mindepth} = this.expand(this.path, color, nkt);
+
+                t.next = leafs.map($ => {
+                    return {
+                        node: $.b,
+                        move: $.m,
+                        nkt: $.ko ? nkt - color : nkt
+                    };
+                }).reverse();
+
+                t.mindepth = mindepth;
+            }
+
+            this.pick();
+        }
+
+        private pick(): void {
+            const {tag: {color, nkt, passed, move, next}, node} = this.current;
+
+            if (next.length > 0) {
+                const {move, nkt, node} = next.pop();
+                this.play(node, move, color, nkt);
+            } else if (passed) {
+                this.done({ color: -color, move: move, repd: infty }, Color.alias(color) + ' is out of moves');
+            } else {
+                const prev = this.tags[this.depth - 2];
+
+                if (prev && prev.passed) {
+                    this.done({ color: this.status(node), repd: infty }, 'both passed');
+                } else {
+                    this.current.tag.passed = true;
+                    this.play(node, null, color, nkt);
+                }
+            }
+        }
+
+        private play(node: Node, move: Coords, color: Color, nkt: number): void {
+            const ttres = this.tt.get(node, -color, nkt);
+
+            if (ttres) {
+                if (ttres.color * color > 0)
+                    this.done(ttres, 'cached result');
+                else if (this.player)
+                    this.player.loss(color, move, ttres.move);
+            } else if (this.status(node) > 0) {
+                this.done({ color: +1, move: move, repd: infty });
+            } else {
+                this.path.push(node);
+                this.tags.push({ color: -color, nkt: nkt, move: move });
+
+                if (this.player)
+                    this.player.play(color, move);
+            }
+        }
+
+        private done(r: Result, comment?: string) {
+            this.current.tag.res = r;
+
+            if (this.player)
+                this.player.done(r.color, r.move, comment);
+        }
+
+        private exit(): void {
+            const {tag: {color, nkt, mindepth, res}, node} = this.current;
+
+            if (color * res.color < 0)
+                res.repd = mindepth;
+
+            if (res.repd > this.depth)
+                this.tt.set(node, color, res, nkt);
+
+            this.path.pop();
+            this.tags.pop();
+
+            if (this.player) {
+                const move = res.move;
+                this.done(res);
+                this.player.undo();
+            }
+
+            if (!this.current)
+                return;
+
+            if (this.current.tag.color * res.color > 0) {
+                this.done(res);
+                return;
+            }
+
+            this.pick();
+        }
     }
 }

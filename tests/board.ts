@@ -135,5 +135,27 @@ module tests {
             $(b.totalLibs(+1)).equal(0);
             $(b.totalLibs(-1)).equal(10);
         });
+
+        $.test($ => {
+            const b = new Board(9, [
+                'X-XXOOOO',
+                'XX-XXOOX',
+                '--XOO-OX',
+                '--XOOOXX',
+                '---XXX--']);
+
+            const n = b.play(5, 2, +1);
+
+            // board is 9x9 so the rightmost column is empty
+            $(n).equal(5 + 1);
+
+            $(b + '').equal(
+                '   A B C D E F G H\n' +
+                ' 1 X - X X O O O O\n' +
+                ' 2 X X - X X O O X\n' +
+                ' 3 - - X - - X O X\n' +
+                ' 4 - - X - - - X X\n' +
+                ' 5 - - - X X X - -');
+        });
     });
 }

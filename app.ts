@@ -1,15 +1,17 @@
+/// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
+/// <reference path="eidogo/eidogo.d.ts" />
 
 module testbench {
     import Board = tsumego.Board;
 
-    declare const eidogo: any;
+    declare var egp: eidogo.Player;
 
-    const x2s = (x: number) => String.fromCharCode(0x61 + x);
-    const y2s = (y: number) => x2s(y);
-    const xy2s = (xy: Coords) => x2s(xy.x) + y2s(xy.y);
-    const c2s = (c: Color) => c > 0 ? 'X' : 'O';
+    const xy2s = (m: Coords) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
+    const c2s = Color.alias;
+    const cm2s = (c: Color, m: Coords) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: Coords) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: Coords) => n2s(xy.x) + n2s(xy.y);
@@ -39,16 +41,21 @@ module testbench {
     /** shared transposition table for black and white */
     const tt = new tsumego.TT;
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0, stats = true) {
+    function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;
 
-        let rs = tsumego.solve(path, color, nkotreats, tt,
+        const solver = new tsumego.Solver(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
 
+        const { tag: t } = solver.current;
+        while (!t.res)
+            solver.next();
+        const rs = t.res;
+
         let t1 = +new Date;
 
-        if (stats) {
+        if (log) {
             console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
             console.log(s2s(color, rs));
             console.log('tt:', Object.keys(tt).length);
@@ -57,11 +64,144 @@ module testbench {
         return rs;
     }
 
+    class CancellationToken {
+        cancelled = false;
+    }
+
+    function sleep(ms: number) {
+        return new Promise<void>(resolve => setTimeout(resolve, ms));
+    }
+
+    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0, stopat?: number) {
+        let log = true;
+
+        const player: tsumego.Player = {
+            play: (color, move) => {
+                if (!log) return;
+                egp.currentColor = color > 0 ? 'B' : 'W';
+
+                if (move)
+                    egp.createMove(xy2f(move));
+                else
+                    egp.pass();
+            },
+            undo: () => {
+                if (!log) return;
+                egp.back();
+            },
+            done: (color, move, note) => {
+                if (!log) return;
+                egp.unsavedChanges = true;
+                egp.cursor.node.C = `${egp.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
+                egp.refresh();
+            },
+            loss: (color, move, response) => {
+                if (!log) return;
+                egp.unsavedChanges = true;
+                egp.cursor.node.C = `${egp.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
+                egp.refresh();
+            }
+        };
+
+        const solver = new tsumego.Solver(path, color, nkotreats, tt,
+            tsumego.generators.Basic(rzone),
+            b => b.at(aim.x, aim.y) < 0 ? -1 : +1, player);
+
+        window['solver'] = solver;
+
+        let tick = 0;
+
+        const next = () => {
+            solver.next();
+            tick++;
+
+            if (log) {
+                const bp = ';bp=' + tick;
+                const rx = /;bp=\d+/;
+
+                location.href = rx.test(location.hash) ?
+                    location.href.replace(rx, bp) :
+                    location.href + bp;
+            }
+        };
+
+        const stepOver = (ct: CancellationToken) => {
+            const {tag: t, node: b} = solver.current;
+            log = false;
+
+            return new Promise((resolve, reject) => {
+                while (!t.res) {
+                    next();
+
+                    if (ct.cancelled)
+                        return void reject();
+                }
+
+                resolve();
+            }).then(() => {
+                log = true;
+                console.log(s2s(t.color, t.res) + ':\n' + b);
+                next();
+            });
+        };
+
+        const stepOut = () => {
+            log = false;
+            const n = solver.depth;
+            while (solver.depth >= n)
+                next();
+            log = true;
+            renderSGF(solver.current.node.toString('SGF'));
+        };
+
+        keyboard.hook(keyboard.Key.F10, event => {
+            event.preventDefault();
+            const ct = new CancellationToken;
+            const hook = keyboard.hook(keyboard.Key.Esc, event => {
+                event.preventDefault();
+                console.log('cancelling...');
+                ct.cancelled = true;
+            });
+
+            stepOver(ct).catch().then(() => hook.dispose());
+        });
+
+        keyboard.hook(keyboard.Key.F11, event => {
+            if (!event.shiftKey) {
+                event.preventDefault();
+                if (event.ctrlKey)
+                    debugger;
+                next();
+            } else {
+                // Shift+F11
+                event.preventDefault();
+                stepOut();
+            }
+        });
+
+        console.log('debug mode:', c2s(color), 'to play with', nkotreats, 'external ko treats\n',
+            'F11 - step into\n',
+            'Ctrl+F11 - step into and debug\n',
+            'F10 - step over\n',
+            'Shift+F11 - step out\n');
+
+        if (stopat > 0) {
+            setTimeout(() => {
+                console.log('skipping first', stopat, 'steps...');
+                log = false;
+                while (tick < stopat)
+                    next();
+                log = true;
+                renderSGF(solver.current.node.toString('SGF'));
+            }, 100);
+        }
+    }
+
     /** Constructs the proof tree in the SGF format.
         The tree's root is a winning move and its
         branches are all possible answers of the opponent. */
     function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
-        const {move} = solve(path, color, nkt, false);
+        const {move} = solve(path, color, nkt);
         if (!move)
             return null;
 
@@ -124,9 +264,7 @@ module testbench {
     const source = location.search.slice(1);
     let sgfdata = '';
 
-    (source.slice(0, 1) == '(' ?
-        Promise.resolve(source) :
-        send('GET', '/problems/' + source + '.sgf')).then(res => {
+    (source.slice(0, 1) == '(' ? Promise.resolve(source) : send('GET', '/problems/' + source + '.sgf')).then(res => {
         [board, rzone, aim] = parseSGF(res);
         path = [board.fork()];
         console.log(res);
@@ -134,12 +272,20 @@ module testbench {
         console.log('\n\n' + board.hash() + '\n\n' + board);
         document.title = source;
         renderSGF(res);
+
+        try {
+            const [, bw, nkt, bp] = /^#(B|W)([+-]\d+)(?:;bp=(\d+))?$/.exec(location.hash);
+
+            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt, +bp);
+        } catch (_) {
+            console.log(_);
+        }
     }).catch(err => {
         console.error(err);
     });
 
     function renderSGF(sgf: string) {
-        window['egp'] = new eidogo.Player({
+        egp = new eidogo.Player({
             container: 'board',
             theme: 'standard',
             sgf: sgf, // EidoGo cannot display 8x8 boards
@@ -187,7 +333,7 @@ module testbench {
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                     }
                 } else {
-                    const {move} = solve(path, c, !xy ? 0 : +xy);
+                    const {move} = solve(path, c, !xy ? 0 : +xy, true);
 
                     if (!move) {
                         console.log(col, 'passes');

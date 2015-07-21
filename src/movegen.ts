@@ -73,7 +73,7 @@ module tsumego {
                         || (b.r - a.r)              // then maximize the number of captured stones
                         || (b.n1 - a.n1)            // then maximize the number of liberties
                         || (a.n2 - b.n2)            // then minimize the number of the opponent's liberties
-                        || (Math.random() - 0.5);   // otherwise try moves in a random order
+                      //|| (Math.random() - 0.5);   // otherwise try moves in a random order
                 });
 
                 return { leafs: leafs, mindepth: mindepth };
