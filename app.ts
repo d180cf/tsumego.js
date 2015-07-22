@@ -72,7 +72,7 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0, stopat?: number) {
+    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
         let log = true;
 
         const player: tsumego.Player = {
@@ -188,18 +188,18 @@ module testbench {
             'F11 - step into\n',
             'Ctrl+F11 - step into and debug\n',
             'F10 - step over\n',
-            'Shift+F11 - step out\n');
+            'Shift+F11 - step out\n',
+            'G - go to a certain step\n');
 
-        if (stopat > 0) {
-            setTimeout(() => {
-                console.log('skipping first', stopat, 'steps...');
-                log = false;
-                while (tick < stopat)
-                    next();
-                log = true;
-                renderSGF(solver.current.node.toString('SGF'));
-            }, 100);
-        }
+        keyboard.hook('G'.charCodeAt(0), event => {
+            event.preventDefault();
+            const stopat = +prompt('Step #:');
+            if (!stopat) return;
+            console.log('skipping first', stopat, 'steps...');
+            while (tick < stopat)
+                next();
+            renderSGF(solver.current.node.toString('SGF'));
+        });
     }
 
     /** Constructs the proof tree in the SGF format.
@@ -279,9 +279,8 @@ module testbench {
         renderSGF(res);
 
         try {
-            const [, bw, nkt, bp] = /^#(B|W)([+-]\d+)(?:;bp=(\d+))?$/.exec(location.hash);
-
-            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt, +bp);
+            const [, bw, nkt] = /^#(B|W)([+-]\d+)/.exec(location.hash);
+            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt);
         } catch (_) {
             console.log(_);
         }
