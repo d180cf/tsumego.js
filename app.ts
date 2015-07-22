@@ -79,19 +79,22 @@ module testbench {
             play: (color, move) => {
                 if (!log) return;
 
-                if (!move) {
-                    // TODO: make a pass; how?
-                } else {
-                    goban.board.addObject({
-                        x: move.x,
-                        y: move.y,
+                const node = new WGo.KNode({
+                    _edited: true,
+                    move: {
+                        pass: !move,
+                        x: move && move.x,
+                        y: move && move.y,
                         c: color > 0 ? WGo.B : WGo.W
-                    });
-                }
+                    }
+                });
+
+                goban.kifuReader.node.appendChild(node);
+                goban.next(goban.kifuReader.node.children.length - 1);
             },
             undo: () => {
                 if (!log) return;
-                // TODO: undo the last move; how?
+                goban.previous();
             },
             done: (color, move, note) => {
                 if (!log) return;
