@@ -1,4 +1,5 @@
 ﻿
+
 /** 
  * This extension handles go game records(kifu). In WGo kifu is stored in JSON. Kifu structure example:
  *
@@ -77,6 +78,96 @@ var recursive_save2 = function(gameTree, node) {
 	}
 }
 
+var sgf_escape = function(text) {
+	if(typeof text == "string") return text.replace(/\\/g, "\\\\").replace(/]/g, "\\]");
+	else return text;
+}
+
+var a_char = 'a'.charCodeAt(0);
+
+var sgf_coordinates = function(x, y) {
+	return String.fromCharCode(a_char+x)+String.fromCharCode(a_char+y);
+}
+
+var sgf_write_group = function(prop, values, output) {
+	if(!values.length) return;
+	
+	output.sgf += prop;
+	for(var i in values) {
+		output.sgf += "["+values[i]+"]";
+	}
+}
+
+var sgf_write_node = function(node, output) {
+	// move
+	if(node.move) {
+		var move = "";
+		if(!node.pass) move = sgf_coordinates(node.move.x, node.move.y);
+		
+		if(node.move.c == WGo.B) output.sgf += "B["+move+"]";
+		else output.sgf += "W["+move+"]";
+	}
+	
+	// setup
+	if(node.setup) {
+		var AB = [];
+		var AW = [];
+		var AE = [];
+		
+		for(var i in node.setup) {
+			if(node.setup[i].c == WGo.B) AB.push(sgf_coordinates(node.setup[i].x, node.setup[i].y));
+			else if(node.setup[i].c == WGo.W) AW.push(sgf_coordinates(node.setup[i].x, node.setup[i].y));
+			else AE.push(sgf_coordinates(node.setup[i].x, node.setup[i].y));
+		}
+		
+		sgf_write_group("AB", AB, output);
+		sgf_write_group("AW", AW, output);
+		sgf_write_group("AE", AE, output);
+	}
+	
+	// markup
+	if(node.markup) {
+		var markup = {};
+		
+		for(var i in node.markup) {
+			markup[node.markup[i].type] = markup[node.markup[i].type] || [];
+			if(node.markup[i].type == "LB") markup["LB"].push(sgf_coordinates(node.markup[i].x, node.markup[i].y)+":"+sgf_escape(node.markup[i].text));
+			else markup[node.markup[i].type].push(sgf_coordinates(node.markup[i].x, node.markup[i].y));
+		}
+		
+		for(var key in markup) {
+			sgf_write_group(key, markup[key], output);
+		}
+	}
+	
+	// other
+	var props = node.getProperties();
+	
+	for(var key in props) {
+		if(typeof props[key] == "object") continue;
+		
+		if(key == "turn") output.sgf += "PL["+(props[key] == WGo.B ? "B" : "W")+"]";
+		else if(key == "comment") output.sgf += "C["+sgf_escape(props[key])+"]";
+		else output.sgf += key+"["+sgf_escape(props[key])+"]";
+	}
+	
+	if(node.children.length == 1) {
+		output.sgf += "\n;";
+		sgf_write_node(node.children[0], output);
+	}
+	else if(node.children.length > 1) {
+		for(var key in node.children) {
+			sgf_write_variantion(node.children[key], output);
+		}
+	}
+}
+
+var sgf_write_variantion = function(node, output) {
+	output.sgf += "(\n;";
+	sgf_write_node(node, output);
+	output.sgf += "\n)";
+}
+
 /**
  * Kifu class - for storing go game record and easy manipulation with it
  */
@@ -136,7 +227,44 @@ Kifu.fromJGO = function(arg) {
  */
 
 Kifu.prototype.toSgf = function() {
-	// not implemented yet
+	var output = {sgf: "(\n;"};
+	
+	var root_props = {};
+	
+	// other info
+	for(var key in this.info) {
+		if(key == "black") {
+			if(this.info.black.name) root_props.PB = sgf_escape(this.info.black.name);
+			if(this.info.black.rank) root_props.BR = sgf_escape(this.info.black.rank);
+			if(this.info.black.team) root_props.BT = sgf_escape(this.info.black.team);
+		}
+		else if(key == "white") {
+			if(this.info.white.name) root_props.PW = sgf_escape(this.info.white.name);
+			if(this.info.white.rank) root_props.WR = sgf_escape(this.info.white.rank);
+			if(this.info.white.team) root_props.WT = sgf_escape(this.info.white.team);
+		}
+		else root_props[key] = sgf_escape(this.info[key]);
+	}
+	
+	// board size
+	if(this.size) root_props.SZ = this.size;
+	
+	// add missing info
+	if(!root_props.AP) root_props.AP = "WGo.js:2";
+	if(!root_props.FF) root_props.FF = "4";
+	if(!root_props.GM) root_props.GM = "1";
+	if(!root_props.CA) root_props.CA = "UTF-8";
+	
+	// write root
+	for(var key in root_props) {
+		if(root_props[key]) output.sgf += key+"["+root_props[key]+"]";
+	}
+	
+	sgf_write_node(this.root, output);
+	
+	output.sgf += ")";
+	
+	return output.sgf;
 }
 
 /**
@@ -199,7 +327,7 @@ Kifu.infoFormatters = {
  * List of game information properties
  */
 
-Kifu.infoList = ["black", "white", "AN", "CP", "DT", "EV", "GN", "GC", "ON", "OT", "RE", "RO", "RU", "SO", "TM", "PC", "KM"];
+Kifu.infoList = ["black", "white", "AN", "CP", "DT", "EV", "GN", "GC", "HA", "ON", "OT", "RE", "RO", "RU", "SO", "TM", "US","PC", "KM"];
 
 WGo.Kifu = Kifu;
 
@@ -214,7 +342,7 @@ var no_add = function(arr, obj, key) {
 }
 
 var no_remove = function(arr, obj) {
-	if(!arr) remove;
+	if(!arr) return;
 	for(var i = 0; i < arr.length; i++) {
 		if(arr[i].x == obj.x && arr[i].y == obj.y) {
 			arr.splice(i,1);
@@ -320,6 +448,9 @@ KNode.prototype = {
 	 */
 	
 	insertAfter: function(node) {
+		for(var child in this.children) {
+			this.children[child].parent = node;
+		}
 		node.children = node.children.concat(this.children);
 		node.parent = this;
 		this.children = [node];
@@ -343,7 +474,7 @@ KNode.prototype = {
 	getProperties: function() {
 		var props = {};
 		for(var key in this) {
-			if(this.hasOwnProperty(key) && key != "children" && key != "parent") props[key] = this[key];
+			if(this.hasOwnProperty(key) && key != "children" && key != "parent" && key[0] != "_") props[key] = this[key];
 		}
 		return props;
 	}
@@ -369,16 +500,18 @@ var pos_diff = function(old_p, new_p) {
  * KifuReader object is capable of reading a kifu nodes and executing them. It contains Game object with actual position.
  * Variable change contains last changes of position.
  * If parameter rememberPath is set, KifuReader will remember last selected child of all nodes.
+ * If parameter allowIllegalMoves is set, illegal moves will be played instead of throwing an exception
  */
 
-var KifuReader = function(kifu, rememberPath) {
+var KifuReader = function(kifu, rememberPath, allowIllegalMoves) {
 	this.kifu = kifu;
 	this.node = this.kifu.root;
-	this.game = new WGo.Game(this.kifu.size);
+	this.allow_illegal = allowIllegalMoves || false;
+	this.game = new WGo.Game(this.kifu.size, this.allow_illegal ? "NONE" : "KO", this.allow_illegal , this.allow_illegal);
 	this.path = {m:0};
 
-	this.change = exec_node(this.game, this.node, true);
 	if(this.kifu.info["HA"] && this.kifu.info["HA"] > 1) this.game.turn = WGo.W;
+	this.change = exec_node(this.game, this.node, true);
 	
 	if(rememberPath) this.rememberPath = true;
 	else this.rememberPath = false;
@@ -408,6 +541,7 @@ var concat_changes = function(ch_orig, ch_new) {
 var exec_node = function(game, node, first) {
 	if(node.parent) node.parent._last_selected = node.parent.children.indexOf(node);
 	
+	// handle moves nodes
 	if(node.move != undefined) {
 		if(node.move.pass) {
 			game.pass(node.move.c);
@@ -416,29 +550,40 @@ var exec_node = function(game, node, first) {
 		else {
 			var res = game.play(node.move.x, node.move.y, node.move.c);
 			if(typeof res == "number") throw new InvalidMoveError(res, node);
+			// we must check whether to add move (it can be suicide)
+			for(var i in res) {
+				if(res[i].x == node.move.x && res[i].y == node.move.y) {
+					return {
+						add: [],
+						remove: res
+					}
+				}
+			}
 			return {
 				add: [node.move],
 				remove: res
 			}
 		}
 	}
-	else if(node.setup != undefined) {
+	// handle other(setup) nodes
+	else {
 		if(!first) game.pushPosition();
 		
 		var add = [], remove = [];
 		
-		for(var i in node.setup) {
-			if(node.setup[i].c) {
-				game.addStone(node.setup[i].x, node.setup[i].y, node.setup[i].c);
-				add.push(node.setup[i]);
-			}
-			else {
-				game.removeStone(node.setup[i].x, node.setup[i].y);
-				remove.push(node.setup[i]);
+		if(node.setup != undefined) {
+			for(var i in node.setup) {
+				if(node.setup[i].c) {
+					game.setStone(node.setup[i].x, node.setup[i].y, node.setup[i].c);
+					add.push(node.setup[i]);
+				}
+				else {
+					game.removeStone(node.setup[i].x, node.setup[i].y);
+					remove.push(node.setup[i]);
+				}
 			}
 		}
 		
-		// TODO: check & test handling of turns 
 		if(node.turn) game.turn = node.turn;
 		
 		return {
@@ -446,10 +591,6 @@ var exec_node = function(game, node, first) {
 			remove: remove
 		};
 	}
-	else if(!first) {
-		game.pushPosition();
-	}
-	return {add:[], remove:[]};
 }
 
 var exec_next = function(i) {
@@ -474,9 +615,10 @@ var exec_previous = function() {
 	this.node = this.node.parent;
 	
 	this.game.popPosition();
+	if(this.node.turn) this.game.turn = this.node.turn;
 	
-	this.path.m--;
 	if(this.path[this.path.m] !== undefined) delete this.path[this.path.m];
+	this.path.m--;
 	
 	return true;
 }
@@ -489,8 +631,8 @@ var exec_first = function() {
 	
 	this.path = {m: 0};
 	
-	this.change = exec_node(this.game, this.node, true);
 	if(this.kifu.info["HA"] && this.kifu.info["HA"] > 1) this.game.turn = WGo.W;
+	this.change = exec_node(this.game, this.node, true);
 }
 
 KifuReader.prototype = {
@@ -570,7 +712,7 @@ KifuReader.prototype = {
 	
 	previousFork: function() {
 		var old_pos = this.game.getPosition();
-		while(exec_previous.call(this) && this.node.children.length == 1);
+		while(exec_previous.call(this) && this.node.children.length == 1){};
 		this.change = pos_diff(old_pos, this.game.getPosition());
 		return this;
 	},
@@ -581,6 +723,23 @@ KifuReader.prototype = {
 	
 	getPosition: function() {
 		return this.game.getPosition();
+	},
+	
+	/**
+	 * Allow or disallow illegal moves to be played
+	 */
+	 
+	allowIllegalMoves: function(b) {
+		if(b) {
+			this.game.allow_rewrite = true;
+			this.game.allow_suicide = true;
+			this.repeating = "NONE";
+		}
+		else {
+			this.game.allow_rewrite = false;
+			this.game.allow_suicide = false;
+			this.repeating = "KO";
+		}
 	}
 }
 
@@ -591,7 +750,12 @@ var InvalidMoveError = function(code, node) {
 	this.name = "InvalidMoveError";
     this.message = "Invalid move in kifu detected. ";
 	
-	if(node.move && node.move.c !== undefined && node.move.x !== undefined && node.move.y !== undefined) this.message += "Trying to play "+(node.move.c == WGo.WHITE ? "white" : "black")+" move on "+String.fromCharCode(node.move.x+65)+""+(19-node.move.y);
+	if(node.move && node.move.c !== undefined && node.move.x !== undefined && node.move.y !== undefined) {
+		var letter = node.move.x;
+		if(node.move.x > 7) letter++;
+		letter = String.fromCharCode(letter+65);
+		this.message += "Trying to play "+(node.move.c == WGo.WHITE ? "white" : "black")+" move on "+String.fromCharCode(node.move.x+65)+""+(19-node.move.y);
+	}
 	else this.message += "Move object doesn't contain arbitrary attributes.";
 	
 	if(code) {
@@ -604,6 +768,7 @@ var InvalidMoveError = function(code, node) {
 			break;
 			case 3:
 				this.message += ", but this move is a suicide.";
+			break;
 			case 4:
 				this.message += ", but this position already occured.";
 			break;

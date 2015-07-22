@@ -48,7 +48,7 @@ properties["AE"] = function(kifu, node, value) {
 	}
 }
 properties["PL"] = function(kifu, node, value) {
-	node.turn = value[0] == "b" ? WGo.B : WGo.W;
+	node.turn = (value[0] == "b" || value[0] == "B") ? WGo.B : WGo.W;
 }
 	
 // Node annotation properties
@@ -122,7 +122,7 @@ WGo.SGF.parse = function(str) {
 			node = node ? node.appendChild(new WGo.KNode()) : kifu.root;
 			
 			// make array of properties
-			props = sequence[i].match(reg_node);
+			props = sequence[i].match(reg_node) || [];
 			kifu.propertyCount += props.length;
 			
 			// insert all properties to node

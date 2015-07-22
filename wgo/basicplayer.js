@@ -85,6 +85,8 @@ var appendComponents = function(area) {
 	if(components) {
 		this.regions[area].element.style.display = "block";
 		
+		if(components.constructor != Array) components = [components];
+		
 		for(var i in components) {
 			if(!this.components[components[i]]) this.components[components[i]] = new BasicPlayer.component[components[i]](this);
 			
@@ -119,7 +121,7 @@ var manageComponents = function() {
 
 /**
  * Main object of player, it binds all magic together and produces visible player.
- * It inherits some functionality from WGo.PlayerView, but full html structure is done here.
+ * It inherits some functionality from WGo.Player, but full html structure is done here.
  *
  * Layout of player can be set. It can be even dynamic according to screen resolution. 
  * There are 5 areas - left, right, top and bottom, and there is special region for board.
@@ -467,11 +469,31 @@ BasicPlayer.attributes = {
 		if(value.toLowerCase() == "false") this.rememberPath = false;
 	},
 	
+	"data-wgo-allowillegal": function(value) {
+		if(value.toLowerCase() != "false") this.allowIllegalMoves = true;
+	},
+	
 	"data-wgo-move": function(value) {
 		var m = parseInt(value);
 		if(m) this.move = m;
 		else this.move = eval("({"+value+"})");
 	},
+
+	"data-wgo-marklastmove": function(value) {
+		if(value.toLowerCase() == "false") this.markLastMove = false;
+	},
+
+	"data-wgo-diagram": function(value) {
+		if(value) {
+			if(value[0] == "(") this.sgf = value;
+			else this.sgfFile = value;
+
+			this.markLastMove = false;
+			this.enableKeys = false;
+			this.enableWheel = false;
+			this.layout = {top: [], right: [], left: [], bottom: []};
+		}
+	}
 }
 
 var player_from_tag = function(elem) {
@@ -491,8 +513,8 @@ var player_from_tag = function(elem) {
 WGo.BasicPlayer = BasicPlayer;
 
 window.addEventListener("load", function() {
-	var pl_elems = document.querySelectorAll("[data-wgo]");
-	
+	var pl_elems = document.querySelectorAll("[data-wgo],[data-wgo-diagram]");
+
 	for(var i = 0; i < pl_elems.length; i++) {
 		player_from_tag(pl_elems[i]);
 	}

@@ -33,6 +33,7 @@
 	height: 100%;
 	line-height: normal;
 	font-size: 16px;
+	position: relative;
 }
 
 .wgo-player-main:after {
@@ -82,6 +83,13 @@
 
 .wgo-board {
 	margin: 0 auto;
+    background-color: #CEB053;
+    border-top: #F0E7A7 solid 1px;
+    border-right: #D1A974 solid 1px;
+    border-left: #CCB467 solid 1px;
+    border-bottom: #665926 solid 3px;
+    /*border-right: #665926 solid 3px;*/
+    border-radius: 3px;
 }
 
 /*--- /Board --------------------------------------------------------------------------*/
@@ -451,7 +459,7 @@ a.wgo-move-link {
 
 /* button widget */
 
-.wgo-button {
+button.wgo-button {
 	border: 1px solid rgba(200,200,200,0.3);
 	border-radius: 2px;
 	background-color: rgba(255,255,255,0.3);
@@ -461,19 +469,19 @@ a.wgo-move-link {
 	vertical-align: middle;
 }
 
-.wgo-button:not([disabled]):hover, 
-.wgo-player-mn-value:focus {
+button.wgo-button:not([disabled]):hover, 
+input[type="text"].wgo-player-mn-value:focus {
 	background-color: rgba(255,255,255,0.45);
 	border: 1px solid rgba(100,100,100,0.3);
 	box-shadow: 0 0 20px 0 rgba(150,150,150,0.5);
 }
 
-.wgo-button.wgo-selected {
+button.wgo-button.wgo-selected {
 	background-color: rgba(255,255,255,0.6);
 	border: 1px solid rgba(0,0,0,0.5);
 }
 
-.wgo-button.wgo-selected:hover {
+button.wgo-button.wgo-selected:hover {
 	background-color: rgba(255,255,255,0.7);
 	border: 1px solid rgba(0,0,0,0.7);
 }
@@ -484,7 +492,7 @@ a.wgo-move-link {
 	display: inline-block;
 }
 
-.wgo-button[disabled]::before, .wgo-player-mn-value[disabled] {
+.wgo-button[disabled]::before, input[type="text"].wgo-player-mn-value[disabled] {
 	color: rgba(64,64,64,0.5);
 }
 
@@ -540,7 +548,7 @@ a.wgo-move-link {
 
 /* move number widget */
 
-.wgo-player-mn-value  {
+input[type="text"].wgo-player-mn-value  {
 	border: 1px solid rgba(200,200,200,0.3);
 	border-radius: 2px;
 	background-color: rgba(255,255,255,0.3);
@@ -594,6 +602,7 @@ a.wgo-move-link {
 	box-shadow: 0 0 20px 0 rgba(127,127,127,0.5);
 	font-weight: bold;
 	color: #292929;
+	text-align: left;
 }
 
 .wgo-menu-item {
@@ -681,7 +690,7 @@ a.wgo-move-link {
 
 /*--- Permalinks ---------------------------------------------------------------------------*/
 
-input.wgo-permalink {
+input[type="text"].wgo-permalink {
 	padding: 7px 10px !important;
 	border: 1px solid white !important;
 	color: white !important;
