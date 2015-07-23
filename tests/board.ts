@@ -1,4 +1,4 @@
-﻿/// <reference path="ut.ts" />
+﻿/// <reference path="infra.ts" />
 
 module tests {
     import Board = tsumego.Board;
