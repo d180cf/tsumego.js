@@ -99,12 +99,14 @@ module testbench {
             done: (color, move, note) => {
                 if (!log) return;
                 const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                // TODO: add comment to the current node; how?
+                goban.kifuReader.node.comment = comment;
+                goban.update();
             },
             loss: (color, move, response) => {
                 if (!log) return;
                 const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
-                // TODO: add comment to the current node; how?
+                goban.kifuReader.node.comment = comment;
+                goban.update();
             }
         };
 
@@ -132,7 +134,6 @@ module testbench {
 
         const stepOver = (ct: CancellationToken) => {
             const {tag: t, node: b} = solver.current;
-            log = false;
 
             return new Promise((resolve, reject) => {
                 while (!t.res) {
@@ -144,7 +145,6 @@ module testbench {
 
                 resolve();
             }).then(() => {
-                log = true;
                 console.log(s2s(t.color, t.res) + ':\n' + b);
                 next();
             });

@@ -14,6 +14,8 @@ declare module WGo {
 
         next(nodeIndex: number): void;
         previous(): void;
+        update(): void;
+        /** Shows/hides side goban labels. */
         setCoordinates(value: boolean): void;
     }
 
@@ -45,6 +47,7 @@ declare module WGo {
 
     interface KNode {
         new (options: KNode.Options): KNode;
+        comment: string;
         children: KNode[];
         appendChild(node: KNode): void;
     }
