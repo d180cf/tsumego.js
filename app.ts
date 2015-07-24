@@ -276,7 +276,7 @@ module testbench {
         sgfdata = res;
         console.log('\n\n' + board.hash() + '\n\n' + board);
         document.title = source;
-        renderSGF(res);
+        setTimeout(() => renderSGF(res));
 
         try {
             const [, bw, nkt] = /^#(B|W)([+-]\d+)/.exec(location.hash);
@@ -290,7 +290,9 @@ module testbench {
 
     function renderSGF(sgf: string) {
         goban = new WGo.BasicPlayer(document.body, {
-            sgf: sgf
+            // a dummy C{...] tag is needed to
+            // enable the comment box in wgo
+            sgf: sgf.replace(/\)\s*$/, 'C[ ])')
         });
 
         goban.setCoordinates(true);
