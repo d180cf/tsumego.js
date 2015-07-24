@@ -99,13 +99,17 @@ module testbench {
             done: (color, move, note) => {
                 if (!log) return;
                 const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                goban.kifuReader.node.comment = comment;
+                const node = goban.kifuReader.node;
+                node.comment = node.comment || '';
+                node.comment += comment;
                 goban.update();
             },
             loss: (color, move, response) => {
                 if (!log) return;
                 const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
-                goban.kifuReader.node.comment = comment;
+                const node = goban.kifuReader.node;
+                node.comment = node.comment || '';
+                node.comment += comment;
                 goban.update();
             }
         };
