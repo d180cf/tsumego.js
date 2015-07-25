@@ -300,6 +300,7 @@ module testbench {
         });
 
         goban.setCoordinates(true);
+        goban.kifuReader.allowIllegalMoves(true);
     }
 
     function parse(si: string): Coords {
