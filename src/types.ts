@@ -12,10 +12,8 @@ module Color {
 }
 
 /** (0, 0) corresponds to the top left corner. */
-interface Coords {
-    /** Horizontal offset. */
+interface Move {
     x: XIndex;
-    /** Vertical offset. */
     y: YIndex;
 }
 
@@ -27,5 +25,5 @@ interface Result {
 
     /** The winning move.
         If the only solution is a loss, no move is stored. */
-    move?: Coords;
+    move?: Move;
 }

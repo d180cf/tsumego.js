@@ -8,21 +8,21 @@ module testbench {
 
     declare var goban: WGo.BasicPlayer;
 
-    const xy2s = (m: Coords) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
+    const xy2s = (m: Move) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
     const c2s = Color.alias;
-    const cm2s = (c: Color, m: Coords) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: Color, m: Coords) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
+    const cm2s = (c: Color, m: Move) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
-    const xy2f = (xy: Coords) => n2s(xy.x) + n2s(xy.y);
+    const xy2f = (xy: Move) => n2s(xy.x) + n2s(xy.y);
 
     /** -1, { x: 2, y: 3 } -> `W[cd]` */
-    const xyc2f = (c: Color, xy: Coords) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
+    const xyc2f = (c: Color, xy: Move) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
 
     /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => <Coords>{ x: s2n(s, 0), y: s2n(s, 1) };
+    const f2xy = (s: string) => <Move>{ x: s2n(s, 0), y: s2n(s, 1) };
 
-    function parseSGF(source: string): [Board, Coords[], Coords] {
+    function parseSGF(source: string): [Board, Move[], Move] {
         const brd = new Board(source);
         const sgf = SGF.parse(source);
         const setup = sgf.steps[0];
@@ -268,7 +268,7 @@ module testbench {
         return ';' + xyc2f(color, move) + vars;
     }
 
-    var board: Board, rzone: Coords[], aim, path: Board[];
+    var board: Board, rzone: Move[], aim, path: Board[];
 
     const source = location.search.slice(1);
     let sgfdata = '';
@@ -303,7 +303,7 @@ module testbench {
         goban.kifuReader.allowIllegalMoves(true);
     }
 
-    function parse(si: string): Coords {
+    function parse(si: string): Move {
         return {
             x: si.charCodeAt(0) - 65,
             y: +/\d+/.exec(si)[0] - 1

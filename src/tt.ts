@@ -1,9 +1,9 @@
 module tsumego {
-    export interface HasheableNode {
+    export interface Hasheable {
         hash(): string;
     }
 
-    interface Solution {
+    interface Status {
         /** 
          * The number of ko treats that will be enough to let white win.
          * Negative values represent white's ko treats, while positive
@@ -24,19 +24,19 @@ module tsumego {
         /**
          * The best move. Obviously, it's absent if there is no way to win.
          */
-        move?: Coords;
+        move?: Move;
     }
 
-    const hash = (b: HasheableNode, c: Color) => (c > 0 ? 'X' : 'O') + ':' + b.hash();
+    const hash = (b: Hasheable, c: Color) => (c > 0 ? 'X' : 'O') + ':' + b.hash();
 
     /** Transposition table. */
     export class TT {
-        private _: { [hash: string]: Solution } = {};
+        private _: { [hash: string]: Status } = {};
 
         /**
          * @param n - The number of available ko treats.
          */
-        get(b: HasheableNode, c: Color, n: number): Result {
+        get(b: Hasheable, c: Color, n: number): Result {
             const h = hash(b, c);
             const s = this._[h];
 
@@ -52,7 +52,7 @@ module tsumego {
         /**
          * @param n - The number of ko treats that was needed to get the result.
          */
-        set(b: HasheableNode, c: Color, r: Result, n: number) {
+        set(b: Hasheable, c: Color, r: Result, n: number) {
             const h = hash(b, c);
             const s = this._[h] || { wmin: -infty, bmax: +infty, move: r.move };
 

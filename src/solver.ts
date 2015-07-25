@@ -8,37 +8,29 @@ module tsumego {
     }
 
     export interface Player {
-        play(color: Color, move: Coords): void;
+        play(color: Color, move: Move): void;
         undo(): void;
-        done(color: Color, move: Coords, comment: string): void;
-        loss(color: Color, move: Coords, response: Coords): void;
+        done(color: Color, move: Move, comment: string): void;
+        loss(color: Color, move: Move, response: Move): void;
     }
 
-    function findrepd<Node extends HasheableNode>(path: Node[], b: Node): number {
+    function findrepd<Node extends Hasheable>(path: Node[], b: Node) {
         for (let i = path.length - 1; i > 0; i--)
             if (b.hash() == path[i - 1].hash())
                 return i;
         return infty;
     }
 
-    export class Solver<Node extends HasheableNode> {
+    export class Solver<Node extends Hasheable> {
         private path: Node[] = [];
 
-        /** tags[i] contains tags for path[i] */
         private tags: {
-            /** Present if the node is solved. */
             res?: Result;
-            /** who plays */
             color: Color;
-            /** how many external ko treats */
             nkt: number;
-            /** which move led to this position */
-            move?: Coords;
-            /** whether the player has passed already */
+            move?: Move;
             passed?: boolean;
-            /** possible continuations */
-            next?: { node: Node, move: Coords, nkt: number }[];
-            /** the earliest node repeated by the continuations */
+            next?: { node: Node, move: Move, nkt: number }[];
             mindepth?: number;
         }[] = [];
 
@@ -56,6 +48,7 @@ module tsumego {
             private expand: Generator<Node>,
             private status: Estimator<Node>,
             private player?: Player) {
+
             for (const b of path) {
                 this.path.push(b);
                 this.tags.push(null);
@@ -134,7 +127,7 @@ module tsumego {
             }
         }
 
-        private play(node: Node, move: Coords, color: Color, nkt: number): void {
+        private play(node: Node, move: Move, color: Color, nkt: number): void {
             const ttres = this.tt.get(node, -color, nkt);
 
             if (ttres) {
@@ -190,7 +183,7 @@ module tsumego {
         }
     }
 
-    export function solve<Node extends HasheableNode, Move>(
+    export function solve<Node extends Hasheable, Move>(
         path: Node[],
         color: Color,
         nkt: number,
