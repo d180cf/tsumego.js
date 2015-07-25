@@ -37,6 +37,7 @@ declare module WGo {
     }
 
     interface Board {
+        size: number;
         addObject(object: Object);
     }
 

@@ -8,7 +8,15 @@ module testbench {
 
     declare var goban: WGo.BasicPlayer;
 
-    const xy2s = (m: Move) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
+    /** In SGF a B stone at x = 8, y = 2
+        is written as B[ic] on a 9x9 goban
+        it corresponds to J7 - the I letter
+        is skipped and the y coordinate is
+        counted from the bottom starting from 1. */
+    const xy2s = (m: Move) => !m ? 'null' :
+        String.fromCharCode(0x41 + (m.x > 7 ? m.x - 1 : m.x)) +
+        (goban.board.size - m.y);
+
     const c2s = Color.alias;
     const cm2s = (c: Color, m: Move) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
     const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
