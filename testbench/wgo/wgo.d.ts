@@ -29,6 +29,7 @@ declare module WGo {
     interface KifuReader {
         game: Game;
         node: KNode;
+        allowIllegalMoves(allow: boolean): void;
     }
 
     interface Game {

@@ -733,12 +733,12 @@ KifuReader.prototype = {
 		if(b) {
 			this.game.allow_rewrite = true;
 			this.game.allow_suicide = true;
-			this.repeating = "NONE";
+			this.game.repeating = "NONE";
 		}
 		else {
 			this.game.allow_rewrite = false;
 			this.game.allow_suicide = false;
-			this.repeating = "KO";
+			this.game.repeating = "KO";
 		}
 	}
 }
