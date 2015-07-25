@@ -1,7 +1,8 @@
 The testbench uses wgo to debug the solver.
 
-1. Compile the testbench with tsc.
-2. Start the HTTP server.
-3. Open http://localhost/testbench?corner-5#B+0
-4. Open the dev console.
-5. Debug the solver.
+- `tsc` to compile the testbench.
+- `npm i` to install deps for the HTTP server.
+- `node server 80` to start the HTTP server.
+- Open http://localhost/testbench?corner-5#B+0
+- Open the dev console.
+- Debug the solver.
