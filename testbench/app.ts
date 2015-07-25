@@ -1,6 +1,6 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
-/// <reference path="src/solver.ts" />
+/// <reference path="../src/solver.ts" />
 /// <reference path="wgo/wgo.d.ts" />
 
 module testbench {

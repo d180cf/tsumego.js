@@ -1,4 +1,4 @@
-﻿/// <reference path="typings/promise.d.ts" />
+﻿/// <reference path="../typings/promise.d.ts" />
 
 function send(method: string, url: string): Promise<string> {
     return new Promise((resolve, reject) => {

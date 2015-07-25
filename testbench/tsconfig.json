@@ -1,0 +1,8 @@
+{
+  "files": [ "app.ts" ],
+  "compilerOptions": {
+    "out": "app.js",
+    "target": "es5",
+    "sourceMap": true
+  }
+}
