@@ -161,4 +161,22 @@ module tsumego {
             this.pick();
         }
     }
+
+    export function solve<Node extends HasheableNode, Move>(
+        path: Node[],
+        color: Color,
+        nkt: number,
+        tt: TT,
+        expand: Generator<Node>,
+        status: Estimator<Node>,
+        player?: Player) {
+
+        const solver = new Solver(path, color, nkt, tt, expand, status, player);
+        const current = solver.current.tag;
+
+        while (!current.res)
+            solver.next();
+
+        return current.res;
+    }
 }
