@@ -1,1 +1,5 @@
-tsc & node tests
+```
+npm i
+tsc
+node tests
+```
