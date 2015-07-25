@@ -1,12 +1,12 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
 /// <reference path="src/solver.ts" />
-/// <reference path="eidogo/eidogo.d.ts" />
+/// <reference path="wgo/wgo.d.ts" />
 
 module testbench {
     import Board = tsumego.Board;
 
-    declare var egp: eidogo.Player;
+    declare var goban: WGo.BasicPlayer;
 
     const xy2s = (m: Coords) => m ? String.fromCharCode(0x41 + m.x) + (m.y + 1) : 'null';
     const c2s = Color.alias;
@@ -72,34 +72,45 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0, stopat?: number) {
+    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
         let log = true;
 
         const player: tsumego.Player = {
             play: (color, move) => {
                 if (!log) return;
-                egp.currentColor = color > 0 ? 'B' : 'W';
 
-                if (move)
-                    egp.createMove(xy2f(move));
-                else
-                    egp.pass();
+                const node = new WGo.KNode({
+                    _edited: true,
+                    move: {
+                        pass: !move,
+                        x: move && move.x,
+                        y: move && move.y,
+                        c: color > 0 ? WGo.B : WGo.W
+                    }
+                });
+
+                goban.kifuReader.node.appendChild(node);
+                goban.next(goban.kifuReader.node.children.length - 1);
             },
             undo: () => {
                 if (!log) return;
-                egp.back();
+                goban.previous();
             },
             done: (color, move, note) => {
                 if (!log) return;
-                egp.unsavedChanges = true;
-                egp.cursor.node.C = `${egp.cursor.node.C || ''} ${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                egp.refresh();
+                const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
+                const node = goban.kifuReader.node;
+                node.comment = node.comment || '';
+                node.comment += comment;
+                goban.update();
             },
             loss: (color, move, response) => {
                 if (!log) return;
-                egp.unsavedChanges = true;
-                egp.cursor.node.C = `${egp.cursor.node.C || ''} if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
-                egp.refresh();
+                const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
+                const node = goban.kifuReader.node;
+                node.comment = node.comment || '';
+                node.comment += comment;
+                goban.update();
             }
         };
 
@@ -127,7 +138,6 @@ module testbench {
 
         const stepOver = (ct: CancellationToken) => {
             const {tag: t, node: b} = solver.current;
-            log = false;
 
             return new Promise((resolve, reject) => {
                 while (!t.res) {
@@ -139,7 +149,6 @@ module testbench {
 
                 resolve();
             }).then(() => {
-                log = true;
                 console.log(s2s(t.color, t.res) + ':\n' + b);
                 next();
             });
@@ -183,18 +192,18 @@ module testbench {
             'F11 - step into\n',
             'Ctrl+F11 - step into and debug\n',
             'F10 - step over\n',
-            'Shift+F11 - step out\n');
+            'Shift+F11 - step out\n',
+            'G - go to a certain step\n');
 
-        if (stopat > 0) {
-            setTimeout(() => {
-                console.log('skipping first', stopat, 'steps...');
-                log = false;
-                while (tick < stopat)
-                    next();
-                log = true;
-                renderSGF(solver.current.node.toString('SGF'));
-            }, 100);
-        }
+        keyboard.hook('G'.charCodeAt(0), event => {
+            event.preventDefault();
+            const stopat = +prompt('Step #:');
+            if (!stopat) return;
+            console.log('skipping first', stopat, 'steps...');
+            while (tick < stopat)
+                next();
+            renderSGF(solver.current.node.toString('SGF'));
+        });
     }
 
     /** Constructs the proof tree in the SGF format.
@@ -271,12 +280,11 @@ module testbench {
         sgfdata = res;
         console.log('\n\n' + board.hash() + '\n\n' + board);
         document.title = source;
-        renderSGF(res);
+        setTimeout(() => renderSGF(res));
 
         try {
-            const [, bw, nkt, bp] = /^#(B|W)([+-]\d+)(?:;bp=(\d+))?$/.exec(location.hash);
-
-            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt, +bp);
+            const [, bw, nkt] = /^#(B|W)([+-]\d+)/.exec(location.hash);
+            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt);
         } catch (_) {
             console.log(_);
         }
@@ -285,24 +293,13 @@ module testbench {
     });
 
     function renderSGF(sgf: string) {
-        egp = new eidogo.Player({
-            container: 'board',
-            theme: 'standard',
-            sgf: sgf, // EidoGo cannot display 8x8 boards
-            mode: 'play', // "play" or "view"
-            //shrinkToFit: true,
-            showComments: true,
-            showPlayerInfo: false,
-            showGameInfo: true,
-            showTools: true,
-            showOptions: true,
-            markCurrent: true,
-            markVariations: true,
-            markNext: true,
-            enableShortcuts: false,
-            showNavTree: true,
-            problemMode: false
+        goban = new WGo.BasicPlayer(document.body, {
+            // a dummy C{...] tag is needed to
+            // enable the comment box in wgo
+            sgf: sgf.replace(/\)\s*$/, 'C[ ])')
         });
+
+        goban.setCoordinates(true);
     }
 
     function parse(si: string): Coords {
