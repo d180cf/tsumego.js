@@ -1,1 +1,3 @@
-tsc & node tests
+- `npm i` to install deps
+- `tsc` to build the lib and the tests
+- `node tests` to run them
