@@ -14,6 +14,13 @@ module tsumego {
         loss(color: Color, move: Coords, response: Coords): void;
     }
 
+    function findrepd<Node extends HasheableNode>(path: Node[], b: Node): number {
+        for (let i = path.length - 1; i > 0; i--)
+            if (b.hash() == path[i - 1].hash())
+                return i;
+        return infty;
+    }
+
     export class Solver<Node extends HasheableNode> {
         private path: Node[] = [];
 
@@ -70,17 +77,38 @@ module tsumego {
             }
 
             if (!t.next) {
-                const {leafs, mindepth} = this.expand(this.path, color, nkt);
+                const leafs = this.expand(node, color);
 
-                t.next = leafs.map($ => {
-                    return {
-                        node: $.b,
-                        move: $.m,
-                        nkt: $.ko ? nkt - color : nkt
-                    };
-                }).reverse();
+                t.mindepth = infty;
+                t.next = [];
 
-                t.mindepth = mindepth;
+                for (const {b, m} of leafs) {
+                    const d = findrepd(this.path, b);
+                    const ko = d < this.depth;
+
+                    if (d < t.mindepth)
+                        t.mindepth = d;
+
+                    // the move makes sense if it doesn't repeat
+                    // a previous position or the current player
+                    // has a ko treat elsewhere on the board and
+                    // can use it to repeat the local position
+                    if (!ko || color * nkt > 0) {
+                        t.next.push({
+                            node: b,
+                            move: m,
+                            nkt: ko ? nkt - color : nkt
+                        });
+                    }
+                }
+
+                // moves that require a ko treat are considered last
+                // that's not just perf optimization: the search depends on this
+                t.next.sort((lhs, rhs) => (rhs.nkt - lhs.nkt) * color);
+
+                // nodes will be .pop()'ed,
+                // so reversing the list
+                t.next.reverse();
             }
 
             this.pick();
