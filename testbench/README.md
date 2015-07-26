@@ -1,4 +1,4 @@
-The testbench uses wgo to debug the solver.
+The testbench uses [wgo](https://github.com/waltheri/wgo.js) to debug the solver.
 
 - `tsc` to compile the testbench
 - `npm i` to install deps for the HTTP server
