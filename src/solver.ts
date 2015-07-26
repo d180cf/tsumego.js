@@ -199,6 +199,16 @@ module tsumego {
         while (!current.res)
             solver.next();
 
+        if (current.res) {
+            const r = current.res;
+
+            if (!r.repd || r.repd == infty)
+                delete current.res.repd;
+
+            if (!r.move)
+                delete r.move;
+        }
+
         return current.res;
     }
 }

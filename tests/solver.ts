@@ -1,12 +1,8 @@
 /// <reference path="infra.ts" />
 
 module tests {
-    /** 
-     * [ number of b stones,
-     *   number of w stones,
-     *   unique tag ]
-     */
-    type Hash =[number, number, number];
+    /** [ number of b stones - number of w stones, unique tag ] */
+    type Hash =[number, number];
 
     /** +1 - b wins
      *  -1 - w wins
@@ -23,7 +19,7 @@ module tests {
         private state: { [hash: string]: Status } = {};
 
         constructor(status: Status, build: GameGraph.Builder) {
-            const hash: Hash = [0, 0, 0];
+            const hash: Hash = [0, 0];
             this.init(hash, status, build);
             this.root = this.nodes[hash + ''];
         }
@@ -42,7 +38,7 @@ module tests {
                 if (moves.indexOf(h + '') >= 0)
                     throw Error(h + ' already added');
 
-                if (h[0] <= hash[0] && h[1] <= hash[1])
+                if (h[0] == hash[0])
                     throw Error(hash + ' -> ' + h + ' adds neither b nor w stones');
 
                 moves.push(h + '');
@@ -73,24 +69,22 @@ module tests {
 
         generate(b: Node, c: number) {
             const h0 = b.hash();
-            const [nb0, nw0] = h0.split(',');
+            const [nbw0] = h0.split(',');
             const ms = this.moves[h0];
 
             if (typeof ms === 'number') {
                 throw Error(b.hash() + ' has a known status');
             } else {
                 return ms.map(h => {
-                    const [nb, nw, tag] = h.split(',');
+                    const [nbw, tag] = h.split(',');
 
                     return {
                         b: this.nodes[h],
-                        c: [+nb, +nw],
+                        c: +nbw - +nbw0,
                         m: { x: +tag, y: +tag }
                     };
                 }).filter(w => {
-                    return c > 0 ?
-                        w.c[0] > +nb0 :
-                        w.c[1] > +nw0;
+                    return c * w.c > 0;
                 });
             }
         }
@@ -122,21 +116,26 @@ module tests {
     ut.group($ => {
         $.test($ => {
             const g = new GameGraph(-1, add => {
-                add([1, 0, 111], +1);
-                add([1, 0, 222], -1);
+                add([+1, 111], +1);
+                add([-1, 222], -1);
             });
 
             $(g.solve(null, +1, 0)).equal({
                 color: +1,
                 move: { x: 111, y: 111 }
             });
+
+            $(g.solve(null, -1, 0)).equal({
+                color: -1,
+                move: { x: 222, y: 222 }
+            });
         });
 
         $.test($ => {
             const g = new GameGraph(-1, add => {
-                add([1, -1, 111], -1, add => {
-                    add([0, 0, 0]);
-                    add([2, -2, 222], +1);
+                add([+1, 111], -1, add => {
+                    add([0, 0]);
+                    add([+2, 222], +1);
                 });
             });
 
@@ -147,8 +146,7 @@ module tests {
             });
 
             $(g.solve(null, +1, -1)).equal({
-                color: -1,
-                move: void 0
+                color: -1
             });
         });
     });
