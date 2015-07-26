@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/d180cf/tsumego.js.svg?branch=master)](https://travis-ci.org/d180cf/tsumego.js)
 
-It's a simplistic tsumego solver in JS. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to ~10) and the target are set manually. The plan is to implement the [lambda df-pn(r)](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search and various static analysis algorithms.
+It's a simplistic tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to ~10) and the target are set manually. The plan is to implement the [lambda df-pn(r)](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search and various static analysis algorithms.
 
 ```
   A B C D E F G H J
@@ -12,3 +12,11 @@ It's a simplistic tsumego solver in JS. At the moment this solver doesn't implem
 ```
 
 It's an example of a [problem](http://www.goproblems.com/18629) that this solver can handle: it can figure out that if white plays first at `C8`, it lives without a ko.
+
+As far as I know, there are very few tsumego solving software:
+
+- Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about)
+- Martin Muller's Tsumego Explorer and [Fuego](http://fuego.sourceforge.net/) (the latter is actually a bot, not just a solver)
+- Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html)
+
+None of these are in JS, but some can be embedded in a website in a Java applet.
