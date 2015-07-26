@@ -7,6 +7,7 @@ module testbench {
     import Board = tsumego.Board;
 
     declare var goban: WGo.BasicPlayer;
+    declare var tt: tsumego.TT;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -47,7 +48,7 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    const tt = new tsumego.TT;
+    tt = new tsumego.TT;
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;

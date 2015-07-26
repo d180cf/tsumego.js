@@ -1,7 +1,11 @@
 ﻿/** Generic LL(*) recursive descent parser. */
 module SDP {
+    interface ParsingFunction<T> {
+        (str: string, pos: number): [T, number];
+    }
+
     export class Pattern<T> {
-        constructor(private _text: string, private _exec: Function) {
+        constructor(private _text: string, private _exec: ParsingFunction<T>) {
 
         }
 
@@ -58,18 +62,27 @@ module SDP {
         }
     }
 
-    export function $<T>(exec: Pattern<T>): Pattern<T>;
-    export function $<T>(text: string, exec: (str: string, pos: number) => [T, number]): Pattern<T>;
+    export function $<T>(pattern: Pattern<T>): Pattern<T>;
+    export function $<T>(text: string, exec: ParsingFunction<T>): Pattern<T>;
     export function $(regexp: RegExp): Pattern<string>;
     export function $(string: string): Pattern<string>;
-    export function $(items: any[]): Pattern<any[]>;
+    export function $(...items): Pattern<any[]>;
 
-    export function $(x, n?): Pattern<any> {
-        if (x instanceof Pattern) return x;
-        if (typeof n === 'function') return new Pattern(x, n);
-        if (x instanceof RegExp) return rgx(x);
-        if (typeof x === 'string') return txt(x);
-        if (x instanceof Array) return seq(...x);
+    export function $(x, s?): Pattern<any> {
+        if (typeof s === 'function')
+            return new Pattern(x, s);
+
+        if (arguments.length > 1)
+            return seq.apply(null, arguments);
+
+        if (x instanceof Pattern)
+            return x;
+
+        if (x instanceof RegExp)
+            return rgx(x);
+
+        if (typeof x === 'string')
+            return txt(x);
     }
 
     function rgx(r: RegExp) {
