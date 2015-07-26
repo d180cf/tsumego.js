@@ -18,7 +18,7 @@ module ut {
                 const name = (() => {
                     try {
                         const stack = Error().stack.split('\n');
-                        
+
                         return typeof location === 'object' ?
                             /\/tests\/(.+)$/i.exec(stack[3])[1] :
                             /\\tests\\(.+?:\d+)/i.exec(stack[4])[1];
@@ -44,11 +44,12 @@ module ut {
     }
 
     function assert(x: boolean, m = 'assertion failed', f = {}) {
-        if (x) return;        
+        if (x) return;
         const e = new Error(m);
         for (const i in f)
             e[i] = f;
-        debugger;
+        if (/^#debug$/.test(location.hash))
+            debugger;
         throw e;
     }
 

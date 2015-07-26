@@ -23,7 +23,7 @@ module tests {
         private state: { [hash: string]: Status } = {};
 
         constructor(build: GameGraph.Builder) {
-            const hash = 'x,x,777';
+            const hash = '0,0,0';
             this.init(hash, 0, build);
             this.root = this.nodes[hash];
         }
@@ -40,15 +40,15 @@ module tests {
 
             build((h, s, b) => {
                 if (moves.indexOf(h + '') >= 0)
-                    throw Error(h + ' already added');
+                    throw Error(h + ' already added');                
+
+                moves.push(h + '');
 
                 if ((h + '') in this.nodes) {
                     // adding a link to an existing node
                     // which creates a loop in the graph
                     if (s !== void 0 || b !== void 0)
                         throw Error(h + ' already has a status');
-
-                    moves.push(h + '');
                 } else {
                     if (s === void 0)
                         throw Error(h + ' is a new node and must have a status');
@@ -123,8 +123,10 @@ module tests {
                 add([1, 0, 222], -1);
             });
 
-            $(g.solve(null, +1, 0)).equal({ color: +1, move: { x: 111, y: 111 } });
-            $(g.solve(null, -1, 0)).equal({ color: -1, move: { x: 222, y: 222 } });
+            $(g.solve(null, +1, 0)).equal({
+                color: +1,
+                move: { x: 111, y: 111 }
+            });
         });
     });
 }
