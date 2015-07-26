@@ -1,6 +1,6 @@
 {
   "name": "tsumego.js",
   "scripts": {
-    "test": "tsc -p tests; node tests"
+    "test": "cd tests; npm i; tsc; node tests"
   }
 }
