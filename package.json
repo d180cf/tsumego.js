@@ -1,6 +1,6 @@
 {
   "name": "tsumego.js",
   "scripts": {
-    "test": "tsc -p tests --out tests.js & ls & ls tests & node tests"
+    "test": "tsc -p tests"
   }
 }
