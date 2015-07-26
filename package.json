@@ -1,9 +1,6 @@
 {
   "name": "tsumego.js",
-  "devDependencies": {
-    "typescript": "1.5"
-  },
   "scripts": {
-    "test": "tsc -p tests & node tests"
+    "test": "tsc -p tests & node tests.js"
   }
 }
