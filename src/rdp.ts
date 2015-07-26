@@ -35,6 +35,10 @@ module SDP {
             return this.map(r => r[i]);
         }
 
+        slice(from: number, to?: number) {
+            return this.map(r => (<any>r).slice(from, to));
+        }
+
         /** [["A", 1], ["B", 2]] -> { A: 1, B: 2 } */
         fold<U>(k: number, v: number) {
             return this.map((r: any) => {
