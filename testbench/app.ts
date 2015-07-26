@@ -3,7 +3,10 @@
 /// <reference path="../src/solver.ts" />
 /// <reference path="wgo/wgo.d.ts" />
 
-module testbench {
+module testbench {    
+    import Result = tsumego.Result;
+    import Color = tsumego.Color;
+    import Move = tsumego.Move;
     import Board = tsumego.Board;
 
     declare var goban: WGo.BasicPlayer;
