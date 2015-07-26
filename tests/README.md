@@ -7,5 +7,5 @@ To run the tests in node:
 To debug the tests in the browser:
 
 - `tsc` to build the lib and the tests
-- `node ../server 80` to start the HTTP server
+- `cd ..; npm i; node server 80` to start the HTTP server
 - `http://localhost/tests` to debug
