@@ -10,37 +10,35 @@ module ut {
 
     export interface GroupContext {
         test(test: ($: TestContext) => void): void;
-    }
+    }    
+
+    const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
+
+    let indent = ' ';
 
     export function group(init: ($: GroupContext) => void) {
+        const _indent = indent;
+        console.log(indent, fname(init));
+        indent += '  ';
+
         init({
             test: test => {
-                const name = (() => {
-                    try {
-                        const stack = Error().stack.split('\n');
-
-                        return typeof location === 'object' ?
-                            /\/tests\/(.+)$/i.exec(stack[3])[1] :
-                            /\\tests\\(.+?:\d+)/i.exec(stack[4])[1];
-                    } catch (_) {
-                        return 'test';
-                    }
-                })();
+                const name = fname(test);
 
                 try {
                     test(expect);
-                    console.log(name, 'passed');
+                    console.log(indent, name);
                 } catch (err) {
-                    console.log(name, 'FAILED');
-                    let indent = '';
+                    console.log(indent, name, ':', 'FAILED');
                     while (err) {
-                        indent = '  ' + indent;
-                        console.error(err && err.stack || err);
+                        console.error(indent, err && err.stack || err);
                         err = err.reason;
                     }
                 }
             }
         });
+
+        indent = _indent;
     }
 
     function assert(x: boolean, m = 'assertion failed', f = {}) {

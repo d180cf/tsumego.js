@@ -3,8 +3,10 @@
 module tests {
     import Board = tsumego.Board;
 
-    ut.group($ => {
-        $.test($ => {
+    ut.group($ => { 
+        /// board
+        $.test($ => { 
+            /// empty 3x3
             const board = new Board(3);
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
@@ -12,7 +14,8 @@ module tests {
             $(board.hash()).equal('3x3()');
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// 5x5 with a stone
             const board = new Board(5);
             board.play(2, 2, +1);
 
@@ -21,12 +24,14 @@ module tests {
             $(board.hash()).equal('5x5(;;--X)');
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// empty 3x3 from sgf
             const board = new Board(`(;FF[4]SZ[3])`);
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// serialization
             const board = new Board(`
            (;FF[4]SZ[9]
              AW[bb][cb][cc][cd][de][df][cg][ch][dh][ai][bi][ci]
@@ -52,7 +57,8 @@ module tests {
             $(board.hash()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// 9x9 from txt to txt
             const board = new Board(9, [
                 '-X--',
                 'XOO-',
@@ -79,7 +85,8 @@ module tests {
             ].join('\n'));
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// total libs
             const b = new Board(5);
 
             $(b.totalLibs(+1)).equal(0);
@@ -136,7 +143,8 @@ module tests {
             $(b.totalLibs(-1)).equal(10);
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// capture
             const b = new Board(9, [
                 'X-XXOOOO',
                 'XX-XXOOX',

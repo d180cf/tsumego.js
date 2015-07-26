@@ -2,8 +2,10 @@ module tests {
     import Board = tsumego.Board;
     import Pattern = tsumego.Pattern;
 
-    ut.group($ => {
-        $.test($ => {
+    ut.group($ => { 
+        /// uc eyes
+        $.test($ => { 
+            /// 9x9
             const board = new Board(`
             (;FF[4]SZ[16]
                 AB

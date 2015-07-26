@@ -113,8 +113,10 @@ module tests {
         }
     }
 
-    ut.group($ => {
-        $.test($ => {
+    ut.group($ => { 
+        /// basic solver
+        $.test($ => { 
+            /// basic capture
             const g = new GameGraph(-1, add => {
                 add([+1, 111], +1);
                 add([-1, 222], -1);
@@ -131,7 +133,8 @@ module tests {
             });
         });
 
-        $.test($ => {
+        $.test($ => { 
+            /// basic ko
             const g = new GameGraph(-1, add => {
                 add([+1, 111], -1, add => {
                     add([0, 0]);

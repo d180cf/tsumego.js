@@ -1,20 +1,25 @@
-﻿ut.group($ => {
-    $.test($ => {
+﻿ut.group($ => { 
+    /// sgf
+    $.test($ => { 
+        /// empty
         const root = SGF.parse('()');
         $(root).equal({ steps: [], vars: [] });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// two empty steps
         const root = SGF.parse('(;)');
         $(root).equal({ steps: [{}], vars: [] });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// three empty steps
         const root = SGF.parse('(;;)');
         $(root).equal({ steps: [{}, {}], vars: [] });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// nested empty var
         const root = SGF.parse('(())');
         $(root).equal({
             steps: [],
@@ -22,7 +27,8 @@
         });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// two nested empty vars
         const root = SGF.parse('(()())');
         $(root).equal({
             steps: [],
@@ -32,7 +38,8 @@
         });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// empty with FF
         const root = SGF.parse('(;FF\n[4]\n)');
         $(root).equal({
             steps: [{ FF: ['4'] }],
@@ -40,7 +47,8 @@
         });
     });
 
-    $.test($ => {
+    $.test($ => { 
+        /// real-world example
         const root = SGF.parse(`
            (;FF[4]GM[1]SZ[19]
              GN[Copyright goproblems.com]
