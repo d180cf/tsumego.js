@@ -19,10 +19,10 @@
     }
 
     export interface Result {
-        color: int;
+        color: Color;
 
         /** Tells where in the path the repetition occured. */
-        repd: number;
+        repd?: number;
 
         /** The winning move.
             If the only solution is a loss, no move is stored. */

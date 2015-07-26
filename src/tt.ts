@@ -34,7 +34,7 @@ module tsumego {
         private _: { [hash: string]: Status } = {};
 
         /**
-         * @param n - The number of available ko treats.
+         * @param n The number of available ko treats.
          */
         get(b: Hasheable, c: Color, n: number): Result {
             const h = hash(b, c);
@@ -42,10 +42,10 @@ module tsumego {
 
             if (s) {
                 if (n >= s.bmax)
-                    return { color: +1, move: s.move, repd: infty };
+                    return { color: +1, move: s.move };
 
                 if (n <= s.wmin)
-                    return { color: -1, move: s.move, repd: infty };
+                    return { color: -1, move: s.move };
             }
         }
 

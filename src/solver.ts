@@ -14,11 +14,12 @@ module tsumego {
         loss(color: Color, move: Move, response: Move): void;
     }
 
+    /** Returns values in 1..path.length-1 range.
+        If no repetition found, returns nothing.  */
     function findrepd<Node extends Hasheable>(path: Node[], b: Node) {
         for (let i = path.length - 1; i > 0; i--)
             if (b.hash() == path[i - 1].hash())
                 return i;
-        return infty;
     }
 
     export class Solver<Node extends Hasheable> {
@@ -114,12 +115,12 @@ module tsumego {
                 const {move, nkt, node} = next.pop();
                 this.play(node, move, color, nkt);
             } else if (passed) {
-                this.done({ color: -color, move: move, repd: infty }, Color.alias(color) + ' is out of moves');
+                this.done({ color: -color, move: move }, Color.alias(color) + ' is out of moves');
             } else {
                 const prev = this.tags[this.depth - 2];
 
                 if (prev && prev.passed) {
-                    this.done({ color: this.status(node), repd: infty }, 'both passed');
+                    this.done({ color: this.status(node) }, 'both passed');
                 } else {
                     this.current.tag.passed = true;
                     this.play(node, null, color, nkt);
@@ -136,7 +137,7 @@ module tsumego {
                 else if (this.player)
                     this.player.loss(color, move, ttres.move);
             } else if (this.status(node) > 0) {
-                this.done({ color: +1, move: move, repd: infty });
+                this.done({ color: +1, move: move });
             } else {
                 this.path.push(node);
                 this.tags.push({ color: -color, nkt: nkt, move: move });
@@ -159,7 +160,7 @@ module tsumego {
             if (color * res.color < 0)
                 res.repd = mindepth;
 
-            if (res.repd > this.depth)
+            if (!res.repd || res.repd > this.depth)
                 this.tt.set(node, color, res, nkt);
 
             this.path.pop();
