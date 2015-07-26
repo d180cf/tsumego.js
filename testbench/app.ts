@@ -70,7 +70,6 @@ module testbench {
         if (log) {
             console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
             console.log(s2s(color, rs));
-            console.log('tt:', Object.keys(tt).length);
         }
 
         return rs;
