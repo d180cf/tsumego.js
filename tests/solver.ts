@@ -22,25 +22,28 @@ module tests {
         private moves: { [hash: string]: string[] } = {};
         private state: { [hash: string]: Status } = {};
 
-        constructor(build: GameGraph.Builder) {
-            const hash = '0,0,0';
-            this.init(hash, 0, build);
-            this.root = this.nodes[hash];
+        constructor(status: Status, build: GameGraph.Builder) {
+            const hash: Hash = [0, 0, 0];
+            this.init(hash, status, build);
+            this.root = this.nodes[hash + ''];
         }
 
-        private init(hash: string, status: Status, build: GameGraph.Builder) {
+        private init(hash: Hash, status: Status, build: GameGraph.Builder) {
             const moves = [];
 
-            this.nodes[hash] = new GameGraph.Node(hash);
-            this.moves[hash] = moves;
-            this.state[hash] = status;
+            this.nodes[hash + ''] = new GameGraph.Node(hash + '');
+            this.moves[hash + ''] = moves;
+            this.state[hash + ''] = status;
 
             if (!build)
                 return;
 
             build((h, s, b) => {
                 if (moves.indexOf(h + '') >= 0)
-                    throw Error(h + ' already added');                
+                    throw Error(h + ' already added');
+
+                if (h[0] <= hash[0] && h[1] <= hash[1])
+                    throw Error(hash + ' -> ' + h + ' adds neither b nor w stones');
 
                 moves.push(h + '');
 
@@ -53,7 +56,7 @@ module tests {
                     if (s === void 0)
                         throw Error(h + ' is a new node and must have a status');
 
-                    this.init(h + '', s, b);
+                    this.init(h, s, b);
                 }
             });
         }
@@ -103,7 +106,7 @@ module tests {
 
     module GameGraph {
         export interface Builder {
-            (add: (hash: Hash, status: Status, build?: Builder) => void): void;
+            (add: (hash: Hash, status?: Status, build?: Builder) => void): void;
         }
 
         export class Node implements tsumego.Hasheable {
@@ -118,7 +121,7 @@ module tests {
 
     ut.group($ => {
         $.test($ => {
-            const g = new GameGraph(add => {
+            const g = new GameGraph(-1, add => {
                 add([1, 0, 111], +1);
                 add([1, 0, 222], -1);
             });
@@ -126,6 +129,26 @@ module tests {
             $(g.solve(null, +1, 0)).equal({
                 color: +1,
                 move: { x: 111, y: 111 }
+            });
+        });
+
+        $.test($ => {
+            const g = new GameGraph(-1, add => {
+                add([1, -1, 111], -1, add => {
+                    add([0, 0, 0]);
+                    add([2, -2, 222], +1);
+                });
+            });
+
+            $(g.solve(null, +1, 0)).equal({
+                color: +1,
+                repd: 1,
+                move: { x: 111, y: 111 }
+            });
+
+            $(g.solve(null, +1, -1)).equal({
+                color: -1,
+                move: void 0
             });
         });
     });
