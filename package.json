@@ -4,6 +4,6 @@
     "typescript": "1.5"
   },
   "scripts": {
-    "test": "tsc -p tests & node tests/tests"
+    "test": "tsc -p tests & node tests"
   }
 }
