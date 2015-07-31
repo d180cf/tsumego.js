@@ -1,8 +1,9 @@
 /// <reference path="infra.ts" />
 
 module tests {
-    /** [ number of b stones - number of w stones, unique tag ] */
-    type Hash =[number, number];
+    /** [ number of b stones - number of w stones, unique tag ]
+        The root node has null tag. */
+    type Hash =[number, string];
 
     /** +1 - b wins
      *  -1 - w wins
@@ -19,7 +20,7 @@ module tests {
         private state: { [hash: string]: Status } = {};
 
         constructor(status: Status, build: GameGraph.Builder) {
-            const hash: Hash = [0, 0];
+            const hash: Hash = [0, null];
             this.init(hash, status, build);
             this.root = this.nodes[hash + ''];
         }
@@ -81,7 +82,7 @@ module tests {
                     return {
                         b: this.nodes[h],
                         c: +nbw - +nbw0,
-                        m: { x: +tag, y: +tag }
+                        m: tag
                     };
                 }).filter(w => {
                     return c * w.c > 0;
@@ -118,34 +119,34 @@ module tests {
         $.test($ => { 
             /// basic capture
             const g = new GameGraph(-1, add => {
-                add([+1, 111], +1);
-                add([-1, 222], -1);
+                add([+1, 'A'], +1);
+                add([-1, 'B'], -1);
             });
 
             $(g.solve(null, +1, 0)).equal({
                 color: +1,
-                move: { x: 111, y: 111 }
+                move: 'A'
             });
 
             $(g.solve(null, -1, 0)).equal({
                 color: -1,
-                move: { x: 222, y: 222 }
+                move: 'B'
             });
         });
 
         $.test($ => { 
             /// basic ko
             const g = new GameGraph(-1, add => {
-                add([+1, 111], -1, add => {
-                    add([0, 0]);
-                    add([+2, 222], +1);
+                add([+1, 'A'], -1, add => {
+                    add([0, null]);
+                    add([+2, 'B'], +1);
                 });
             });
 
             $(g.solve(null, +1, 0)).equal({
                 color: +1,
                 repd: 1,
-                move: { x: 111, y: 111 }
+                move: 'A'
             });
 
             $(g.solve(null, +1, -1)).equal({

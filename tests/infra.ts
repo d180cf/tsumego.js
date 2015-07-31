@@ -46,7 +46,7 @@ module ut {
         const e = new Error(m);
         for (const i in f)
             e[i] = f;
-        if (/^#debug$/.test(location.hash))
+        if (typeof location === 'object' && /^#debug$/.test(location.hash))
             debugger;
         throw e;
     }
