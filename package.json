@@ -1,5 +1,12 @@
 {
   "name": "tsumego.js",
+  "license": "Apache-2.0",
+  "description": "Tsumego solver in JS",
+  "version": "0.0.0",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/d180cf/tsumego.js"
+  },
   "scripts": {
     "test": "cd tests; npm i; tsc; node tests"
   }
