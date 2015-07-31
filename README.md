@@ -16,7 +16,7 @@ It's an example of a [problem](http://www.goproblems.com/18629) that this solver
 As far as I know, there are very few tsumego solving software:
 
 - Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about)
-- Martin Muller's Tsumego Explorer and [Fuego](http://fuego.sourceforge.net/) (the latter is actually a bot, not just a solver)
+- Martin Muller's Tsumego Explorer and [Fuego](https://github.com/svn2github/fuego) (the latter is actually a bot, not just a solver)
 - Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html)
 
 None of these are in JS, but some can be embedded in a website in a Java applet.
