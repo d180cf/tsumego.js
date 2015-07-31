@@ -3,6 +3,8 @@
 /// <reference path="tt.ts" />
 
 module tsumego {
+    'use strict';
+
     interface Estimator<Node> {
         (board: Node): number;
     }

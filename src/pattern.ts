@@ -1,6 +1,8 @@
 ﻿/// <reference path="board.ts" />
 
 module tsumego {
+    'use strict';
+
     export class Pattern {
         data: string;
 

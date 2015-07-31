@@ -2,6 +2,8 @@
 /// <reference path="sgf.ts" />
 
 module tsumego {
+    'use strict';
+
     /** A block is a solidly connected set of stones.
         Stones in a block cannot be separated. */
     type BlockId = int;
