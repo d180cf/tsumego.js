@@ -5,7 +5,7 @@ module tsumego {
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: Move[]): Generator<Board, Move> {
+        export function Basic(rzone: XY[]): Generator<Board, XY> {
             return (board: Board, color: number) => {
                 const leafs = [];
 

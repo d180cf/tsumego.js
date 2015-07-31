@@ -13,7 +13,7 @@
     }
 
     /** (0, 0) corresponds to the top left corner. */
-    export interface Move {
+    export interface XY {
         x: XIndex;
         y: YIndex;
     }
