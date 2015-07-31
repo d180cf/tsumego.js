@@ -1,11 +1,11 @@
 module tsumego {
-    export interface Generator<Node> {
+    export interface Generator<Node, Move> {
         (node: Node, color: number): { b: Node; m: Move }[];
     }
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: Move[]): Generator<Board> {
+        export function Basic(rzone: Move[]): Generator<Board, Move> {
             return (board: Board, color: number) => {
                 const leafs = [];
 

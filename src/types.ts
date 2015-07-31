@@ -18,7 +18,7 @@
         y: YIndex;
     }
 
-    export interface Result {
+    export interface Result<Move> {
         color: Color;
 
         /** Tells where in the path the repetition occured. */

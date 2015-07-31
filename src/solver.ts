@@ -7,7 +7,7 @@ module tsumego {
         (board: Node): number;
     }
 
-    export interface Player {
+    export interface Player<Move> {
         play(color: Color, move: Move): void;
         undo(): void;
         done(color: Color, move: Move, comment: string): void;
@@ -22,11 +22,11 @@ module tsumego {
                 return i;
     }
 
-    export class Solver<Node extends Hasheable> {
+    export class Solver<Node extends Hasheable, Move> {
         private path: Node[] = [];
 
         private tags: {
-            res?: Result;
+            res?: Result<Move>;
             color: Color;
             nkt: number;
             move?: Move;
@@ -45,10 +45,10 @@ module tsumego {
         }
 
         constructor(path: Node[], color: Color, nkt: number,
-            private tt: TT,
-            private expand: Generator<Node>,
+            private tt: TT<Move>,
+            private expand: Generator<Node, Move>,
             private status: Estimator<Node>,
-            private player?: Player) {
+            private player?: Player<Move>) {
 
             for (const b of path) {
                 this.path.push(b);
@@ -147,7 +147,7 @@ module tsumego {
             }
         }
 
-        private done(r: Result, comment?: string) {
+        private done(r: Result<Move>, comment?: string) {
             this.current.tag.res = r;
 
             if (this.player)
@@ -188,10 +188,10 @@ module tsumego {
         path: Node[],
         color: Color,
         nkt: number,
-        tt: TT,
-        expand: Generator<Node>,
+        tt: TT<Move>,
+        expand: Generator<Node, Move>,
         status: Estimator<Node>,
-        player?: Player) {
+        player?: Player<Move>) {
 
         const solver = new Solver(path, color, nkt, tt, expand, status, player);
         const current = solver.current.tag;
