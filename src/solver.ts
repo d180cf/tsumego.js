@@ -1,6 +1,7 @@
 ﻿/// <reference path="pattern.ts" />
 /// <reference path="movegen.ts" />
 /// <reference path="tt.ts" />
+/// <reference path="benson.ts" />
 
 module tsumego {
     'use strict';

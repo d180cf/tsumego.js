@@ -10,110 +10,116 @@
 module tsumego.benson {
     'use strict';
 
+    interface Predicate<T> {
+        (value: T): boolean;
+    }
+
     /** The flood fill algorithm which would better
         be implemented as a es6 generator. */
-    function fill<Stone>(root: Stone,
-        libs: (stone: Stone) => Stone[],
-        test: (stone: Stone) => boolean) {
+    function fill<Node>(
+        /** Where the search starts. */ root: Node,
+        /** Tells where the search can continue. */ libs: (node: Node) => Node[],
+        /** Tells where the search should stop. */ next: (stone: Node,
+            /** Return this if the stone belongs to the group. */ take,
+            /** Return this if the stone doesn't belong to the group. */ exit) => any) {
+        const body: Node[] = [];
+        const edge: Node[] = [root];
 
-        const body: Stone[] = [];
-        const edge: Stone[] = [root];
+        const kTake = {};
+        const kExit = {};
 
         while (edge.length > 0) {
             const stone = edge.pop();
             body.push(stone);
 
             for (const s of libs(stone)) {
-                if (test(s) && body.indexOf(s) < 0 && edge.indexOf(s) < 0)
+                if (body.indexOf(s) >= 0) continue;
+                if (edge.indexOf(s) >= 0) continue;
+
+                const r = next(s, kTake, kExit);
+
+                if (r === kTake)
                     edge.push(s);
+                else if (r !== kExit)
+                    return r;
             }
         }
     }
-        
-    function alive<Stone>(root: Stone,
-        libs: (stone: Stone) => Stone[],
-        test: (stone: Stone) => boolean,
-        vacant: (stone: Stone) => boolean) {
 
-        const chain: Stone[] = [];
-        const liberties: Stone[] = [];
+    function has2eyes<Coords>(
+        /** One stone from each chain. */ roots: Coords[],
+        /** Gives the 4 libs of a stone. */ libs: (stone: Coords) => Coords[],
+        /** Tells where to stop. */ test: Predicate<Coords>,
+        /** Tells if a location is unoccupied. */ vacant: Predicate<Coords>) {
+        const chain: Coords[] = [];
+        const liberties: Coords[] = [];
 
-        fill(root, libs, stone => {
-            const inside = test(stone);
-            if (inside)
-                chain.push(stone);
-            else
-                liberties.push(stone);
-            return inside;
-        });
+        for (const root of roots) {
+            fill(root, libs, (stone, kTake, kExit) => {
+                const inside = test(stone);
+                if (inside)
+                    chain.push(stone);
+                else
+                    liberties.push(stone);
+                return inside ? kTake : kExit;
+            });
+        }
 
-        const vital: Node[] = [];
+        const vital: Coords[] = [];
 
-        try {
-            for (const stone in liberties) {
-                try {
-                    // check if all vacant nodes of the region
-                    // are adjacent to the chain
-                    fill(stone, libs, s => {
-                        // escaped from the region
-                        if (test(s))
-                            return false;
+        for (const stone in liberties) {
+            // check if all vacant nodes of the region
+            // are adjacent to the chain
+            const twoEyes = fill(stone, libs, (s, kTake, kExit) => {
+                // escaped from the region
+                if (test(s))
+                    return kExit;
 
-                        // occupied by the opponent
-                        if (!vacant(s))
-                            return true;
+                // occupied by the opponent
+                if (!vacant(s))
+                    return kTake;
 
-                        // not a liberty of the group
-                        if (liberties.indexOf(s) < 0)
-                            throw false;
+                // not a liberty of the group
+                if (liberties.indexOf(s) < 0)
+                    return false;
 
-                        vital.push(s);
+                vital.push(s);
 
-                        if (vital.length > 1)
-                            throw true;
-                    });
-                } catch (r) {
-                    if (r === true)
-                        throw true;
-                    if (r !== false)
-                        throw r;
-                }
+                if (vital.length > 1)
+                    return true;
+            });
 
-                return false;
-            }
-
-            return false;
-        } catch (r) {
-            if (r === true)
+            if (twoEyes)
                 return true;
-            throw r;
         }
+
+        return false;
     }
 
-    /** A chain of stones is unconditionally alive if there are
+    /** A group of stones is unconditionally alive if there are
         two regions in which all vacant intersections are liberties
-        of the chain. */
-    export function isAlive(board: Board, stone: XY) {
-        const c = board.at(stone.x, stone.y);
+        of the group. Such regions are called "eyes" of the group. */
+    export function alive(board: Board, stones: XY[]) {
+        const color = board.at(stones[0].x, stones[0].y);
 
-        const libs = ({x, y}: XY) => {
+        function libs({x, y}: XY) {
             const nb: XY[] = [];
 
-            const chk = (x, y) => {
+            const add = (x, y) => {
                 if (board.inBounds(x, y) && !board.at(x, y))
                     nb.push({ x: x, y: y });
             };
 
-            chk(x - 1, y);
-            chk(x + 1, y);
-            chk(x, y - 1);
-            chk(x, y + 1);
+            add(x - 1, y);
+            add(x + 1, y);
+            add(x, y - 1);
+            add(x, y + 1);
 
             return nb;
-        };
+        }
 
-        return alive(stone, libs,
-            s => board.at(s.x, s.y) * c > 0,
+        return has2eyes(stones, libs,
+            s => board.at(s.x, s.y) * color > 0,
             s => !board.at(s.x, s.y));
     }
 }
