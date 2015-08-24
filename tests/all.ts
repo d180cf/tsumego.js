@@ -5,3 +5,4 @@
 /// <reference path="board.ts" />
 /// <reference path="uceyes.ts" />
 /// <reference path="solver.ts" />
+/// <reference path="benson.ts" />

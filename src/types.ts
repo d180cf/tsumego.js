@@ -15,9 +15,8 @@
     }
 
     /** (0, 0) corresponds to the top left corner. */
-    export interface XY {
-        x: XIndex;
-        y: YIndex;
+    export class XY {
+        constructor(public x: number, public y: number) { }
     }
 
     export interface Result<Move> {

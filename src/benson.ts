@@ -54,6 +54,8 @@ module tsumego.benson {
         const chain: Coords[] = [];
         const liberties: Coords[] = [];
 
+        throw 0;
+
         for (const root of roots) {
             fill(root, libs, (stone, kTake, kExit) => {
                 const inside = test(stone);
@@ -102,11 +104,14 @@ module tsumego.benson {
     export function alive(board: Board, stones: XY[]) {
         const color = board.at(stones[0].x, stones[0].y);
 
+        if (!color)
+            return false;
+
         function libs({x, y}: XY) {
             const nb: XY[] = [];
 
             const add = (x, y) => {
-                if (board.inBounds(x, y) && !board.at(x, y))
+                if (board.inBounds(x, y))
                     nb.push({ x: x, y: y });
             };
 
