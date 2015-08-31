@@ -14,4 +14,6 @@ module tsumego {
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
+
+    export const last = <R>(g: IterableIterator<R>) => { for (var x of g); return x; };
 }
