@@ -3,14 +3,15 @@
 /// <reference path="../src/solver.ts" />
 /// <reference path="wgo/wgo.d.ts" />
 
-module testbench {    
+module testbench {
+    import n2s = tsumego.n2s;
+    import s2n = tsumego.s2n;
     import Result = tsumego.Result;
     import Color = tsumego.Color;
-    import Move = tsumego.Move;
+    import Move = tsumego.XY;
     import Board = tsumego.Board;
 
-    declare var goban: WGo.BasicPlayer;
-    declare var tt: tsumego.TT;
+    var goban: WGo.BasicPlayer = null;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -43,7 +44,7 @@ module testbench {
         return [brd, rzn, aim];
     }
 
-    function s2s(c: Color, s: Result) {
+    function s2s(c: Color, s: Result<Move>) {
         let isDraw = s.color == 0;
         let isLoss = s.color * c < 0;
 
@@ -51,19 +52,14 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    tt = new tsumego.TT;
+    var tt = new tsumego.TT<Move>();
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;
 
-        const solver = new tsumego.Solver(path, color, nkotreats, tt,
+        const rs = tsumego.solve(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
-
-        const { tag: t } = solver.current;
-        while (!t.res)
-            solver.next();
-        const rs = t.res;
 
         let t1 = +new Date;
 
@@ -86,7 +82,7 @@ module testbench {
     function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
         let log = true;
 
-        const player: tsumego.Player = {
+        const player: tsumego.Player<Move> = {
             play: (color, move) => {
                 if (!log) return;
 
@@ -125,17 +121,21 @@ module testbench {
             }
         };
 
-        const solver = new tsumego.Solver(path, color, nkotreats, tt,
+        const solver = tsumego.Solver(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1, player);
 
         window['solver'] = solver;
 
         let tick = 0;
+        let board: Board;
+        let result: Result<Move>;
 
         const next = () => {
-            solver.next();
+            const {done, value} = solver.next();
             tick++;
+            board = value.node;
+            result = value.result;
 
             if (log) {
                 const bp = ';bp=' + tick;
@@ -148,10 +148,10 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const {tag: t, node: b} = solver.current;
+            const b = board;            
 
             return new Promise((resolve, reject) => {
-                while (!t.res) {
+                while (!result || !board || b.hash() != board.hash()) {
                     next();
 
                     if (ct.cancelled)
@@ -160,18 +160,20 @@ module testbench {
 
                 resolve();
             }).then(() => {
-                console.log(s2s(t.color, t.res) + ':\n' + b);
+                //console.log(s2s(color, result) + ':\n' + b);
                 next();
             });
         };
 
         const stepOut = () => {
+            /*
             log = false;
             const n = solver.depth;
             while (solver.depth >= n)
                 next();
             log = true;
             renderSGF(solver.current.node.toString('SGF'));
+            */
         };
 
         keyboard.hook(keyboard.Key.F10, event => {
@@ -213,7 +215,7 @@ module testbench {
             console.log('skipping first', stopat, 'steps...');
             while (tick < stopat)
                 next();
-            renderSGF(solver.current.node.toString('SGF'));
+            renderSGF(board.toString('SGF'));
         });
     }
 

@@ -1,6 +1,4 @@
-﻿/// <reference path="promise.d.ts" />
-
-function send(method: string, url: string): Promise<string> {
+﻿function send(method: string, url: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest;
 
