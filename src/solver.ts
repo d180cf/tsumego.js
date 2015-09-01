@@ -9,11 +9,6 @@ module tsumego {
         (board: Node): number;
     }
 
-    interface Spot<Node, Move> {
-        node: Node;
-        result: Result<Move>;
-    }
-
     export interface Player<Move> {
         play(color: Color, move: Move): void;
         undo(): void;
@@ -67,13 +62,15 @@ module tsumego {
         tt: TT<Move>,
         expand: Generator<Node, Move>,
         status: Estimator<Node>,
-        player?: Player<Move>): IterableIterator<Spot<Node, Move>> {
+        player?: Player<Move>) {
+
+        type R = Result<Move>;
 
         function* solve(
             path: Node[],
             color: Color,
             nkt: number,
-            ko: boolean): IterableIterator<Spot<Node, Move>> {
+            ko: boolean): IterableIterator<R> {
 
             if (ko) {
                 // since moves that require to spend a ko treat are considered
@@ -88,10 +85,12 @@ module tsumego {
             const board = path[depth - 1];
             const ttres = tt.get(board, color, nkt);
 
-            if (ttres)
+            if (ttres) {
+                player && player.done(ttres.color, ttres.move, null);
                 return ttres;
+            }
 
-            let result: Result<Move>;
+            let result: R;
             let mindepth = infty;
 
             // TODO: better to use array comprehensions here
@@ -123,20 +122,34 @@ module tsumego {
             leafs.sort((lhs, rhs) => (rhs.nkt - lhs.nkt) * color);
 
             for (const {b, m, ko} of leafs) {
-                let s: Result<Move>;
+                let s: R;
 
                 if (status(b) > 0) {
                     // black wins by capturing the white's stones
                     s = { color: +1, repd: infty };
                 } else {
                     path.push(b);
-                    const s_move = last(solve(path, -color, nkt, ko)).result; // the opponent makes a move
+                    player && player.play(color, m);
+                    yield null;
+
+                    // the opponent makes a move
+                    for (var s_move of solve(path, -color, nkt, ko))
+                        yield s_move;
 
                     if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
-                        const s_pass = last(solve(path, color, nkt, ko)).result; // the opponent passes
-                        const s_asis: Result<Move> = { color: status(b), repd: infty };
+                        // the opponent passes
+                        player && player.play(-color, null);
+                        yield null;
+
+                        for (var s_pass of solve(path, color, nkt, ko))
+                            yield s_pass;
+
+                        player && player.undo();
+                        yield null;
+
+                        const s_asis: R = { color: status(b), repd: infty };
 
                         // the opponent can either make a move or pass if it thinks
                         // that making a move is a loss, while the current player
@@ -146,6 +159,8 @@ module tsumego {
                     }
 
                     path.pop();
+                    player && player.undo();
+                    yield null;
                 }
 
                 // the min value of repd is counted only for the case
@@ -172,8 +187,12 @@ module tsumego {
             }
 
             // if there is no winning move, record a loss
-            if (!result)
+            if (!result) {
                 result = { color: -color, repd: mindepth };
+                player && player.loss(color, null, null);
+            } else {
+                player && player.done(result.color, result.move, null);
+            }
 
             if (ko) {
                 // the (dis)proof for the node may or may not intersect with
@@ -197,7 +216,7 @@ module tsumego {
                 }, nkt);
             }
 
-            yield { result: result, node: board };
+            yield result;            
         }
 
         yield* solve(path, color, nkt, false);
@@ -212,6 +231,6 @@ module tsumego {
         status: Estimator<Node>,
         player?: Player<Move>) {
 
-        return last(Solver(path, color, nkt, tt, expand, status, player)).result;
+        return last(Solver(path, color, nkt, tt, expand, status, player));
     }
 }

@@ -134,8 +134,8 @@ module testbench {
         const next = () => {
             const {done, value} = solver.next();
             tick++;
-            board = value.node;
-            result = value.result;
+            board = path[path.length - 1];
+            result = value;
 
             if (log) {
                 const bp = ';bp=' + tick;
@@ -148,7 +148,7 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const b = board;            
+            const b = board;
 
             return new Promise((resolve, reject) => {
                 while (!result || !board || b.hash() != board.hash()) {
