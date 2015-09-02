@@ -72,6 +72,8 @@ module tsumego {
             nkt: number,
             ko: boolean): IterableIterator<R> {
 
+            yield null;
+
             if (ko) {
                 // since moves that require to spend a ko treat are considered
                 // last, by this moment all previous moves have been searched
@@ -130,7 +132,6 @@ module tsumego {
                 } else {
                     path.push(b);
                     player && player.play(color, m);
-                    yield null;
 
                     // the opponent makes a move
                     for (var s_move of solve(path, -color, nkt, ko))
@@ -141,13 +142,11 @@ module tsumego {
                     } else {
                         // the opponent passes
                         player && player.play(-color, null);
-                        yield null;
 
                         for (var s_pass of solve(path, color, nkt, ko))
                             yield s_pass;
 
                         player && player.undo();
-                        yield null;
 
                         const s_asis: R = { color: status(b), repd: infty };
 
@@ -160,7 +159,6 @@ module tsumego {
 
                     path.pop();
                     player && player.undo();
-                    yield null;
                 }
 
                 // the min value of repd is counted only for the case
@@ -216,7 +214,7 @@ module tsumego {
                 }, nkt);
             }
 
-            yield result;            
+            return result;            
         }
 
         yield* solve(path, color, nkt, false);
