@@ -15,5 +15,12 @@ module tsumego {
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
 
-    export const last = <R>(g: IterableIterator<R>) => { for (var x of g); return x; };
+    /** Simulates yield* which can't be called in a regular function.
+        The point is to get the value that a generator returns at the end. */
+    export function result<T>(g: IterableIterator<T>) {
+        let r = g.next();
+        while (!r.done)
+            r = g.next();
+        return r.value;
+    }
 }

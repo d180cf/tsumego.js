@@ -55,7 +55,7 @@ module tsumego {
         return array;
     };
 
-    export function* Solver<Node extends Hasheable, Move>(
+    export function* _solve<Node extends Hasheable, Move>(
         path: Node[],
         color: Color,
         nkt: number,
@@ -72,7 +72,7 @@ module tsumego {
             nkt: number,
             ko: boolean): IterableIterator<R> {
 
-            yield null;
+            yield; // entering a node
 
             if (ko) {
                 // since moves that require to spend a ko treat are considered
@@ -134,20 +134,15 @@ module tsumego {
                     player && player.play(color, m);
 
                     // the opponent makes a move
-                    for (var s_move of solve(path, -color, nkt, ko))
-                        yield s_move;
+                    const s_move = yield* solve(path, -color, nkt, ko);
 
                     if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
                         // the opponent passes
                         player && player.play(-color, null);
-
-                        for (var s_pass of solve(path, color, nkt, ko))
-                            yield s_pass;
-
+                        const s_pass = yield* solve(path, color, nkt, ko);
                         player && player.undo();
-
                         const s_asis: R = { color: status(b), repd: infty };
 
                         // the opponent can either make a move or pass if it thinks
@@ -217,7 +212,7 @@ module tsumego {
             return result;            
         }
 
-        yield* solve(path, color, nkt, false);
+        return yield* solve(path, color, nkt, false);
     }
 
     export function solve<Node extends Hasheable, Move>(
@@ -229,6 +224,6 @@ module tsumego {
         status: Estimator<Node>,
         player?: Player<Move>) {
 
-        return last(Solver(path, color, nkt, tt, expand, status, player));
+        return result(_solve(path, color, nkt, tt, expand, status, player));
     }
 }

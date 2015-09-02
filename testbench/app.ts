@@ -121,7 +121,7 @@ module testbench {
             }
         };
 
-        const solver = tsumego.Solver(path, color, nkotreats, tt,
+        const solver = tsumego._solve(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             b => b.at(aim.x, aim.y) < 0 ? -1 : +1, player);
 
