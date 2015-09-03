@@ -2,8 +2,10 @@ var fs = require('fs');
 var path = require('path');
 var babel = require('babel');
 
-var srcPath = process.argv[2];
-var outPath = process.argv[3];
+var tsconfig = require(path.resolve('tsconfig.json'));
+
+var srcPath = process.argv[2] || tsconfig.compilerOptions.out;
+var outPath = process.argv[3] || srcPath;
 
 var es6src = fs.readFileSync(srcPath, 'utf8');
 var es6map = fs.readFileSync(srcPath + '.map', 'utf8');

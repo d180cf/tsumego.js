@@ -72,7 +72,7 @@ module tsumego {
             nkt: number,
             ko: boolean): IterableIterator<R> {
 
-            yield; // entering a node
+            yield; // entering the node
 
             if (ko) {
                 // since moves that require to spend a ko treat are considered
@@ -134,14 +134,14 @@ module tsumego {
                     player && player.play(color, m);
 
                     // the opponent makes a move
-                    const s_move = yield* solve(path, -color, nkt, ko);
+                    const s_move: R = yield* solve(path, -color, nkt, ko);
 
                     if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
                         // the opponent passes
                         player && player.play(-color, null);
-                        const s_pass = yield* solve(path, color, nkt, ko);
+                        const s_pass: R = yield* solve(path, color, nkt, ko);
                         player && player.undo();
                         const s_asis: R = { color: status(b), repd: infty };
 
@@ -224,6 +224,9 @@ module tsumego {
         status: Estimator<Node>,
         player?: Player<Move>) {
 
-        return result(_solve(path, color, nkt, tt, expand, status, player));
+        const r = result(_solve(path, color, nkt, tt, expand, status, player));
+        if (r.repd == infty || !r.repd)
+            delete r.repd;
+        return r;
     }
 }

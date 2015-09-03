@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "source-map-support": "latest"
+    "source-map-support": "0.3.2",
+    "es6-symbol": "2.0.1"
   }
 }
