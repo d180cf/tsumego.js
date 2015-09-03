@@ -2,7 +2,7 @@
   "files": [ "src/solver.ts" ],
   "compilerOptions": {
     "out": "tsumego.js",
-    "target": "es5",
+    "target": "es6",
     "sourceMap": true
   }
 }
