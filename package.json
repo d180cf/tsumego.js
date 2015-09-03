@@ -11,6 +11,6 @@
     "babel": "5.8.23"
   },
   "scripts": {
-    "test": "cd tests; npm i; tsc; node tests"
+    "test": "cd tests; npm i; tsc; node ../esc; node tests"
   }
 }
