@@ -2,7 +2,7 @@
   "files": [ "app.ts" ],
   "compilerOptions": {
     "out": "app.js",
-    "target": "es5",
+    "target": "es6",
     "sourceMap": true
   }
 }

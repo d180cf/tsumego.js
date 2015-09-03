@@ -4,10 +4,13 @@
   "description": "Tsumego solver in JS",
   "version": "0.0.0",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/d180cf/tsumego.js"
+    "type": "git",
+    "url": "https://github.com/d180cf/tsumego.js"
+  },
+  "devDependencies": {
+    "babel": "5.8.23"
   },
   "scripts": {
-    "test": "cd tests; npm i; tsc; node tests"
+    "test": "cd tests; npm i; tsc; node ../esc; node tests"
   }
 }

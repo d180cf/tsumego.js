@@ -170,8 +170,11 @@ module ut {
 }
 
 declare const require: Function;
+declare const global;
 
 try {
+    global.Symbol = require('es6-symbol');
+    global.regeneratorRuntime = require('../regenerator-runtime');
     require('source-map-support').install();
 } catch (e) {
     console.log(e);
