@@ -17,7 +17,7 @@ module tsumego {
         private _hash: string;
 
         constructor(size: uint);
-        constructor(size: uint, rows: string[]|string);
+        constructor(size: uint, rows: string[]);
         constructor(sgf: string);
 
         constructor(size, setup?) {
