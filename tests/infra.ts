@@ -70,7 +70,7 @@ module ut {
         if (typeof pattern === 'string')
             return match.text(pattern);
 
-        if (typeof pattern === 'number' || pattern === null || pattern === undefined)
+        if (typeof pattern === 'number' || pattern === null || pattern === undefined || pattern === false || pattern === true)
             return match.primitive(pattern);
 
         if (typeof pattern === 'object' && pattern.constructor === Object)
