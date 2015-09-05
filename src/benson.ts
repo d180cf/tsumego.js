@@ -17,6 +17,8 @@ module tsumego.benson {
         return false;
     }
 
+    const neighbors = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
+
     function* region(root: XY, belongs: (target: XY, source: XY) => boolean) {
         const body: XY[] = [];
         const edge = [root];
@@ -27,32 +29,23 @@ module tsumego.benson {
             yield xy;
             body.push(xy);
 
-            const {x, y} = xy;
+            for (const [dx, dy] of neighbors) {
+                const nxy = new XY(xy.x + dx, xy.y + dy);
 
-            const neighbors = [
-                { x: x - 1, y: y },
-                { x: x + 1, y: y },
-                { x: x, y: y - 1 },
-                { x: x, y: y + 1 }
-            ];
-
-            for (const nxy of neighbors)
                 if (belongs(nxy, xy) && !contains(body, nxy) && !contains(edge, nxy))
                     edge.push(nxy);
+            }
         }
     }
 
     /** A region is vital to a chain if all its empty intersections are liberties of that chain. */
     function isVital(board: Board, region: Iterable<XY>, liberties: XY[]) {
-        search: for (const {x, y} of region) {
-            if (board.at(x, y))
+        for (const p of region) {
+            if (board.at(p.x, p.y))
                 continue;
 
-            for (const s of liberties)
-                if (x == s.x && y == s.y)
-                    continue search;
-
-            return false;
+            if (!contains(liberties, p))
+                return false;
         }
 
         return true;
@@ -67,7 +60,7 @@ module tsumego.benson {
         const liberties: XY[] = [];
 
         for (const root of roots)
-            for (const s of region(root, (target, source) => sameColor(source)))
+            for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
                 if (!b.at(s.x, s.y))
                     liberties.push(s);
 
