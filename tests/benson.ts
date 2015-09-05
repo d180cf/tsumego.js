@@ -26,7 +26,7 @@ module test {
             const p = new XY(1, 1);
             const r = benson.alive(b, [p]);
             $(r).equal(false);
-        });        
+        });
 
         $.test($ => {
             /// one vital region is not enough
@@ -46,6 +46,14 @@ module test {
             const p = new XY(1, 1);
             const r = benson.alive(b, [p]);
             $(r).equal(true);
+        });
+
+        $.test($ => {
+            /// one region is not enough
+            const b = new Board(9, ['--X', 'XXX']);
+            const p = new XY(1, 1);
+            const r = benson.alive(b, [p]);
+            $(r).equal(false);
         });
 
         $.test($ => {

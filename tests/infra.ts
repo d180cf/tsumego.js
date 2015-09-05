@@ -14,12 +14,12 @@ module ut {
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
-    let indent = ' ';
+    let indent = '-';
 
     export function group(init: ($: GroupContext) => void) {
         const _indent = indent;
         console.log(indent, fname(init));
-        indent += '  ';
+        indent += '--';
 
         init({
             test: test => {
@@ -31,7 +31,7 @@ module ut {
                 } catch (err) {
                     console.log(indent, name, ':', 'FAILED');
                     while (err) {
-                        console.log(indent, err && err.stack || err);
+                        console.log(err && err.stack || err);
                         err = err.reason;
                     }
                 }
