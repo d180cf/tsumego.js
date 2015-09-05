@@ -67,7 +67,7 @@ module tsumego.benson {
         let eyes = 0;
 
         for (const lib of liberties) {
-            const adjacent = region(lib, (target, source) => !sameColor(target));
+            const adjacent = region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y));
 
             if (!isVital(b, adjacent, liberties))
                 continue;
