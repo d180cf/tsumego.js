@@ -17,8 +17,6 @@ module tsumego.benson {
         return false;
     }
 
-    const neighbors = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
-
     function* region(root: XY, belongs: (target: XY, source: XY) => boolean) {
         const body: XY[] = [];
         const edge = [root];
@@ -29,7 +27,7 @@ module tsumego.benson {
             yield xy;
             body.push(xy);
 
-            for (const [dx, dy] of neighbors) {
+            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]]) {
                 const nxy = new XY(xy.x + dx, xy.y + dy);
 
                 if (belongs(nxy, xy) && !contains(body, nxy) && !contains(edge, nxy))
@@ -40,13 +38,9 @@ module tsumego.benson {
 
     /** A region is vital to a chain if all its empty intersections are liberties of that chain. */
     function isVital(board: Board, region: Iterable<XY>, liberties: XY[]) {
-        for (const p of region) {
-            if (board.at(p.x, p.y))
-                continue;
-
-            if (!contains(liberties, p))
+        for (const p of region)
+            if (!board.at(p.x, p.y) && !contains(liberties, p))
                 return false;
-        }
 
         return true;
     }
@@ -69,11 +63,12 @@ module tsumego.benson {
         for (const lib of liberties) {
             const adjacent = region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y));
 
-            if (!isVital(b, adjacent, liberties))
-                continue;
+            if (isVital(b, adjacent, liberties)) {
+                eyes++;
 
-            if (++eyes > 1)
-                return true;
+                if (eyes > 1)
+                    return true;
+            }
         }
 
         return false;

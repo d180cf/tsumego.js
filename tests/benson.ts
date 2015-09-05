@@ -7,21 +7,24 @@ module test {
         $.test($ => {
             /// start from a vacant point
             const b = new Board(9, []);
-            const r = benson.alive(b, [new XY(0, 0)]);
+            const p = new XY(0, 0);
+            const r = benson.alive(b, [p]);
             $(r).equal(false);
         });
 
         $.test($ => {
             /// single stone is not alive
             const b = new Board(9, ['X']);
-            const r = benson.alive(b, [new XY(0, 0)]);
+            const p = new XY(0, 0);
+            const r = benson.alive(b, [p]);
             $(r).equal(false);
         });
 
         $.test($ => {
             /// a one-eye group is not alive
             const b = new Board(9, ['-X', 'XX']);
-            const r = benson.alive(b, [new XY(1, 1)]);
+            const p = new XY(1, 1);
+            const r = benson.alive(b, [p]);
             $(r).equal(false);
         });        
 
@@ -32,14 +35,16 @@ module test {
                 '--X',
                 'XXX'
             ]);
-            const r = benson.alive(b, [new XY(2, 2)]);
+            const p = new XY(2, 2);
+            const r = benson.alive(b, [p]);
             $(r).equal(false);
         });
 
         $.test($ => {
             /// a two-eye group is alive
             const b = new Board(9, ['-X-X', 'XXXX']);
-            const r = benson.alive(b, [new XY(1, 1)]);
+            const p = new XY(1, 1);
+            const r = benson.alive(b, [p]);
             $(r).equal(true);
         });
 
@@ -50,7 +55,8 @@ module test {
                 '--X--X',
                 'XXXXXX'
             ]);
-            const r = benson.alive(b, [new XY(2, 2)]);
+            const p = new XY(2, 2);
+            const r = benson.alive(b, [p]);
             $(r).equal(true);
         });
 
@@ -61,7 +67,8 @@ module test {
                 '-XX',
                 'XXX'
             ]);
-            const r = benson.alive(b, [new XY(2, 2)]);
+            const p = new XY(2, 2);
+            const r = benson.alive(b, [p]);
             $(r).equal(true);
         });
 
@@ -72,8 +79,41 @@ module test {
                 '-XXX',
                 'XXXX'
             ]);
-            const r = benson.alive(b, [new XY(2, 2)]);
+            const p = new XY(2, 2);
+            const r = benson.alive(b, [p]);
             $(r).equal(false);
+        });
+
+        $.test($ => {
+            /// alive with two false eyes in the corner
+            const b = new Board(9, [
+                'X-XXXXXXX',
+                '-XOOOOOOX',
+                'XO--O--OX',
+                'XO--O--OX',
+                'XO--O--OX',
+                'XOOOOOOOX',
+                'XXXXXXXXX'
+            ]);
+            const p = new XY(2, 0);
+            const r = benson.alive(b, [p]);
+            $(r).equal(true);
+        });
+
+        $.test($ => {
+            /// alive with two false eyes on the side
+            const b = new Board(9, [
+                'XX-XXX-XX',
+                'XXXOOOXXX',
+                'XOOO-OOOX',
+                'XO--O--OX',
+                'XO--O--OX',
+                'XOOOOOOOX',
+                'XXXXXXXXX'
+            ]);
+            const p = new XY(0, 0);
+            const r = benson.alive(b, [p]);
+            $(r).equal(true);
         });
     });
 }

@@ -31,7 +31,7 @@ module ut {
                 } catch (err) {
                     console.log(indent, name, ':', 'FAILED');
                     while (err) {
-                        console.error(indent, err && err.stack || err);
+                        console.log(indent, err && err.stack || err);
                         err = err.reason;
                     }
                 }
