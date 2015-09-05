@@ -7,3 +7,8 @@
 /// <reference path="uceyes.ts" />
 /// <reference path="solver.ts" />
 /// <reference path="benson.ts" />
+
+declare const process;
+
+if (typeof process !== 'undefined')
+    process.exit(ut.failed ? 1 : 0);

@@ -15,6 +15,7 @@ module ut {
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
     let indent = '-';
+    export let failed = false;
 
     export function group(init: ($: GroupContext) => void) {
         const _indent = indent;
@@ -29,6 +30,7 @@ module ut {
                     test(expect);
                     console.log(indent, name);
                 } catch (err) {
+                    failed = true;
                     console.log(indent, name, ':', 'FAILED');
                     while (err) {
                         console.log(err && err.stack || err);
