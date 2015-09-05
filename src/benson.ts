@@ -57,12 +57,12 @@ module tsumego.benson {
     export function alive(b: Board, roots: XY[]) {
         const color = b.at(roots[0].x, roots[0].y);
         const sameColor = (s: XY) => b.at(s.x, s.y) * color > 0;
-        const liberties: XY[] = [];
-
-        for (const root of roots)
-            for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
-                if (!b.at(s.x, s.y))
-                    liberties.push(s);
+        const liberties = [...function* () {
+            for (const root of roots)
+                for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
+                    if (!b.at(s.x, s.y))
+                        yield s;
+        } ()];
 
         let eyes = 0;
 

@@ -96,8 +96,7 @@ module tsumego {
             let result: R;
             let mindepth = infty;
 
-            // TODO: better to use array comprehensions here
-            const leafs = Array.from(function* () {
+            const leafs = [...function* () {
                 for (const {b, m} of expand(board, color)) {
                     const d = findrepd(path, b);
                     const ko = d < depth;
@@ -118,7 +117,7 @@ module tsumego {
                         };
                     }
                 }
-            } ());
+            } ()];
 
             // moves that require a ko treat are considered last
             // that's not just perf optimization: the search depends on this
@@ -210,7 +209,7 @@ module tsumego {
                 }, nkt);
             }
 
-            return result;            
+            return result;
         }
 
         return yield* solve(path, color, nkt, false);
