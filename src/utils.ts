@@ -23,4 +23,30 @@ module tsumego {
             r = g.next();
         return r.value;
     }
+
+    export function contains(coords: XY[], {x, y}: XY) {
+        for (const s of coords)
+            if (x == s.x && y == s.y)
+                return true;
+        return false;
+    }
+
+    export function* region(root: XY, belongs: (target: XY, source: XY) => boolean) {
+        const body: XY[] = [];
+        const edge = [root];
+
+        while (edge.length > 0) {
+            const xy = edge.pop();
+
+            yield xy;
+            body.push(xy);
+
+            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]]) {
+                const nxy = new XY(xy.x + dx, xy.y + dy);
+
+                if (belongs(nxy, xy) && !contains(body, nxy) && !contains(edge, nxy))
+                    edge.push(nxy);
+            }
+        }
+    }
 }

@@ -10,32 +10,6 @@
 module tsumego.benson {
     'use strict';
 
-    function contains(coords: XY[], {x, y}: XY) {
-        for (const s of coords)
-            if (x == s.x && y == s.y)
-                return true;
-        return false;
-    }
-
-    function* region(root: XY, belongs: (target: XY, source: XY) => boolean) {
-        const body: XY[] = [];
-        const edge = [root];
-
-        while (edge.length > 0) {
-            const xy = edge.pop();
-
-            yield xy;
-            body.push(xy);
-
-            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]]) {
-                const nxy = new XY(xy.x + dx, xy.y + dy);
-
-                if (belongs(nxy, xy) && !contains(body, nxy) && !contains(edge, nxy))
-                    edge.push(nxy);
-            }
-        }
-    }
-
     /** A region is vital to a chain if all its empty intersections are liberties of that chain. */
     function isVital(board: Board, region: Iterable<XY>, liberties: XY[]) {
         for (const p of region)
