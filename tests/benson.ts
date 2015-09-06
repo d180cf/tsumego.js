@@ -60,7 +60,7 @@ module test {
             /// two vital regions is enough
             const b = new Board(9, [
                 '--X--X',
-                '--X--X',
+                'X-X--X',
                 'XXXXXX'
             ]);
             const p = new XY(2, 2);
