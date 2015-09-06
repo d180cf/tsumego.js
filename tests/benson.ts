@@ -134,5 +134,23 @@ module test {
             const r = benson.alive(b, p);
             $(r).equal(false);
         });
+
+        $.test($ => {
+            /// a loop of alive chains
+            const b = new Board(9, [
+                '-XX-XX-XX',
+                'XX-XX-XX-',
+                'X-------X',
+                'X------XX',
+                '-X-----X-',
+                'XX------X',
+                'X------XX',
+                '-XX-XX-X-',
+                'X-XX-XX-X',
+            ]);
+            const p = new XY(1, 1);
+            const r = benson.alive(b, p);
+            $(r).equal(true);
+        });
     });
 }
