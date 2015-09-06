@@ -10,15 +10,6 @@
 module tsumego.benson {
     'use strict';
 
-    /** A region is vital to a chain if all its empty intersections are liberties of that chain. */
-    function isVital(board: Board, region: Iterable<XY>, liberties: XY[]) {
-        for (const p of region)
-            if (!board.at(p.x, p.y) && !contains(liberties, p))
-                return false;
-
-        return true;
-    }
-
     /** A group of stones is unconditionally alive if there are
         two regions in which all vacant intersections are liberties
         of the group. Such regions are called "eyes" of the group. */
@@ -34,15 +25,13 @@ module tsumego.benson {
 
         let eyes = 0;
 
-        for (const lib of liberties) {
-            const adjacent = region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y));
+        search: for (const lib of liberties) {
+            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y)))
+                if (!b.at(p.x, p.y) && !contains(liberties, p))
+                    continue search;
 
-            if (isVital(b, adjacent, liberties)) {
-                eyes++;
-
-                if (eyes > 1)
-                    return true;
-            }
+            if (++eyes > 1)
+                return true;
         }
 
         return false;
