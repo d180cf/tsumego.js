@@ -123,5 +123,16 @@ module test {
             const r = benson.alive(b, p);
             $(r).equal(true);
         });
+
+        $.test($ => {
+            /// oiotoshi on the side
+            const b = new Board(9, [
+                '-XX-XX-XX',
+                'XX-XX-XX-'
+            ]);
+            const p = new XY(1, 1);
+            const r = benson.alive(b, p);
+            $(r).equal(false);
+        });
     });
 }
