@@ -30,10 +30,14 @@ module tsumego.benson {
             for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y))) {
                 const ps = xy2s(p);
 
-                if (!b.at(p.x, p.y) && !(ps in liberties) || liberties[ps])
+                if (liberties[ps]) // already visited?
                     continue search;
 
                 liberties[ps] = true;
+
+                if (!b.at(p.x, p.y)) // is vacant?
+                    if (!b.adjacent(p.x, p.y, color)) // is adjacent to the group?
+                        continue search;
             }
 
             if (++eyes > 1)

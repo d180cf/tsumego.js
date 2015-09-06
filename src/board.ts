@@ -334,6 +334,14 @@ module tsumego {
             return this._hash;
         }
 
+        adjacent(x: number, y: number, block: number) {
+            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]])
+                if (this.at(x + dx, y + dy) == block)
+                    return true;
+
+            return false;
+        }
+
         private toStringSGF() {
             const take = (pf: string, fn: (g: number) => boolean) => {
                 let list = '';
