@@ -37,6 +37,8 @@ module tsumego {
         return false;
     }
 
+    export const nesw = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
+
     export function* region(root: XY, belongs: (target: XY, source: XY) => boolean) {
         const body: XY[] = [];
         const edge = [root];
@@ -47,7 +49,7 @@ module tsumego {
             yield xy;
             body.push(xy);
 
-            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]]) {
+            for (const [dx, dy] of nesw) {
                 const nxy = new XY(xy.x + dx, xy.y + dy);
 
                 if (belongs(nxy, xy) && !contains(body, nxy) && !contains(edge, nxy))

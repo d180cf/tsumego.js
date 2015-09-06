@@ -87,6 +87,10 @@ module tsumego {
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
+        chainAt(x: number, y: number) {
+            return this.at(x, y);
+        }
+
         private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
             var $ = this, g = $.nlibs;
 
