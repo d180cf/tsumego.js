@@ -25,11 +25,10 @@ module tsumego.benson {
      * the region and thus cannot capture the chain since there are two such regions.
      */
     export function alive(b: Board, root: XY, path: number[] = []) {
-        const chainId = b.at(root.x, root.y);
+        const chainId = b.chainAt(root.x, root.y);
         const sameColor = (s: XY) => b.at(s.x, s.y) * chainId > 0;
         const visited = []; // [x | y << 5] = true/undefined
 
-        let nRegions = 0;
         let nEyes = 0;
 
         // enumerate all liberties of the chain to find two eyes among those liberties
