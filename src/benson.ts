@@ -13,14 +13,13 @@ module tsumego.benson {
     /** A group of stones is unconditionally alive if there are
         two regions in which all vacant intersections are liberties
         of the group. Such regions are called "eyes" of the group. */
-    export function alive(b: Board, roots: XY[]) {
-        const color = b.at(roots[0].x, roots[0].y);
+    export function alive(b: Board, root: XY) {
+        const color = b.at(root.x, root.y);
         const sameColor = (s: XY) => b.at(s.x, s.y) * color > 0;
         const liberties = [...function* () {
-            for (const root of roots)
-                for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
-                    if (!b.at(s.x, s.y))
-                        yield s;
+            for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
+                if (!b.at(s.x, s.y))
+                    yield s;
         } ()];
 
         let eyes = 0;

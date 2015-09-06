@@ -8,7 +8,7 @@ module test {
             /// start from a vacant point
             const b = new Board(9, []);
             const p = new XY(0, 0);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -16,7 +16,7 @@ module test {
             /// single stone is not alive
             const b = new Board(9, ['X']);
             const p = new XY(0, 0);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -24,7 +24,7 @@ module test {
             /// a one-eye group is not alive
             const b = new Board(9, ['-X', 'XX']);
             const p = new XY(1, 1);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -36,7 +36,7 @@ module test {
                 'XXX'
             ]);
             const p = new XY(2, 2);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -44,7 +44,7 @@ module test {
             /// a two-eye group is alive
             const b = new Board(9, ['-X-X', 'XXXX']);
             const p = new XY(1, 1);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(true);
         });
 
@@ -52,7 +52,7 @@ module test {
             /// one region is not enough
             const b = new Board(9, ['--X', 'XXX']);
             const p = new XY(1, 1);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -64,7 +64,7 @@ module test {
                 'XXXXXX'
             ]);
             const p = new XY(2, 2);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(true);
         });
 
@@ -76,7 +76,7 @@ module test {
                 'XXX'
             ]);
             const p = new XY(2, 2);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(true);
         });
 
@@ -88,7 +88,7 @@ module test {
                 'XXXX'
             ]);
             const p = new XY(2, 2);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(false);
         });
 
@@ -104,7 +104,7 @@ module test {
                 'XXXXXXXXX'
             ]);
             const p = new XY(2, 0);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(true);
         });
 
@@ -120,7 +120,7 @@ module test {
                 'XXXXXXXXX'
             ]);
             const p = new XY(0, 0);
-            const r = benson.alive(b, [p]);
+            const r = benson.alive(b, p);
             $(r).equal(true);
         });
     });
