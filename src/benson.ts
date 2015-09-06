@@ -20,7 +20,7 @@ module tsumego.benson {
 
         for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
             if (!b.at(s.x, s.y))
-                liberties[xy2s(s)] = false;
+                liberties[xy2s(s)] = liberties[xy2s(s)];
 
         let eyes = 0;
 
