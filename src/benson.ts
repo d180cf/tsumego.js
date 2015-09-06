@@ -16,18 +16,25 @@ module tsumego.benson {
     export function alive(b: Board, root: XY) {
         const color = b.at(root.x, root.y);
         const sameColor = (s: XY) => b.at(s.x, s.y) * color > 0;
-        const liberties = [...function* () {
-            for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
-                if (!b.at(s.x, s.y))
-                    yield s;
-        } ()];
+        const liberties: { [xy: string]: boolean } = {};
+
+        for (const s of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y)))
+            if (!b.at(s.x, s.y))
+                liberties[xy2s(s)] = false;
 
         let eyes = 0;
 
-        search: for (const lib of liberties) {
-            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y)))
-                if (!b.at(p.x, p.y) && !contains(liberties, p))
+        search: for (const ls in liberties) {
+            const lib = s2xy(ls);
+
+            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y))) {
+                const ps = xy2s(p);
+
+                if (!b.at(p.x, p.y) && !(ps in liberties) || liberties[ps])
                     continue search;
+
+                liberties[ps] = true;
+            }
 
             if (++eyes > 1)
                 return true;
