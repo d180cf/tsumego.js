@@ -4,6 +4,8 @@ module test {
     import XY = tsumego.XY;
 
     ut.group($ => {
+        /// benson's pass-alive test
+
         /** invokes the benson's test for every intersection
             on the board and checks whether the result is correct */
         function test(title: string, setup: string) {
@@ -18,30 +20,42 @@ module test {
                     .reduce((a, b) => a > b ? a : b, rows.length);
 
                 const board = new Board(size);
-                const alive: boolean[] = []; // [x | y << 5]
 
                 for (let y = 0; y < size; y++) {
                     for (let x = 0; x < size; x++) {
                         const marker = (rows[y] || '').charAt(x * 2);
                         const color = { x: +1, o: -1 }[marker.toLowerCase()] || 0;
 
-                        if (color) {
+                        if (color)
                             board.play(x, y, color);
-                            alive[x | y << 5] = marker.toLowerCase() != marker;
-                        }
                     }
+                }
+
+                const rsts: string[] = [];
+
+                for (let y = 0; y < size; y++) {
+                    const tags: string[] = [];
+
+                    for (let x = 0; x < size; x++) {
+                        const chain = board.chainAt(x, y);
+                        const marker = chain > 0 ? 'X' : 'O';
+
+                        tags.push(!chain ? '-' :
+                            benson.alive(board, { x: x, y: y }) ? marker :
+                                marker.toLowerCase());
+                    }
+
+                    rsts.push(tags.join(' '));
                 }
 
                 for (let y = 0; y < size; y++) {
                     for (let x = 0; x < size; x++) {
-                        if (!board.chainAt(x, y))
-                            continue;
+                        const lhs = (rows[y] || '').charAt(x * 2) || '-';
+                        const rhs = (rsts[y] || '').charAt(x * 2) || '-';
 
-                        const actual = benson.alive(board, { x: x, y: y });
-                        const expected = !!alive[x | y << 5];
-
-                        if (actual != expected)
-                            throw Error(`x=${x} y=${y} is ${expected ? '' : 'not '}expected to be pass alive`);
+                        if (lhs != rhs) {
+                            throw Error(`Expected "${lhs}" at x=${x} y=${y}:\n` + rsts.join('\n'));
+                        }
                     }
                 }
             }, title);
@@ -141,6 +155,38 @@ module test {
             X - - - - - - X X
             - X X - X X - X -
             X - X X - X X - X
+        `);
+
+        test(`a sequence of not pass-alive chains`, `
+            - x - -
+            x x x -
+            - - x -
+            - x - x
+            - x - x
+            - x x x
+            - x - x
+            - x x x
+        `);
+
+        test(`not pass-alive chain attached to an alive chain`, `
+            - X - X
+            X X X X
+            - - X -
+            - X - X
+            - X - X
+            - X X X
+            - X - X
+            - X X X
+        `);
+
+        test(`a sequence of pass-alive chains`, `
+            - X - -
+            X X X -
+            - - X -
+            - X - X
+            - X X X
+            - X - X
+            - X X X
         `);
     });
 }
