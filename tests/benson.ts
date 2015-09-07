@@ -106,6 +106,37 @@ module test {
             X X X X X X
         `);
 
+        test(`two non-vital regions is not enough`, `
+            - - x - - x
+            - - x - - x
+            x x x x x x
+        `);
+
+        test(`not an eye #1 on the side`, `
+            - x - x - -
+            x x x - - -
+        `);
+
+        test(`not an eye #1.1 on the side`, `
+            - x - x - x -
+            x x x - x x -
+        `);
+
+        test(`not an eye #1.2 on the side`, `
+            - X - X - X - X
+            X X X - X X X X
+        `);
+
+        test(`not an eye #2 on the side`, `
+            - x - - x -
+            x x x x - -
+        `);
+
+        test(`not an eye #3 on the side`, `
+            - x - - - x -
+            x x x x x - -
+        `);
+
         test(`the smallest alive group`, `
             X - X
             - X X
@@ -137,6 +168,16 @@ module test {
             X O - - O - - O X
             X O O O O O O O X
             X X X X X X X X X
+        `);
+
+        test(`a false eye`, `
+            - x x x x x x x x
+            x o o o o o o o x
+            x o x x x o o o x
+            x o x - x o o - x
+            x o x x x o o o x
+            x o o o o o o o x
+            x x x x x x x x x
         `);
 
         test(`oiotoshi on the side`, `
