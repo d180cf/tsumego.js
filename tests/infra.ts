@@ -9,8 +9,8 @@ module ut {
     }
 
     export interface GroupContext {
-        test(test: ($: TestContext) => void): void;
-    }    
+        test(test: ($: TestContext) => void, name?: string): void;
+    }
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
@@ -23,9 +23,7 @@ module ut {
         indent += '--';
 
         init({
-            test: test => {
-                const name = fname(test);
-
+            test: (test, name = fname(test)) => {
                 try {
                     test(expect);
                     console.log(indent, name);
@@ -96,7 +94,7 @@ module ut {
             };
         }
 
-        export function primitive<T extends number|void>(pattern: T) {
+        export function primitive<T extends number | void>(pattern: T) {
             return (value: T) => {
                 if (value !== pattern)
                     assert(false, `${value} !== ${pattern}`);
