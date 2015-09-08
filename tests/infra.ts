@@ -17,6 +17,13 @@ module ut {
     let indent = '-';
     export let failed = false;
 
+    declare const process;
+    declare const location;
+
+    const filter: string = typeof location === 'object' ?
+        location.hash :
+        process.argv[2];
+
     export function group(init: ($: GroupContext) => void) {
         const _indent = indent;
         console.log(indent, fname(init));
@@ -24,9 +31,14 @@ module ut {
 
         init({
             test: (test, name = fname(test)) => {
+                if (filter && name.indexOf(filter) < 0)
+                    return;
+
                 try {
+                    const started = +new Date;
                     test(expect);
-                    console.log(indent, name);
+                    const duration = +new Date - started;
+                    console.log(indent, name, duration, 'ms');
                 } catch (err) {
                     failed = true;
                     console.log(indent, name, ':', 'FAILED');
