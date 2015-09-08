@@ -59,7 +59,7 @@ module testbench {
 
         const rs = tsumego.solve(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
-            b => b.at(aim.x, aim.y) < 0 ? -1 : +1);
+            status);
 
         let t1 = +new Date;
 
@@ -123,7 +123,8 @@ module testbench {
 
         const solver = tsumego._solve(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
-            b => b.at(aim.x, aim.y) < 0 ? -1 : +1, player);
+            status,
+            player);
 
         window['solver'] = solver;
 
@@ -148,21 +149,11 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const b = board;
+            const i = path.length - 1;
+            const b = path[i];
 
-            return new Promise((resolve, reject) => {
-                while (!result || !board || b.hash() != board.hash()) {
-                    next();
-
-                    if (ct.cancelled)
-                        return void reject();
-                }
-
-                resolve();
-            }).then(() => {
-                //console.log(s2s(color, result) + ':\n' + b);
+            while (path[i] === b && !ct.cancelled)
                 next();
-            });
         };
 
         const stepOut = () => {
@@ -185,7 +176,7 @@ module testbench {
                 ct.cancelled = true;
             });
 
-            stepOver(ct).catch().then(() => hook.dispose());
+            stepOver(ct);
         });
 
         keyboard.hook(keyboard.Key.F11, event => {
@@ -279,6 +270,10 @@ module testbench {
         }
 
         return ';' + xyc2f(color, move) + vars;
+    }
+
+    function status(b: Board) {
+        return b.at(aim.x, aim.y) < 0 ? -1 : +1;
     }
 
     var board: Board, rzone: Move[], aim, path: Board[];
