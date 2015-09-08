@@ -15,7 +15,7 @@ var es5 = babel.transform(es6src, {
     sourceMaps: true
 });
 
-es5.code += '\n//# sourceMappingURL=' + outPath + '.map';
+es5.code = es5.code.replace(/(\r?\n\/\/# sourceMappingURL=)(.+)$/img, '$1' + outPath + '.map');
 
 fs.writeFileSync(outPath, es5.code, 'utf8');
 fs.writeFileSync(outPath + '.map', JSON.stringify(es5.map, null, '\t'), 'utf8');
