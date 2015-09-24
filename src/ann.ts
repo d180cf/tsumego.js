@@ -28,8 +28,18 @@ module tsumego.ann {
      * different inputs and adjusting w to get closer to desired outputs.
      */
     export class SimpleLayeredNetwork {
-        layers: matrix[]; // layers[i] connects outputs[i] with outputs[i + 1]
-        outputs: vector[]; // outputs[i + 1] = f(layers[i] * outputs[i])
+        layers: matrix[];
+        values: vector[];
+
+        constructor(size: number) {
+            this.layers = [];
+            this.values = [vector.zero(size)];
+        }
+
+        add(layer: matrix) {
+            this.layers.push(layer);
+            this.values.push(vector.zero(layer.length));
+        }
 
         /**
          * Values are propagated by a simple rule:
@@ -42,14 +52,17 @@ module tsumego.ann {
          *
          * f(x) is choosen to keep values in 0..1 range.
          */
-        apply(input: vector) {
-            const vs = this.outputs;
+        apply(input: vector): vector {
+            const vs = this.values;
             const ws = this.layers;
+            const n = ws.length;
 
             vs[0] = input;
 
-            for (let i = 0; i < ws.length; i++)
+            for (let i = 0; i < n; i++)
                 vs[i + 1] = matrix.mulv(ws[i], vs[i]).map(sigmoid0); // vs[i+1] = ws[i]*vs[i] | f'
+
+            return vs[n];
         }
 
         /**
@@ -71,8 +84,8 @@ module tsumego.ann {
          * So this algorithm starts with computing vector d[n] and then it goes back
          * one layer at a time to adjust w[i] and compute the next d[i].
          */
-        adjust(target: vector, k = 0.75) {
-            const vs = this.outputs;
+        adjust(target: vector, k = 1.0) {
+            const vs = this.values;
             const ws = this.layers;
 
             const v0 = vs[vs.length - 1];

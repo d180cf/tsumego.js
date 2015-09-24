@@ -22,6 +22,9 @@ module tsumego.linalg {
     };
 
     export module vector {
+        export const zero = (n: number): vector =>
+            from(n, () => 0);
+
         export const dot = (u: vector, v: vector) => {
             let s = 0;
 

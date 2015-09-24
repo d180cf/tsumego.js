@@ -7,6 +7,7 @@
 /// <reference path="uceyes.ts" />
 /// <reference path="solver.ts" />
 /// <reference path="benson.ts" />
+/// <reference path="ann.ts" />
 
 declare const process;
 
