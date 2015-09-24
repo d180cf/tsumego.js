@@ -59,6 +59,6 @@ module tsumego.linalg {
 
         export const transpose = (m: matrix): matrix =>
             from(m[0].length, i =>
-                from(m.length, j => m[i][j]));
+                from(m.length, j => m[j][i]));
     }
 }

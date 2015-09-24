@@ -3,11 +3,11 @@
 /// <reference path="../src/solver.ts" />
 
 /// <reference path="sgf.ts" />
+/// <reference path="ann.ts" />
 /// <reference path="board.ts" />
 /// <reference path="uceyes.ts" />
 /// <reference path="solver.ts" />
 /// <reference path="benson.ts" />
-/// <reference path="ann.ts" />
 
 declare const process;
 
