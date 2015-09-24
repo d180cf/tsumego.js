@@ -25,6 +25,9 @@ module tsumego.linalg {
         export const zero = (n: number): vector =>
             from(n, () => 0);
 
+        export const make = (n: number, f: (i: number) => number): vector =>
+            from(n, f);
+
         export const dot = (u: vector, v: vector) => {
             let s = 0;
 
@@ -49,6 +52,13 @@ module tsumego.linalg {
     }
 
     export module matrix {
+        export const zero = (rows: number, cols: number): matrix =>
+            from(rows, () => vector.zero(cols));
+
+        export const make = (rows: number, cols: number, f: (r: number, c: number) => number): matrix =>
+            from(rows, r =>
+                vector.make(cols, c => f(r, c)));
+
         /** m * v */
         export const mulv = (m: matrix, v: vector): vector =>
             from(m.length, i => vector.dot(m[i], v));

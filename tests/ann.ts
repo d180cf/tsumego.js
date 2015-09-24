@@ -55,5 +55,78 @@ module test {
             const output2 = net.apply(input);
             $(output2).equal([0.5609479467866498]);
         });
+
+        $.test($ => {
+            /// simple letters
+
+            const letters = {
+                A: [0, 0, 1, 0, 0,
+                    0, 1, 0, 1, 0,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 1,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1],
+
+                B: [1, 1, 1, 1, 0,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 0,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 0],
+
+                C: [1, 1, 1, 1, 1,
+                    1, 0, 0, 0, 0,
+                    1, 0, 0, 0, 0,
+                    1, 0, 0, 0, 0,
+                    1, 0, 0, 0, 0,
+                    1, 0, 0, 0, 0,
+                    1, 1, 1, 1, 1],
+
+                D: [1, 1, 1, 1, 0,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 0],
+
+                E: [1, 1, 1, 1, 0,
+                    1, 0, 0, 1, 1,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 0,
+                    1, 0, 0, 0, 1,
+                    1, 0, 0, 0, 1,
+                    1, 1, 1, 1, 1],
+            };
+
+            const net = new Net(letters.A.length);
+
+            net.add(letters.A.length);
+            net.add(letters.A.length);
+            net.add(4);
+
+            for (let i = 0; i < 1e4; i++) {
+                net.apply(letters.A);
+                net.adjust([1, 0, 0, 0]);
+
+                net.apply(letters.B);
+                net.adjust([0, 1, 0, 0]);
+
+                net.apply(letters.C);
+                net.adjust([0, 0, 1, 0]);
+
+                net.apply(letters.D);
+                net.adjust([0, 0, 0, 1]);
+            }
+
+            //$(net.apply(letters.A).map(x => x * 100 | 0)).equal([98, 2, 1, 0]);
+            //$(net.apply(letters.B).map(x => x * 100 | 0)).equal([2, 96, 0, 1]);
+            //$(net.apply(letters.C).map(x => x * 100 | 0)).equal([0, 0, 98, 0]);
+            //$(net.apply(letters.D).map(x => x * 100 | 0)).equal([0, 2, 1, 97]);
+
+            console.log(net.apply(letters.E).map(x => x * 100 | 0));
+        });
     });
 }
