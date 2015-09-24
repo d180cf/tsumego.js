@@ -1,6 +1,7 @@
 module test {
     'use strict';
 
+    import rand = tsumego.rand.LCG.NR01;
     import Net = tsumego.ann.SimpleLayeredNetwork;
 
     ut.group($ => {
@@ -90,24 +91,16 @@ module test {
                     1, 0, 0, 0, 1,
                     1, 0, 0, 0, 1,
                     1, 0, 0, 0, 1,
-                    1, 1, 1, 1, 0],
-
-                E: [1, 1, 1, 1, 0,
-                    1, 0, 0, 1, 1,
-                    1, 0, 0, 0, 1,
-                    1, 1, 1, 1, 0,
-                    1, 0, 0, 0, 1,
-                    1, 0, 0, 0, 1,
-                    1, 1, 1, 1, 1],
+                    1, 1, 1, 1, 0]
             };
 
             const net = new Net(letters.A.length);
 
-            net.add(letters.A.length);
-            net.add(letters.A.length);
-            net.add(4);
+            net.add(letters.A.length, rand(0));
+            net.add(letters.A.length, rand(0));
+            net.add(4, rand(0));
 
-            for (let i = 0; i < 1e4; i++) {
+            for (let i = 0; i < 500; i++) {
                 net.apply(letters.A);
                 net.adjust([1, 0, 0, 0]);
 
@@ -121,12 +114,10 @@ module test {
                 net.adjust([0, 0, 0, 1]);
             }
 
-            //$(net.apply(letters.A).map(x => x * 100 | 0)).equal([98, 2, 1, 0]);
-            //$(net.apply(letters.B).map(x => x * 100 | 0)).equal([2, 96, 0, 1]);
-            //$(net.apply(letters.C).map(x => x * 100 | 0)).equal([0, 0, 98, 0]);
-            //$(net.apply(letters.D).map(x => x * 100 | 0)).equal([0, 2, 1, 97]);
-
-            console.log(net.apply(letters.E).map(x => x * 100 | 0));
+            $(net.apply(letters.A).map(x => x * 100 | 0)).equal([94, 5, 0, 0]);
+            $(net.apply(letters.B).map(x => x * 100 | 0)).equal([6, 90, 0, 10]);
+            $(net.apply(letters.C).map(x => x * 100 | 0)).equal([0, 0, 90, 16]);
+            $(net.apply(letters.D).map(x => x * 100 | 0)).equal([0, 8, 8, 84]);
         });
     });
 }

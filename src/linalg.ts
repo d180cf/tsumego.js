@@ -1,3 +1,5 @@
+/// <reference path="rand.ts" />
+
 module tsumego.linalg {
     'use strict';
 

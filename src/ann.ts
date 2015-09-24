@@ -42,11 +42,11 @@ module tsumego.ann {
          * match the number of columns in the matrix ad the size of
          * the new layer matches the number of rows.
          */
-        add(layer: matrix | number) {
+        add(layer: matrix | number, rand = () => Math.random()) {
             const v = this.outputs[this.outputs.length - 1];
 
             if (typeof layer === 'number') {
-                this.add(matrix.make(layer, v.length, () => Math.random() / layer * 2));
+                this.add(matrix.make(layer, v.length, () => rand() / layer * 2));
             } else {
                 this.weights.push(layer);
                 this.outputs.push(vector.zero(layer.length));
