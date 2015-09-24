@@ -28,17 +28,23 @@ module tsumego.ann {
      * different inputs and adjusting w to get closer to desired outputs.
      */
     export class SimpleLayeredNetwork {
-        layers: matrix[];
-        values: vector[];
+        private weights: matrix[];
+        private outputs: vector[];
 
         constructor(size: number) {
-            this.layers = [];
-            this.values = [vector.zero(size)];
+            this.weights = [];
+            this.outputs = [vector.zero(size)];
         }
 
+        /**
+         * Adds a new layer and sets all connections as a matrix
+         * with the latest layer. The size of the last layer must
+         * match the number of columns in the matrix ad the size of
+         * the new layer matches the number of rows.
+         */
         add(layer: matrix) {
-            this.layers.push(layer);
-            this.values.push(vector.zero(layer.length));
+            this.weights.push(layer);
+            this.outputs.push(vector.zero(layer.length));
         }
 
         /**
@@ -53,8 +59,8 @@ module tsumego.ann {
          * f(x) is choosen to keep values in 0..1 range.
          */
         apply(input: vector): vector {
-            const vs = this.values;
-            const ws = this.layers;
+            const vs = this.outputs;
+            const ws = this.weights;
             const n = ws.length;
 
             vs[0] = input;
@@ -85,8 +91,8 @@ module tsumego.ann {
          * one layer at a time to adjust w[i] and compute the next d[i].
          */
         adjust(target: vector, k = 1.0) {
-            const vs = this.values;
-            const ws = this.layers;
+            const vs = this.outputs;
+            const ws = this.weights;
 
             const v0 = vs[vs.length - 1];
 
