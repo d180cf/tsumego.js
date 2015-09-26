@@ -165,5 +165,77 @@ module tests {
                 ' 4 - - X - - - X X\n' +
                 ' 5 - - - X X X - -');
         });
+
+        $.test($ => {
+            /// captured block releases libs
+
+            const b = new Board(9, [
+                'O X',
+                '- -'
+            ]);
+
+            const r = b.play(0, 1, 1);
+
+            $(r).equal(2);
+
+            $(b.toString('RL-')).equal([
+                ' 0 3',
+                ' 3 0'
+            ].join('\n'));
+        });
+
+        $.test($ => {
+            /// suicide #1
+
+            const b = new Board(9, [
+                '- X',
+                'X X'
+            ]);
+
+            const r = b.play(0, 0, -1);
+
+            $(r).equal(0);
+        });
+
+        $.test($ => {
+            /// suicide #2
+
+            const b = new Board(9, [
+                '- O X',
+                'X X X'
+            ]);
+
+            const r = b.play(0, 0, -1);
+
+            $(r).equal(0);
+        });
+
+        $.test($ => {
+            /// suicide #3
+
+            const b = new Board(9, [
+                '- O X',
+                'O X X',
+                'X X X'
+            ]);
+
+            const r = b.play(0, 0, -1);
+
+            $(r).equal(0);
+        });
+
+        $.test($ => {
+            /// suicide #4
+
+            const b = new Board(9, [
+                '- O X',
+                'O O X',
+                'X X X'
+            ]);
+
+            const r = b.play(0, 0, -1);
+
+            $(r).equal(0);
+        });
     });
 }

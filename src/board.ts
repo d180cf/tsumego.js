@@ -13,8 +13,8 @@ module tsumego {
     export class Board {
         size: uint;
 
-        private grid: BlockId[]; // index = y * size + x
-        private libs: uint[] = [0]; // index = abs(blockid)
+        private _grid: BlockId[]; // index = y * size + x
+        private _libs: uint[] = [0]; // index = abs(blockid)
         private _hash: string;
 
         constructor(size: uint);
@@ -33,12 +33,12 @@ module tsumego {
 
         private init(size: number) {
             this.size = size;
-            this.grid = new Array(size * size);
+            this._grid = new Array(size * size);
         }
 
         private initFromTXT(rows: string[]) {
             rows.map((row, y) => {
-                row.split('').map((chr, x) => {
+                row.replace(/\s/g, '').split('').map((chr, x) => {
                     let c = chr == 'X' ? +1 : chr == 'O' ? -1 : 0;
                     if (c && !this.play(x, y, c))
                         throw new Error('Invalid setup.');
@@ -76,8 +76,8 @@ module tsumego {
 
             board.size = $.size;
             board._hash = $._hash;
-            board.grid = $.grid.slice(0);
-            board.libs = $.libs.slice(0);
+            board._grid = $._grid.slice(0);
+            board._libs = $._libs.slice(0);
 
             return board;
         }
@@ -88,12 +88,12 @@ module tsumego {
                 x = XY.x(x);
             }
 
-            var $ = this, n = $.size, t = $.grid;
+            var $ = this, n = $.size, t = $._grid;
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
         private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
-            const $ = this, g = $.libs;
+            const $ = this, g = $._libs;
 
             const sl = $.get(x - 1, y);
             const sr = $.get(x + 1, y);
@@ -114,7 +114,7 @@ module tsumego {
         }
 
         private remove(s: BlockId): uint {
-            const $ = this, t = $.grid, n = $.size, g = $.libs;
+            const $ = this, t = $._grid, n = $.size, g = $._libs;
 
             let r = 0, i = 0;
 
@@ -135,7 +135,7 @@ module tsumego {
         }
 
         private countLibs(s: BlockId): uint {
-            const $ = this, t = $.grid, n = $.size;
+            const $ = this, t = $._grid, n = $.size;
             let i = 0, r = 0;
 
             for (let y = 0; y < n; y++) {
@@ -164,8 +164,12 @@ module tsumego {
             return x >= 0 && x < n && y >= 0 && y < n;
         }
 
+        libs(block: BlockId) {
+            return this._libs[abs(block)] || 0;
+        }
+
         play(x: number, y: number, s: Color): uint {
-            const $ = this, n = $.size, t = $.grid, nn = t.length, g = $.libs;
+            const $ = this, n = $.size, t = $._grid, nn = t.length, g = $._libs;
 
             if (!$.inBounds(x, y) || t[y * n + x])
                 return 0;            
@@ -270,7 +274,7 @@ module tsumego {
         }
 
         totalLibs(c: Color): uint {
-            var $ = this, t = $.grid, n = $.size;
+            var $ = this, t = $._grid, n = $.size;
             var i = 0, x, y, r = 0;
 
             for (y = 0; y < n; y++) {
@@ -350,8 +354,11 @@ module tsumego {
                 + take('AW', c => c < 0) + ')';
         }
 
-        private toStringTXT() {
-            let xmax = 0, ymax = 0;
+        private toStringTXT(mode = '') {
+            const hideLabels = /L-/.test(mode);
+            const showLibsNum = /R/.test(mode);
+
+            let xmax = 0, ymax = 0, s = '';
 
             for (let x = 0; x < this.size; x++)
                 for (let y = 0; y < this.size; y++)
@@ -359,23 +366,29 @@ module tsumego {
                         xmax = max(x, xmax),
                         ymax = max(y, ymax);
 
-            let hc = '  ';
+            if (!hideLabels) {
+                s += '  ';
 
-            for (let x = 0; x <= xmax; x++)
-                hc += ' ' + String.fromCharCode(0x41 + x);
-
-            let s = hc;
+                for (let x = 0; x <= xmax; x++)
+                    s += ' ' + String.fromCharCode(0x41 + x);
+            }
 
             for (let y = 0; y <= ymax; y++) {
-                s += '\n';
-                const vc = y < 9 ? ' ' + (y + 1) : (y + 1);
+                if (s)
+                    s += '\n';
 
-                s += vc;
+                if (!hideLabels)
+                    s += y < 9 ? ' ' + (y + 1) : (y + 1);
 
                 for (let x = 0; x <= xmax; x++) {
                     const c = this.get(x, y);
+
                     s += ' ';
-                    s += c > 0 ? 'X' : c < 0 ? 'O' : '-';
+
+                    s += showLibsNum ? this.libs(c) :
+                        c > 0 ? 'X' :
+                            c < 0 ? 'O' :
+                                '-';
                 }
             }
 
@@ -385,7 +398,7 @@ module tsumego {
         toString(mode?: string): string {
             return mode == 'SGF' ?
                 this.toStringSGF() :
-                this.toStringTXT();
+                this.toStringTXT(mode);
         }
     }
 }
