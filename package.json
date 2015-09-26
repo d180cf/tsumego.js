@@ -7,8 +7,7 @@
     "type": "git",
     "url": "https://github.com/d180cf/tsumego.js"
   },
-  "devDependencies": {
-    "typescript": "1.6.2",
+  "devDependencies": {    
     "babel": "5.8.23"
   },
   "scripts": {
