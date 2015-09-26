@@ -8,9 +8,10 @@
     "url": "https://github.com/d180cf/tsumego.js"
   },
   "devDependencies": {
+    "typescript": "1.6.2",
     "babel": "5.8.23"
   },
   "scripts": {
-    "test": "cd tests; npm i; tsc; node ../esc; node tests"
+    "test": "cd tests; npm i; node_modules/.bin/tsc; node ../esc; node tests"
   }
 }
