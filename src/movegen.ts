@@ -8,6 +8,8 @@ module tsumego {
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
         export function Basic(rzone: XY[]): Generator<Board, XY> {
+            const random = rand.LCG.NR01(Date.now());
+
             return (board: Board, color: number) => {
                 const leafs = [];
 
@@ -41,7 +43,8 @@ module tsumego {
                 leafs.sort((a, b) => {
                     return (b.r - a.r)      // maximize the number of captured stones first
                         || (b.n1 - a.n1)    // then maximize the number of liberties
-                        || (a.n2 - b.n2);   // then minimize the number of the opponent's liberties
+                        || (a.n2 - b.n2)    // then minimize the number of the opponent's liberties
+                        || random() - 0.5;
                 });
 
                 return leafs;
