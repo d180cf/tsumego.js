@@ -52,7 +52,7 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    var tt = new tsumego.TT<Move>();
+    export var tt = new tsumego.TT<Move>();
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;
