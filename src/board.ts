@@ -5,16 +5,16 @@
 module tsumego {
     'use strict';
 
-    /** A block is a solidly connected set of stones.
-        Stones in a block cannot be separated. */
+    /** Stones in a block cannot be separated.
+        Positive ids are for black blocks.
+        Negative ids are for white blocks. */
     type BlockId = int;
 
     export class Board {
         size: uint;
 
-        private table: BlockId[];
-        private nlibs: uint[] = [0];
-        private gcols: Color[] = [0];
+        private grid: BlockId[]; // index = y * size + x
+        private libs: uint[] = [0]; // index = abs(blockid)
         private _hash: string;
 
         constructor(size: uint);
@@ -33,7 +33,7 @@ module tsumego {
 
         private init(size: number) {
             this.size = size;
-            this.table = new Array(size * size);
+            this.grid = new Array(size * size);
         }
 
         private initFromTXT(rows: string[]) {
@@ -76,9 +76,8 @@ module tsumego {
 
             board.size = $.size;
             board._hash = $._hash;
-            board.table = $.table.slice(0);
-            board.nlibs = $.nlibs.slice(0);
-            board.gcols = $.gcols.slice(0);
+            board.grid = $.grid.slice(0);
+            board.libs = $.libs.slice(0);
 
             return board;
         }
@@ -89,33 +88,33 @@ module tsumego {
                 x = XY.x(x);
             }
 
-            var $ = this, n = $.size, t = $.table;
+            var $ = this, n = $.size, t = $.grid;
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
         private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
-            const $ = this, g = $.nlibs;
+            const $ = this, g = $.libs;
 
             const sl = $.get(x - 1, y);
             const sr = $.get(x + 1, y);
             const st = $.get(x, y + 1);
             const sb = $.get(x, y - 1);
 
-            if (sl && sl * s < 0)
+            if (sl * s < 0)
                 g[abs(sl)] += q;
 
-            if (sr && sr * s < 0 && sr != sl)
+            if (sr * s < 0 && sr != sl)
                 g[abs(sr)] += q;
 
-            if (st && st * s < 0 && st != sr && st != sl)
+            if (st * s < 0 && st != sr && st != sl)
                 g[abs(st)] += q;
 
-            if (sb && sb * s < 0 && sb != st && sb != sr && sb != sl)
+            if (sb * s < 0 && sb != st && sb != sr && sb != sl)
                 g[abs(sb)] += q;
         }
 
         private remove(s: BlockId): uint {
-            const $ = this, t = $.table, n = $.size, g = $.nlibs;
+            const $ = this, t = $.grid, n = $.size, g = $.libs;
 
             let r = 0, i = 0;
 
@@ -136,7 +135,7 @@ module tsumego {
         }
 
         private countLibs(s: BlockId): uint {
-            const $ = this, t = $.table, n = $.size;
+            const $ = this, t = $.grid, n = $.size;
             let i = 0, r = 0;
 
             for (let y = 0; y < n; y++) {
@@ -166,9 +165,9 @@ module tsumego {
         }
 
         play(x: number, y: number, s: Color): uint {
-            const $ = this, n = $.size, t = $.table, nn = t.length, g = $.nlibs;
+            const $ = this, n = $.size, t = $.grid, nn = t.length, g = $.libs;
 
-            if (t[y * n + x] || !$.inBounds(x, y))
+            if (!$.inBounds(x, y) || t[y * n + x])
                 return 0;            
 
             // block ids
@@ -265,14 +264,13 @@ module tsumego {
 
             t[y * n + x] = gs;
             g[gi] = $.countLibs(gs);
-            $.gcols[gi] = gs;
             $._hash = null;
 
             return r + 1;
         }
 
         totalLibs(c: Color): uint {
-            var $ = this, t = $.table, n = $.size;
+            var $ = this, t = $.grid, n = $.size;
             var i = 0, x, y, r = 0;
 
             for (y = 0; y < n; y++) {
@@ -289,16 +287,6 @@ module tsumego {
             }
 
             return r;
-        }
-
-        nInAtari(color: Color): uint {
-            var $ = this, ns = $.nlibs, cs = $.gcols, i, n = 0;
-
-            for (i = 0; i < ns.length; i++)
-                if (cs[i] * color > 0 && ns[i] < 2)
-                    n++;
-
-            return n;
         }
 
         eulern(color: Color, q: number = 2): int {
