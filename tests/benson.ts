@@ -37,7 +37,7 @@ module test {
                     const tags: string[] = [];
 
                     for (let x = 0; x < size; x++) {
-                        const chain = board.chainAt(x, y);
+                        const chain = board.get(x, y);
                         const marker = chain > 0 ? 'X' : 'O';
 
                         tags.push(!chain ? '-' :

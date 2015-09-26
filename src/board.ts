@@ -83,7 +83,7 @@ module tsumego {
             return board;
         }
 
-        at(x: number, y?: number): BlockId {
+        get(x: number, y?: number): BlockId {
             if (y === void 0) {
                 y = XY.y(x);
                 x = XY.x(x);
@@ -93,37 +93,34 @@ module tsumego {
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
-        chainAt(x: number, y?: number) {
-            return this.at(x, y);
-        }
-
         private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
-            var $ = this, g = $.nlibs;
+            const $ = this, g = $.nlibs;
 
-            var sl = $.at(x - 1, y);
-            var sr = $.at(x + 1, y);
-            var st = $.at(x, y + 1);
-            var sb = $.at(x, y - 1);
+            const sl = $.get(x - 1, y);
+            const sr = $.get(x + 1, y);
+            const st = $.get(x, y + 1);
+            const sb = $.get(x, y - 1);
 
-            if (sl && (sl ^ s) < 0)
+            if (sl && sl * s < 0)
                 g[abs(sl)] += q;
 
-            if (sr && (sr ^ s) < 0 && sr != sl)
+            if (sr && sr * s < 0 && sr != sl)
                 g[abs(sr)] += q;
 
-            if (st && (st ^ s) < 0 && st != sr && st != sl)
+            if (st && st * s < 0 && st != sr && st != sl)
                 g[abs(st)] += q;
 
-            if (sb && (sb ^ s) < 0 && sb != st && sb != sr && sb != sl)
+            if (sb && sb * s < 0 && sb != st && sb != sr && sb != sl)
                 g[abs(sb)] += q;
         }
 
         private remove(s: BlockId): uint {
-            var $ = this, t = $.table, n = $.size, g = $.nlibs;
-            var i = 0, x, y, r = 0;
+            const $ = this, t = $.table, n = $.size, g = $.nlibs;
 
-            for (y = 0; y < n; y++) {
-                for (x = 0; x < n; x++) {
+            let r = 0, i = 0;
+
+            for (let y = 0; y < n; y++) {
+                for (let x = 0; x < n; x++) {
                     if (t[i] == s) {
                         $.adjustLibs(s, x, y, +1);
                         t[i] = 0;
@@ -139,16 +136,16 @@ module tsumego {
         }
 
         private countLibs(s: BlockId): uint {
-            var $ = this, t = $.table, n = $.size;
-            var i = 0, x, y, r = 0;
+            const $ = this, t = $.table, n = $.size;
+            let i = 0, r = 0;
 
-            for (y = 0; y < n; y++) {
-                for (x = 0; x < n; x++) {
+            for (let y = 0; y < n; y++) {
+                for (let x = 0; x < n; x++) {
                     if (!t[i])
-                        if ($.at(x - 1, y) == s ||
-                            $.at(x + 1, y) == s ||
-                            $.at(x, y - 1) == s ||
-                            $.at(x, y + 1) == s)
+                        if ($.get(x - 1, y) == s ||
+                            $.get(x + 1, y) == s ||
+                            $.get(x, y - 1) == s ||
+                            $.get(x, y + 1) == s)
                             r++;
 
                     i++;
@@ -169,49 +166,48 @@ module tsumego {
         }
 
         play(x: number, y: number, s: Color): uint {
-            var $ = this, n = $.size, t = $.table, g = $.nlibs;
-            var i, r = 0;
+            const $ = this, n = $.size, t = $.table, g = $.nlibs;
 
-            if (t[y * n + x] || !this.inBounds(x, y))
-                return;            
+            if (t[y * n + x] || !$.inBounds(x, y))
+                return 0;            
 
-            // stone id
+            // block ids
 
-            var sl = $.at(x - 1, y);
-            var sr = $.at(x + 1, y);
-            var sb = $.at(x, y - 1);
-            var st = $.at(x, y + 1);
+            const sl = $.get(x - 1, y);
+            const sr = $.get(x + 1, y);
+            const sb = $.get(x, y - 1);
+            const st = $.get(x, y + 1);
 
             // libs number
 
-            var nl = sl && g[abs(sl)];
-            var nr = sr && g[abs(sr)];
-            var nt = st && g[abs(st)];
-            var nb = sb && g[abs(sb)];
+            const nl = sl && g[abs(sl)];
+            const nr = sr && g[abs(sr)];
+            const nt = st && g[abs(st)];
+            const nb = sb && g[abs(sb)];
 
-            var kx, ky;
+            let r = 0;
 
             // remove captured enemy neighbors
 
-            if (nl == 1 && (s ^ sl) < 0)
-                r += $.remove(sl), kx = x - 1, ky = y;
+            if (nl == 1 && s * sl < 0)
+                r += $.remove(sl);
 
-            if (nr == 1 && (s ^ sr) < 0)
-                r += $.remove(sr), kx = x + 1, ky = y;
+            if (nr == 1 && s * sr < 0)
+                r += $.remove(sr);
 
-            if (nt == 1 && (s ^ st) < 0)
-                r += $.remove(st), kx = x, ky = y + 1;
+            if (nt == 1 && s * st < 0)
+                r += $.remove(st);
 
-            if (nb == 1 && (s ^ sb) < 0)
-                r += $.remove(sb), kx = x, ky = y - 1;
+            if (nb == 1 && s * sb < 0)
+                r += $.remove(sb);
 
             // suicide is not allowed
 
             if (r == 0
-                && (sl && (sl ^ s) < 0 || nl == 1 || x == 0)
-                && (sr && (sr ^ s) < 0 || nr == 1 || x == n - 1)
-                && (st && (st ^ s) < 0 || nt == 1 || y == n - 1)
-                && (sb && (sb ^ s) < 0 || nb == 1 || y == 0)) {
+                && (sl && sl * s < 0 || nl == 1 || x == 0)
+                && (sr && sr * s < 0 || nr == 1 || x == n - 1)
+                && (st && st * s < 0 || nt == 1 || y == n - 1)
+                && (sb && sb * s < 0 || nb == 1 || y == 0)) {
                 return 0;
             }
 
@@ -221,7 +217,7 @@ module tsumego {
 
             // new group id = min of neighbor group ids
 
-            var gi = g.length;
+            let gi = g.length;
 
             if (sl && (sl ^ s) >= 0)
                 gi = min(gi, abs(sl));
@@ -237,31 +233,31 @@ module tsumego {
 
             // merge neighbors into one group
 
-            var gs = s < 0 ? -gi : gi;
+            let gs = s < 0 ? -gi : gi;
 
             if (sl && (sl ^ s) >= 0 && sl != gs) {
-                for (i = 0; i < t.length; i++)
+                for (let i = 0; i < t.length; i++)
                     if (t[i] == sl)
                         t[i] = gs;
                 g[abs(sl)] = 0;
             }
 
             if (st && (st ^ s) >= 0 && st != gs) {
-                for (i = 0; i < t.length; i++)
+                for (let i = 0; i < t.length; i++)
                     if (t[i] == st)
                         t[i] = gs;
                 g[abs(st)] = 0;
             }
 
             if (sr && (sr ^ s) >= 0 && sr != gs) {
-                for (i = 0; i < t.length; i++)
+                for (let i = 0; i < t.length; i++)
                     if (t[i] == sr)
                         t[i] = gs;
                 g[abs(sr)] = 0;
             }
 
             if (sb && (sb ^ s) >= 0 && sb != gs) {
-                for (i = 0; i < t.length; i++)
+                for (let i = 0; i < t.length; i++)
                     if (t[i] == sb)
                         t[i] = gs;
                 g[abs(sb)] = 0;
@@ -282,10 +278,10 @@ module tsumego {
             for (y = 0; y < n; y++) {
                 for (x = 0; x < n; x++) {
                     if (!t[i])
-                        if ($.at(x - 1, y) * c > 0 ||
-                            $.at(x + 1, y) * c > 0 ||
-                            $.at(x, y - 1) * c > 0 ||
-                            $.at(x, y + 1) * c > 0)
+                        if ($.get(x - 1, y) * c > 0 ||
+                            $.get(x + 1, y) * c > 0 ||
+                            $.get(x, y - 1) * c > 0 ||
+                            $.get(x, y + 1) * c > 0)
                             r++;
 
                     i++;
@@ -310,10 +306,10 @@ module tsumego {
 
             for (x = -1; x < n; x++) {
                 for (y = -1; y < n; y++) {
-                    a = (board.at(x, y) * color) > 0;
-                    b = (board.at(x + 1, y) * color) > 0;
-                    c = (board.at(x + 1, y + 1) * color) > 0;
-                    d = (board.at(x, y + 1) * color) > 0;
+                    a = (board.get(x, y) * color) > 0;
+                    b = (board.get(x + 1, y) * color) > 0;
+                    c = (board.get(x + 1, y + 1) * color) > 0;
+                    d = (board.get(x, y + 1) * color) > 0;
 
                     switch (a + b + c + d) {
                         case 1: n1++; break;
@@ -335,7 +331,7 @@ module tsumego {
                     let rx = h.length;
 
                     for (let x = 0; x < n; x++) {
-                        const b = this.at(x, y);
+                        const b = this.get(x, y);
                         h += b > 0 ? 'X' : b < 0 ? 'O' : '-';
                         if (b) len = rx = h.length;
                     }
@@ -349,21 +345,13 @@ module tsumego {
             return this._hash;
         }
 
-        adjacent(x: number, y: number, block: number) {
-            for (const [dx, dy] of [[-1, 0], [+1, 0], [0, -1], [0, +1]])
-                if (this.at(x + dx, y + dy) == block)
-                    return true;
-
-            return false;
-        }
-
         private toStringSGF() {
             const take = (pf: string, fn: (g: number) => boolean) => {
                 let list = '';
 
                 for (let y = 0; y < this.size; y++)
                     for (let x = 0; x < this.size; x++)
-                        if (fn(this.at(x, y)))
+                        if (fn(this.get(x, y)))
                             list += '[' + n2s(x) + n2s(y) + ']';
 
                 return list && pf + list;
@@ -379,7 +367,7 @@ module tsumego {
 
             for (let x = 0; x < this.size; x++)
                 for (let y = 0; y < this.size; y++)
-                    if (this.at(x, y))
+                    if (this.get(x, y))
                         xmax = max(x, xmax),
                         ymax = max(y, ymax);
 
@@ -397,7 +385,7 @@ module tsumego {
                 s += vc;
 
                 for (let x = 0; x <= xmax; x++) {
-                    const c = this.at(x, y);
+                    const c = this.get(x, y);
                     s += ' ';
                     s += c > 0 ? 'X' : c < 0 ? 'O' : '-';
                 }

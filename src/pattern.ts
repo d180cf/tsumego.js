@@ -45,7 +45,7 @@ module tsumego {
 
             for (i = -1; i <= 1; i++) {
                 for (j = -1; j <= 1; j++) {
-                    c = board.at(x + i, y + j);
+                    c = board.get(x + i, y + j);
                     d = data[i * mxx + j * mxy + 1 + 3 * (i * myx + j * myy + 1)];
 
                     if (d == 'X' && (!c || (c ^ color) < 0) ||

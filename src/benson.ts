@@ -25,8 +25,8 @@ module tsumego.benson {
      * the region and thus cannot capture the chain since there are two such regions.
      */
     export function alive(b: Board, root: XY, path: number[] = []) {
-        const chainId = b.chainAt(root);
-        const sameColor = (s: XY) => b.at(s) * chainId > 0;
+        const chainId = b.get(root);
+        const sameColor = (s: XY) => b.get(s) * chainId > 0;
         const visited: { [move: number]: boolean } = [];
 
         let nEyes = 0;
@@ -34,7 +34,7 @@ module tsumego.benson {
         // enumerate all liberties of the chain to find two eyes among those liberties
         search: for (const lib of region(root, (t, s) => sameColor(s) && b.inBounds(t))) {
             // the region(...) above enumerates stones in the chain and the liberties
-            if (b.chainAt(lib))
+            if (b.get(lib))
                 continue;
 
             // chains adjacent to the region
@@ -51,7 +51,7 @@ module tsumego.benson {
                 let isAdjacent = false;
 
                 for (const q of XY.nb.lrtb(p)) {
-                    const ch = b.chainAt(q);
+                    const ch = b.get(q);
 
                     if (ch == chainId) {
                         isAdjacent = true;
@@ -62,7 +62,7 @@ module tsumego.benson {
                 }
 
                 // is it an empty intersection that is not adjacent to the chain?
-                if (!b.chainAt(p) && !isAdjacent)
+                if (!b.get(p) && !isAdjacent)
                     continue search;
             }
 

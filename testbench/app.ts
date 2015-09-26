@@ -243,7 +243,7 @@ module testbench {
 
         let vars = '';
 
-        if (b.at(Move.x(aim), Move.y(aim))) {
+        if (b.get(Move.x(aim), Move.y(aim))) {
             for (const m of rzone) {
                 const bm = b.fork();
                 if (!bm.play(Move.x(m), Move.y(m), -color))
@@ -275,7 +275,7 @@ module testbench {
     }
 
     function status(b: Board) {
-        return b.at(Move.x(aim), Move.y(aim)) < 0 ? -1 : +1;
+        return b.get(Move.x(aim), Move.y(aim)) < 0 ? -1 : +1;
     }
 
     var board: Board, rzone: Move[], aim, path: Board[];
