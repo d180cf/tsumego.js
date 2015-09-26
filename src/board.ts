@@ -166,7 +166,7 @@ module tsumego {
         }
 
         play(x: number, y: number, s: Color): uint {
-            const $ = this, n = $.size, t = $.table, g = $.nlibs;
+            const $ = this, n = $.size, t = $.table, nn = t.length, g = $.nlibs;
 
             if (t[y * n + x] || !$.inBounds(x, y))
                 return 0;            
@@ -204,10 +204,10 @@ module tsumego {
             // suicide is not allowed
 
             if (r == 0
-                && (sl && sl * s < 0 || nl == 1 || x == 0)
-                && (sr && sr * s < 0 || nr == 1 || x == n - 1)
-                && (st && st * s < 0 || nt == 1 || y == n - 1)
-                && (sb && sb * s < 0 || nb == 1 || y == 0)) {
+                && (sl * s < 0 || nl == 1 || x == 0)
+                && (sr * s < 0 || nr == 1 || x == n - 1)
+                && (st * s < 0 || nt == 1 || y == n - 1)
+                && (sb * s < 0 || nb == 1 || y == 0)) {
                 return 0;
             }
 
@@ -219,45 +219,45 @@ module tsumego {
 
             let gi = g.length;
 
-            if (sl && (sl ^ s) >= 0)
+            if (sl * s > 0)
                 gi = min(gi, abs(sl));
 
-            if (st && (st ^ s) >= 0)
+            if (st * s > 0)
                 gi = min(gi, abs(st));
 
-            if (sr && (sr ^ s) >= 0)
+            if (sr * s > 0)
                 gi = min(gi, abs(sr));
 
-            if (sb && (sb ^ s) >= 0)
+            if (sb * s > 0)
                 gi = min(gi, abs(sb));
 
             // merge neighbors into one group
 
             let gs = s < 0 ? -gi : gi;
 
-            if (sl && (sl ^ s) >= 0 && sl != gs) {
-                for (let i = 0; i < t.length; i++)
+            if (sl * s > 0 && sl != gs) {
+                for (let i = 0; i < nn; i++)
                     if (t[i] == sl)
                         t[i] = gs;
                 g[abs(sl)] = 0;
             }
 
-            if (st && (st ^ s) >= 0 && st != gs) {
-                for (let i = 0; i < t.length; i++)
+            if (st * s > 0 && st != gs) {
+                for (let i = 0; i < nn; i++)
                     if (t[i] == st)
                         t[i] = gs;
                 g[abs(st)] = 0;
             }
 
-            if (sr && (sr ^ s) >= 0 && sr != gs) {
-                for (let i = 0; i < t.length; i++)
+            if (sr * s > 0 && sr != gs) {
+                for (let i = 0; i < nn; i++)
                     if (t[i] == sr)
                         t[i] = gs;
                 g[abs(sr)] = 0;
             }
 
-            if (sb && (sb ^ s) >= 0 && sb != gs) {
-                for (let i = 0; i < t.length; i++)
+            if (sb * s > 0 && sb != gs) {
+                for (let i = 0; i < nn; i++)
                     if (t[i] == sb)
                         t[i] = gs;
                 g[abs(sb)] = 0;
