@@ -19,21 +19,21 @@ module testbench {
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
     const xy2s = (m: Move) => !m ? 'null' :
-        String.fromCharCode(0x41 + (m.x > 7 ? m.x - 1 : m.x)) +
-        (goban.board.size - m.y);
+        String.fromCharCode(0x41 + (Move.x(m) > 7 ? Move.x(m) - 1 : Move.x(m))) +
+        (goban.board.size - Move.y(m));
 
     const c2s = Color.alias;
     const cm2s = (c: Color, m: Move) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
     const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
-    const xy2f = (xy: Move) => n2s(xy.x) + n2s(xy.y);
+    const xy2f = (xy: Move) => n2s(Move.x(xy)) + n2s(Move.y(xy));
 
     /** -1, { x: 2, y: 3 } -> `W[cd]` */
     const xyc2f = (c: Color, xy: Move) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
 
     /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => <Move>{ x: s2n(s, 0), y: s2n(s, 1) };
+    const f2xy = (s: string) => Move(s2n(s, 0), s2n(s, 1));
 
     function parseSGF(source: string): [Board, Move[], Move] {
         const brd = new Board(source);
@@ -52,7 +52,7 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    var tt = new tsumego.TT<Move>();
+    export var tt = new tsumego.TT<Move>();
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         let t0 = +new Date;
@@ -86,12 +86,14 @@ module testbench {
             play: (color, move) => {
                 if (!log) return;
 
+                const pass = !Number.isFinite(move);
+
                 const node = new WGo.KNode({
                     _edited: true,
                     move: {
-                        pass: !move,
-                        x: move && move.x,
-                        y: move && move.y,
+                        pass: pass,
+                        x: Move.x(move),
+                        y: Move.y(move),
                         c: color > 0 ? WGo.B : WGo.W
                     }
                 });
@@ -219,7 +221,7 @@ module testbench {
             return null;
 
         const b = path[path.length - 1].fork();
-        if (!b.play(move.x, move.y, color)) {
+        if (!b.play(Move.x(move), Move.y(move), color)) {
             debugger;
             throw new Error('Impossible move: ' + xy2s(move));
         }
@@ -241,10 +243,10 @@ module testbench {
 
         let vars = '';
 
-        if (b.at(aim.x, aim.y)) {
+        if (b.at(Move.x(aim), Move.y(aim))) {
             for (const m of rzone) {
                 const bm = b.fork();
-                if (!bm.play(m.x, m.y, -color))
+                if (!bm.play(Move.x(m), Move.y(m), -color))
                     continue;
 
                 // check for repetitions
@@ -273,7 +275,7 @@ module testbench {
     }
 
     function status(b: Board) {
-        return b.at(aim.x, aim.y) < 0 ? -1 : +1;
+        return b.at(Move.x(aim), Move.y(aim)) < 0 ? -1 : +1;
     }
 
     var board: Board, rzone: Move[], aim, path: Board[];
@@ -312,10 +314,10 @@ module testbench {
     }
 
     function parse(si: string): Move {
-        return {
-            x: si.charCodeAt(0) - 65,
-            y: +/\d+/.exec(si)[0] - 1
-        };
+        return Move(
+            si.charCodeAt(0) - 65,
+            +/\d+/.exec(si)[0] - 1
+        );
     }
 
     window['$'] = data => {
@@ -332,7 +334,7 @@ module testbench {
                 if (/^[a-z]\d+$/i.test(xy)) {
                     var p = parse(xy);
 
-                    if (!b.play(p.x, p.y, c)) {
+                    if (!b.play(Move.x(p), Move.y(p), c)) {
                         console.log(col, 'cannot play at', xy);
                     } else {
                         path.push(b);
@@ -348,7 +350,7 @@ module testbench {
                             /\)\s*$/,
                             '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
 
-                        b.play(move.x, move.y, c);
+                        b.play(Move.x(move), Move.y(move), c);
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                         renderSGF(sgfp);

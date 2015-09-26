@@ -1,4 +1,5 @@
 ﻿/// <reference path="utils.ts" />
+/// <reference path="move.ts" />
 /// <reference path="sgf.ts" />
 
 module tsumego {
@@ -82,12 +83,17 @@ module tsumego {
             return board;
         }
 
-        at(x: XIndex, y: YIndex): Color {
+        at(x: number, y?: number): BlockId {
+            if (y === void 0) {
+                y = XY.y(x);
+                x = XY.x(x);
+            }
+
             var $ = this, n = $.size, t = $.table;
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
-        chainAt(x: number, y: number) {
+        chainAt(x: number, y?: number) {
             return this.at(x, y);
         }
 
@@ -152,12 +158,17 @@ module tsumego {
             return r;
         }
 
-        inBounds(x: XIndex, y: YIndex): boolean {
+        inBounds(x: number, y?: number): boolean {
+            if (y === void 0) {
+                y = XY.y(x);
+                x = XY.x(x);
+            }
+
             var n = this.size;
             return x >= 0 && x < n && y >= 0 && y < n;
         }
 
-        play(x: XIndex, y: YIndex, s: Color): uint {
+        play(x: number, y: number, s: Color): uint {
             var $ = this, n = $.size, t = $.table, g = $.nlibs;
             var i, r = 0;
 

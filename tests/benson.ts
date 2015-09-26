@@ -41,7 +41,7 @@ module test {
                         const marker = chain > 0 ? 'X' : 'O';
 
                         tags.push(!chain ? '-' :
-                            benson.alive(board, { x: x, y: y }) ? marker :
+                            benson.alive(board, XY(x, y)) ? marker :
                                 marker.toLowerCase());
                     }
 
@@ -64,7 +64,7 @@ module test {
         $.test($ => {
             /// start from a vacant point
             const b = new Board(9, []);
-            const p = new XY(0, 0);
+            const p = XY(0, 0);
             const r = benson.alive(b, p);
             $(r).equal(false);
         });
