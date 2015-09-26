@@ -2,5 +2,5 @@ language: node_js
 node_js:
   - "stable"
 before_script:
-- npm i typescript@next -g
+- npm i typescript@1.6.2 -g
   
