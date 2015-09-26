@@ -13,10 +13,13 @@ module tsumego {
 
                 let forked: Board;
 
-                for (let m of rzone) {
-                    if (!Pattern.isEye(board, m.x, m.y, color)) {
+                for (const m of rzone) {
+                    const x = XY.x(m);
+                    const y = XY.y(m);
+
+                    if (!Pattern.isEye(board, x, y, color)) {
                         const b = forked || board.fork();
-                        const r = b.play(m.x, m.y, color);
+                        const r = b.play(x, y, color);
 
                         if (!r) {
                             forked = b;

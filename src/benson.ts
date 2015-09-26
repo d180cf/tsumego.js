@@ -25,48 +25,44 @@ module tsumego.benson {
      * the region and thus cannot capture the chain since there are two such regions.
      */
     export function alive(b: Board, root: XY, path: number[] = []) {
-        const chainId = b.chainAt(root.x, root.y);
-        const sameColor = (s: XY) => b.at(s.x, s.y) * chainId > 0;
-        const visited = []; // [x | y << 5] = true/undefined
+        const chainId = b.chainAt(root);
+        const sameColor = (s: XY) => b.at(s) * chainId > 0;
+        const visited: { [move: number]: boolean } = [];
 
         let nEyes = 0;
 
         // enumerate all liberties of the chain to find two eyes among those liberties
-        search: for (const lib of region(root, (t, s) => sameColor(s) && b.inBounds(t.x, t.y))) {
+        search: for (const lib of region(root, (t, s) => sameColor(s) && b.inBounds(t))) {
             // the region(...) above enumerates stones in the chain and the liberties
-            if (b.chainAt(lib.x, lib.y))
+            if (b.chainAt(lib))
                 continue;
 
             // chains adjacent to the region
             const adjacent: number[] = [];
             const adjacentXY: XY[] = [];
 
-            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t.x, t.y))) {
-                const coord = p.x | p.y << 5;
-
+            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t))) {
                 // has this region been already marked as non vital to this chain?
-                if (visited[coord])
+                if (visited[p])
                     continue search;
 
-                visited[coord] = true;
+                visited[p] = true;
 
                 let isAdjacent = false;
 
-                for (const [dx, dy] of nesw) {
-                    const nx = p.x + dx;
-                    const ny = p.y + dy;
-                    const ch = b.chainAt(nx, ny);
+                for (const q of XY.nb.lrtb(p)) {
+                    const ch = b.chainAt(q);
 
                     if (ch == chainId) {
                         isAdjacent = true;
                     } else if (ch * chainId > 0 && adjacent.indexOf(ch) < 0) {
                         adjacent.push(ch);
-                        adjacentXY.push({ x: nx, y: ny });
+                        adjacentXY.push(q);
                     }
                 }
 
                 // is it an empty intersection that is not adjacent to the chain?
-                if (!b.chainAt(p.x, p.y) && !isAdjacent)
+                if (!b.chainAt(p) && !isAdjacent)
                     continue search;
             }
 

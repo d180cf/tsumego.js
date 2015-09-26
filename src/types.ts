@@ -14,11 +14,6 @@
         export const alias = (color: Color) => color > 0 ? 'B' : 'W';
     }
 
-    /** (0, 0) corresponds to the top left corner. */
-    export class XY {
-        constructor(public x: number, public y: number) { }
-    }
-
     export interface Result<Move> {
         color: Color;
 
