@@ -5,7 +5,7 @@ case `uname` in
     *CYGWIN*) basedir=`cygpath -w "$basedir"`;;
 esac
 
-"$basedir/../node_modules/.bin/tsc" "$@"
+#"$basedir/../node_modules/.bin/tsc" "$@"
 
 if [ -x "$basedir/node" ]; then
   "$basedir/node"  "$basedir/../esc"
