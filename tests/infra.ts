@@ -34,14 +34,32 @@ module ut {
                 if (filter && name.indexOf(filter) < 0)
                     return;
 
+                const logs = [];
+
                 try {
+                    const _console_log = console.log;
+
+                    console.log = (...args) => {
+                        logs.push([...args].join(' '));
+                    };
+
                     const started = +new Date;
-                    test(expect);
+
+                    try {
+                        test(expect);
+                    } finally {
+                        console.log = _console_log;
+                    }
+
                     const duration = +new Date - started;
                     console.log(indent, name, duration, 'ms');
                 } catch (err) {
                     failed = true;
                     console.log(indent, name, ':', 'FAILED');
+
+                    for (const log of logs)
+                        console.log(log);
+
                     while (err) {
                         console.log(err && err.stack || err);
                         err = err.reason;

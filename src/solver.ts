@@ -69,6 +69,8 @@ module tsumego {
 
         type R = Result<Move>;
 
+        let nknodes = 0;
+
         function* solve(
             path: Node[],
             color: Color,
@@ -76,6 +78,7 @@ module tsumego {
             ko: boolean): IterableIterator<R> {
 
             yield; // entering the node
+            nknodes++;
 
             if (ko) {
                 // since moves that require to spend a ko treat are considered
@@ -214,7 +217,9 @@ module tsumego {
             return result;
         }
 
-        return yield* solve(path, color, nkt, false);
+        const result = yield* solve(path, color, nkt, false);
+        console.log(nknodes + ' nodes explored');
+        return result;
     }
 
     export function solve<Node extends Hasheable, Move>(
