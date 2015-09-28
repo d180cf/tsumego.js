@@ -76,10 +76,7 @@ module tsumego {
         }
 
         static take(board: Board, x0: number, y0: number, color: number) {
-            let m0 = 0;
-            let m1 = 0;
-            let m2 = 0;
-            let m3 = 0;
+            const m = [0, 0, 0, 0];
 
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++) {
@@ -89,29 +86,29 @@ module tsumego {
                     const b = 1 << (3 * i + j);
 
                     if (c * color > 0)
-                        m0 |= b; // a stone of the same color
+                        m[0] |= b; // a stone of the same color
                     else if (c * color < 0)
-                        m1 |= b; // a stone of the opposite color
+                        m[1] |= b; // a stone of the opposite color
                     else if (!board.inBounds(x, y))
-                        m2 |= b; // a neutral stone (the wall)
+                        m[2] |= b; // a neutral stone (the wall)
                     else
-                        m3 |= b; // a vacant intersection
+                        m[3] |= b; // a vacant intersection
                 }
             }
 
-            return [m0, m1, m2, m3];
+            return m;
         }
 
-        test(m0: number, m1: number, m2: number, m3: number) {
+        test(m: number[]) {
             for (let i = 0; i < 8; i++) {
-                const m = this.masks[i];
+                const ms = this.masks[i];
 
-                const m0b = m[0].bits;
-                const m1b = m[1].bits;
-                const m2b = m[2].bits;
-                const m3b = m[3].bits;
+                const m0b = ms[0].bits;
+                const m1b = ms[1].bits;
+                const m2b = ms[2].bits;
+                const m3b = ms[3].bits;
 
-                if ((m0b & m0) == m0b && (m1b & m1) == m1b && (m2b & m2) == m2b && (m3b & m3) == m3b)
+                if ((m0b & m[0]) == m0b && (m1b & m[1]) == m1b && (m2b & m[2]) == m2b && (m3b & m[3]) == m3b)
                     return true;
             }
 
@@ -119,9 +116,10 @@ module tsumego {
         }
 
         static isEye = profile._time('Pattern.isEye', (board: Board, x: XIndex, y: YIndex, color: Color) => {
-            const [m0, m1, m2, m3] = Pattern.take(board, x, y, color);
+            const snapshot = Pattern.take(board, x, y, color);
+
             for (const p of Pattern.uceyes)
-                if (p.test(m0, m1, m2, m3))
+                if (p.test(snapshot))
                     return true;
 
             return false;
