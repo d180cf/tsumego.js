@@ -3,8 +3,18 @@
 module tsumego {
     'use strict';
 
+    enum Tag {
+        Empty,
+        Friend,
+        Enemy,
+        Wall,
+        Any
+    }
+
+    const aliases = { 'X': Tag.Friend, 'O': Tag.Enemy, '-': Tag.Wall, '.': Tag.Empty, '?': Tag.Any };
+
     export class Pattern {
-        private data: string;
+        private data: Int8Array | number[];
 
         static tms = [
             [+1, 0, 0, +1],
@@ -24,8 +34,14 @@ module tsumego {
             new Pattern(['XX-', 'X.-', '---']) // corner
         ]
 
-        constructor(data: string[]) {
-            this.data = data.join('');
+        constructor(rows: string[]) {
+            let i = 0;
+
+            this.data = new Int8Array(9);
+
+            for (const row of rows)
+                for (const ch of row)
+                    this.data[i++] = aliases[ch];
         }
 
         @profile.time
@@ -41,12 +57,13 @@ module tsumego {
             for (let i = -1; i <= 1; i++) {
                 for (let j = -1; j <= 1; j++) {
                     const c = board.get(x + i, y + j);
-                    const d = this.data.charAt(i * mxx + j * mxy + 1 + 3 * (i * myx + j * myy + 1));
+                    const n = i * mxx + j * mxy + 1 + 3 * (i * myx + j * myy + 1);
+                    const d = this.data[n];
 
-                    if (d == 'X' && (!c || (c ^ color) < 0) ||
-                        d == 'O' && (!c || (c ^ color) > 0) ||
-                        d == '.' && (c || !board.inBounds(x + i, y + j)) ||
-                        d == '-' && board.inBounds(x + i, y + j))
+                    if (d == Tag.Friend && (!c || (c ^ color) < 0) ||
+                        d == Tag.Enemy && (!c || (c ^ color) > 0) ||
+                        d == Tag.Empty && (c || !board.inBounds(x + i, y + j)) ||
+                        d == Tag.Wall && board.inBounds(x + i, y + j))
                         return false;
                 }
             }
