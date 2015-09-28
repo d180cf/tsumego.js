@@ -3,7 +3,9 @@ module tsumego.profile {
 
     export const enabled = true;
 
-    export const now = () => performance.now();
+    export const now = typeof performance === 'undefined' ?
+        () => Date.now() :
+        () => performance.now();
 
     export let started: number;
 
