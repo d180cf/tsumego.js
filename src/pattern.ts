@@ -4,7 +4,7 @@ module tsumego {
     'use strict';
 
     export class Pattern {
-        data: string;
+        private data: string;
 
         static tms = [
             [+1, 0, 0, +1],
@@ -29,25 +29,19 @@ module tsumego {
         }
 
         @profile.time
-        public test(board: Board, x: XIndex, y: YIndex, color: Color): boolean {
-            var $ = this, tms = Pattern.tms, k, m;
-
-            for (k = 0; k < tms.length; k++) {
-                m = tms[k];
-                if ($.testrm(board, x, y, color, m[0], m[1], m[2], m[3]))
+        test(board: Board, x: XIndex, y: YIndex, color: Color): boolean {
+            for (const m of Pattern.tms)
+                if (this.testrm(board, x, y, color, m[0], m[1], m[2], m[3]))
                     return true;
-            }
 
             return false;
         }
 
-        testrm(board: Board, x: XIndex, y: YIndex, color: Color, mxx: number, mxy: number, myx: number, myy: number): boolean {
-            var $ = this, data = $.data, i, j, c, d;
-
-            for (i = -1; i <= 1; i++) {
-                for (j = -1; j <= 1; j++) {
-                    c = board.get(x + i, y + j);
-                    d = data[i * mxx + j * mxy + 1 + 3 * (i * myx + j * myy + 1)];
+        private testrm(board: Board, x: XIndex, y: YIndex, color: Color, mxx: number, mxy: number, myx: number, myy: number): boolean {
+            for (let i = -1; i <= 1; i++) {
+                for (let j = -1; j <= 1; j++) {
+                    const c = board.get(x + i, y + j);
+                    const d = this.data.charAt(i * mxx + j * mxy + 1 + 3 * (i * myx + j * myy + 1));
 
                     if (d == 'X' && (!c || (c ^ color) < 0) ||
                         d == 'O' && (!c || (c ^ color) > 0) ||
@@ -61,10 +55,8 @@ module tsumego {
         }
 
         static isEye(board: Board, x: XIndex, y: YIndex, color: Color): boolean {
-            var i;
-
-            for (i = 0; i < Pattern.uceyes.length; i++)
-                if (Pattern.uceyes[i].test(board, x, y, color))
+            for (const p of Pattern.uceyes)
+                if (p.test(board, x, y, color))
                     return true;
 
             return false;
