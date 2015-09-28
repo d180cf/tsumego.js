@@ -193,7 +193,7 @@ module tests {
                     BasicMoveGen(rzone),
                     b => b.get(aimx, aimy) < 0 ? -1 : +1);
 
-                console.log(result);
+                console.log(JSON.stringify(result));
 
                 $(result).equal(null);
             }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
