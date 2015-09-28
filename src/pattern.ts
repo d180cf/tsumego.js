@@ -15,6 +15,19 @@ module tsumego {
 
     const same = (m: BitMatrix, b: number) => (m.bits & b) === m.bits;
 
+    /**
+     * An example of a pattern:
+     *
+     *      X X ?
+     *      O . X
+     *      - - -
+     *
+     *  `X` = a stone of the same color
+     *  `O` = a stone of the opposite color
+     *  `.` = an empty intersection
+     *  `-` = a neutral stone (the wall)
+     *  `?` = anything (doesn't matter what's on that intersection)
+     */
     export class Pattern {
         private masks = [new Array<BitMatrix>()]; // 8 elements
 
@@ -41,20 +54,13 @@ module tsumego {
             ])
         ]
 
-        /**
-         * An example of a pattern:
-         *
-         *      X X ?
-         *      O . X
-         *      - - -
-         *
-         *  `X` = a stone of the same color
-         *  `O` = a stone of the opposite color
-         *  `.` = an empty intersection
-         *  `-` = a neutral stone (the wall)
-         *  `?` = anything (doesn't matter what's on that intersection)
-         */
+        // the constructor can be very slow as every pattern
+        // is constructed only once before the solver starts
         constructor(data: string[]) {
+            // m[0] = bits for X
+            // m[1] = bits for O
+            // m[2] = bits for -
+            // m[3] = bits for .
             const m = this.masks;
 
             for (let i = 0; i < 4; i++)
@@ -70,6 +76,23 @@ module tsumego {
                 }
             }
 
+            // Now we need to come up with all sane transformations
+            // of the given pattern: reflections, rotations and so on.
+            // There are four such transformations:
+            //
+            //  T = transposition
+            //  R = rotation by 90 degress counter clock wise
+            //  H = horizontal reflection
+            //  V = vertical reflection
+            //
+            // It can be noted that V = TR and H = RT which means that
+            // T and R are enough to construct all the transformations.
+            // Since RRRR = 1 (rotation by 360 degrees), the first four
+            // patterns form a ring: m, Rm, RRm, RRRm. Applying T gives
+            // the second ring: TRm, TRRm, TRRRm. Since TT = 1, it can
+            // be easily proven that these 8 patterns form a closed group
+            // over T and R operators.
+
             for (let i = 0; i < 3; i++)
                 m.push(m[i].map(m => m.r));
 
@@ -78,6 +101,10 @@ module tsumego {
         }
 
         static take(board: Board, x0: number, y0: number, color: number) {
+            // constructing and disposing an array at every call
+            // might look very inefficient, but getting rid of it
+            // by declaring this array as a variable outside the
+            // method doesn't improve performance at all in V8
             const m = [0, 0, 0, 0];
 
             for (let i = 0; i < 3; i++) {
@@ -119,6 +146,8 @@ module tsumego {
             const snapshot = Pattern.take(board, x, y, color);
             const patterns = Pattern.uceyes;
 
+            // for..of would create an iterator and make
+            // the function about 2x slower overall
             for (let i = 0; i < patterns.length; i++)
                 if (patterns[i].test(snapshot))
                     return true;
