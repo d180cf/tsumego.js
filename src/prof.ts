@@ -24,6 +24,7 @@ module tsumego.profile {
             console.log(`${name}: ${(counters[name] / total) * 100 | 0}%`);
     }
 
+    /** Measures time taken by all invocations of the method. */
     export function time(prototype: Object, method: string, d: TypedPropertyDescriptor<Function>) {
         if (!enabled) return;
 
