@@ -3,6 +3,7 @@
   "compilerOptions": {
     "out": "tsumego.js",
     "target": "es6",
+    "experimentalDecorators": true,
     "sourceMap": true
   }
 }

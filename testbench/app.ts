@@ -10,6 +10,7 @@ module testbench {
     import Color = tsumego.Color;
     import Move = tsumego.XY;
     import Board = tsumego.Board;
+    import profile = tsumego.profile;
 
     var goban: WGo.BasicPlayer = null;
 
@@ -55,16 +56,14 @@ module testbench {
     export var tt = new tsumego.TT<Move>();
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
-        let t0 = +new Date;
+        profile.reset();
 
         const rs = tsumego.solve(path, color, nkotreats, tt,
             tsumego.generators.Basic(rzone),
             status);
 
-        let t1 = +new Date;
-
         if (log) {
-            console.log('solved in', ((t1 - t0) / 1000).toFixed(2), 'seconds');
+            profile.log();
             console.log(s2s(color, rs));
         }
 
@@ -346,6 +345,8 @@ module testbench {
                     if (!move) {
                         console.log(col, 'passes');
                     } else {
+                        debugger;
+
                         const sgfp = sgfdata.replace(
                             /\)\s*$/,
                             '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');

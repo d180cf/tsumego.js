@@ -28,6 +28,7 @@ module tsumego {
             this.data = data.join('');
         }
 
+        @profile.time
         public test(board: Board, x: XIndex, y: YIndex, color: Color): boolean {
             var $ = this, tms = Pattern.tms, k, m;
 

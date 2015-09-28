@@ -3,6 +3,7 @@
   "compilerOptions": {
     "out": "tests.js",
     "target": "es6",
+    "experimentalDecorators": true,
     "sourceMap": true
   }
 }

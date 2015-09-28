@@ -3,6 +3,7 @@
   "compilerOptions": {
     "out": "app.js",
     "target": "es6",
+    "experimentalDecorators": true,
     "sourceMap": true
   }
 }

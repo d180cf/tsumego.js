@@ -1,5 +1,6 @@
 ﻿/// <reference path="utils.ts" />
 /// <reference path="move.ts" />
+/// <reference path="prof.ts" />
 /// <reference path="sgf.ts" />
 
 module tsumego {
@@ -168,11 +169,12 @@ module tsumego {
             return this._libs[abs(block)] || 0;
         }
 
+        @profile.time
         play(x: number, y: number, s: Color): uint {
             const $ = this, n = $.size, t = $._grid, nn = t.length, g = $._libs;
 
             if (!$.inBounds(x, y) || t[y * n + x])
-                return 0;            
+                return 0;
 
             // block ids
 
