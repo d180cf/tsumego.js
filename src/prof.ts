@@ -24,16 +24,13 @@ module tsumego.profile {
             console.log(`${name}: ${(counters[name] / total) * 100 | 0}%`);
     }
 
-    /** Measures time taken by all invocations of the method. */
-    export function time(prototype: Object, method: string, d: TypedPropertyDescriptor<Function>) {
-        if (!enabled) return;
-
-        const name = prototype.constructor.name + '::' + method;
-        const fn = d.value;
+    export function _time(name: string, fn: Function) {
+        if (!enabled)
+            return fn;
 
         counters[name] = 0;
 
-        d.value = function () {
+        return function () {
             const started = now();
 
             try {
@@ -42,5 +39,10 @@ module tsumego.profile {
                 counters[name] += now() - started;
             }
         };
+    }
+
+    /** Measures time taken by all invocations of the method. */
+    export function time(prototype: Object, method: string, d: TypedPropertyDescriptor<Function>) {
+        d.value = _time(prototype.constructor.name + '::' + method, d.value);
     }
 }

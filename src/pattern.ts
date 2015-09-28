@@ -75,12 +75,11 @@ module tsumego {
                 m.push(m[i].map(m => m.t));
         }
 
-        //@profile.time
-        test(board: Board, x0: number, y0: number, color: number) {
-            let m0 = 0; // a stone of the same color
-            let m1 = 0; // a stone of the opposite color
-            let m2 = 0; // a neutral stone (the wall)
-            let m3 = 0; // a vacant intersection
+        static take(board: Board, x0: number, y0: number, color: number) {
+            let m0 = 0;
+            let m1 = 0;
+            let m2 = 0;
+            let m3 = 0;
 
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++) {
@@ -90,16 +89,20 @@ module tsumego {
                     const b = 1 << (3 * i + j);
 
                     if (c * color > 0)
-                        m0 |= b;
+                        m0 |= b; // a stone of the same color
                     else if (c * color < 0)
-                        m1 |= b;
+                        m1 |= b; // a stone of the opposite color
                     else if (!board.inBounds(x, y))
-                        m2 |= b;
+                        m2 |= b; // a neutral stone (the wall)
                     else
-                        m3 |= b;
+                        m3 |= b; // a vacant intersection
                 }
             }
 
+            return [m0, m1, m2, m3];
+        }
+
+        test(m0: number, m1: number, m2: number, m3: number) {
             for (let i = 0; i < 8; i++) {
                 const m = this.masks[i];
 
@@ -115,12 +118,13 @@ module tsumego {
             return false;
         }
 
-        static isEye(board: Board, x: XIndex, y: YIndex, color: Color): boolean {
+        static isEye = profile._time('Pattern.isEye', (board: Board, x: XIndex, y: YIndex, color: Color) => {
+            const [m0, m1, m2, m3] = Pattern.take(board, x, y, color);
             for (const p of Pattern.uceyes)
-                if (p.test(board, x, y, color))
+                if (p.test(m0, m1, m2, m3))
                     return true;
 
             return false;
-        }
+        });
     }
 }
