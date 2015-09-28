@@ -23,7 +23,7 @@ module tsumego {
         constructor(sgf: string | SGF.Node);
 
         constructor(size, setup?) {
-            if (typeof size === 'string')
+            if (typeof size === 'string' || typeof size === 'object')
                 this.initFromSGF(size);
             else if (typeof size === 'number') {
                 this.init(size);

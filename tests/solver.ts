@@ -183,6 +183,8 @@ module tests {
                 const rzone = setup['DD'].map(f2xy).map(m => Move(m[0], m[1]));
                 const board = new Board(sgf);
 
+                console.log(board + '');
+
                 const result = solve(
                     [board],
                     +1,
@@ -191,7 +193,7 @@ module tests {
                     BasicMoveGen(rzone),
                     b => b.get(aimx, aimy) < 0 ? -1 : +1);
 
-                const expected = setup['ER'][0];
+                console.log(result);
 
                 $(result).equal(null);
             }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
