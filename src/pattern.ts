@@ -115,7 +115,7 @@ module tsumego {
             return false;
         }
 
-        static isEye = profile._time('Pattern.isEye', (board: Board, x: XIndex, y: YIndex, color: Color) => {
+        static isEye(board: Board, x: XIndex, y: YIndex, color: Color) {
             const snapshot = Pattern.take(board, x, y, color);
             const patterns = Pattern.uceyes;
 
@@ -124,6 +124,6 @@ module tsumego {
                     return true;
 
             return false;
-        });
+        }
     }
 }

@@ -169,7 +169,7 @@ module tsumego {
             return this._libs[abs(block)] || 0;
         }
 
-        @profile.time
+        //@profile.time
         play(x: number, y: number, s: Color): uint {
             const $ = this, n = $.size, t = $._grid, nn = t.length, g = $._libs;
 
