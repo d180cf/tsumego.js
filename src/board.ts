@@ -20,7 +20,7 @@ module tsumego {
 
         constructor(size: uint);
         constructor(size: uint, rows: string[]);
-        constructor(sgf: string);
+        constructor(sgf: string | SGF.Node);
 
         constructor(size, setup?) {
             if (typeof size === 'string')
@@ -47,8 +47,8 @@ module tsumego {
             });
         }
 
-        private initFromSGF(source: string) {
-            const sgf = SGF.parse(source);
+        private initFromSGF(source: string | SGF.Node) {
+            const sgf = typeof source === 'string' ? SGF.parse(source) : source;
             if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
             const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
             const size = +setup['SZ'];

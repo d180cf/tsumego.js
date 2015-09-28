@@ -1,9 +1,18 @@
 /// <reference path="infra.ts" />
 
 module tests {
+    import Board = tsumego.Board;
+    import solve = tsumego.solve;
+    import Move = tsumego.XY;
+    import s2n = tsumego.s2n;
+    import TT = tsumego.TT;
+    import BasicMoveGen = tsumego.generators.Basic;
+
+    const f2xy = (s: string) => [s2n(s, 0), s2n(s, 1)];
+
     /** [ number of b stones - number of w stones, unique tag ]
         The root node has null tag. */
-    type Hash =[number, string];
+    type Hash = [number, string];
 
     /** +1 - b wins
      *  -1 - w wins
@@ -153,5 +162,39 @@ module tests {
                 color: -1
             });
         });
+    });
+
+    ut.group($ => {
+        /// tsumego samples
+
+        if (typeof require === 'undefined')
+            console.log('these tests are available only in node.js');
+
+        const ls = require('glob').sync;
+        const cat = require('fs').readFileSync;
+
+        for (const path of ls('../problems/**/*.sgf')) {
+            const data = cat(path, 'utf8');
+
+            $.test($ => {
+                const sgf = SGF.parse(data);
+                const setup = sgf.steps[0];
+                const [aimx, aimy] = f2xy(setup['MA'][0]);
+                const rzone = setup['DD'].map(f2xy).map(m => Move(m[0], m[1]));
+                const board = new Board(sgf);
+
+                const result = solve(
+                    [board],
+                    +1,
+                    0,
+                    new TT<Move>(),
+                    BasicMoveGen(rzone),
+                    b => b.get(aimx, aimy) < 0 ? -1 : +1);
+
+                const expected = setup['ER'][0];
+
+                $(result).equal(null);
+            }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
+        }
     });
 }
