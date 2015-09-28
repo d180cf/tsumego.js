@@ -1,11 +1,40 @@
 module tests {
+    'use strict';
+
     import Board = tsumego.Board;
     import Pattern = tsumego.Pattern;
+    import LCG = tsumego.rand.LCG.NR01;
+
+    function apply(board: Board, fn: (b: Board, x: number, y: number, c: number) => boolean) {
+        const eyes = {};
+
+        for (let x = 0; x < 16; x++) {
+            for (let y = 0; y < 16; y++) {
+                // I is skipped
+                const xy = String.fromCharCode(x > 7 ? x + 0x42 : x + 0x41) + (16 - y);
+
+                if (fn(board, x, y, +1)) {
+                    if (eyes[xy])
+                        throw Error(xy + ' already taken');
+                    eyes[xy] = +1;
+                }
+
+                if (fn(board, x, y, -1)) {
+                    if (eyes[xy])
+                        throw Error(xy + ' already taken');
+                    eyes[xy] = -1;
+                }
+            }
+        }
+
+        return eyes;
+    }
 
     ut.group($ => { 
         /// uc eyes
+
         $.test($ => { 
-            /// 9x9
+            /// 16x16
             const board = new Board(`
             (;FF[4]SZ[16]
                 AB
@@ -22,24 +51,7 @@ module tests {
 
             console.log(board + '');
 
-            const eyes = {};
-
-            for (let x = 0; x < 16; x++) {
-                for (let y = 0; y < 16; y++) {
-                    // I is skipped
-                    const xy = String.fromCharCode(x > 7 ? x + 0x42 : x + 0x41) + (16 - y);
-
-                    if (Pattern.isEye(board, x, y, +1)) {
-                        $(eyes[xy]).equal(void 0);
-                        eyes[xy] = +1;
-                    }
-
-                    if (Pattern.isEye(board, x, y, -1)) {
-                        $(eyes[xy]).equal(void 0);
-                        eyes[xy] = -1;
-                    }
-                }
-            }
+            const eyes = apply(board, Pattern.isEye);
 
             $(eyes).equal({
                 A16: +1,
@@ -52,6 +64,27 @@ module tests {
                 Q16: -1,
                 A1: -1
             });
+        });
+
+        $.test($ => { 
+            /// 25x25
+            const rand = LCG(1728382);
+            const board = new Board(25);
+
+            for (let i = 0; i < 2000; i++) {
+                const x = rand() * board.size | 0;
+                const y = rand() * board.size | 0;
+                const c = rand() > 0.5 ? +1 : -1;
+
+                const r = board.play(x, y, c);
+            }
+
+            const eyes = apply(board, Pattern.isEye);
+
+            console.log(board + '');
+            console.log(JSON.stringify(eyes));
+
+            $(eyes).equal({ "C7": -1, "F10": -1, "H7": 1, "J12": -1, "N10": 1, "N8": 1 });
         });
     });
 }

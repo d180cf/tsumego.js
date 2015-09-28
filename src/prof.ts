@@ -24,17 +24,17 @@ module tsumego.profile {
             console.log(`${name}: ${(counters[name] / total) * 100 | 0}%`);
     }
 
-    export function _time(name: string, fn: Function) {
+    export function _time<F extends Function>(name: string, fn: F): F {
         if (!enabled)
             return fn;
 
         counters[name] = 0;
 
-        return function () {
+        return <any>function (...args) {
             const started = now();
 
             try {
-                return fn.apply(this, arguments);
+                return fn.apply(this, args);
             } finally {
                 counters[name] += now() - started;
             }

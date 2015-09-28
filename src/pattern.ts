@@ -13,6 +13,8 @@ module tsumego {
         '.' = 3, // a vacant intersection
     }
 
+    const same = (m: BitMatrix, b: number) => (m.bits & b) === m.bits;
+
     export class Pattern {
         private masks = [new Array<BitMatrix>()]; // 8 elements
 
@@ -100,16 +102,14 @@ module tsumego {
         }
 
         test(m: number[]) {
-            for (let i = 0; i < 8; i++) {
-                const ms = this.masks[i];
+            search: for (let i = 0; i < 8; i++) {
+                const w = this.masks[i];
 
-                const m0b = ms[0].bits;
-                const m1b = ms[1].bits;
-                const m2b = ms[2].bits;
-                const m3b = ms[3].bits;
+                for (let j = 0; j < 4; j++)
+                    if (!same(w[j], m[j]))
+                        continue search;
 
-                if ((m0b & m[0]) == m0b && (m1b & m[1]) == m1b && (m2b & m[2]) == m2b && (m3b & m[3]) == m3b)
-                    return true;
+                return true;
             }
 
             return false;
@@ -117,9 +117,10 @@ module tsumego {
 
         static isEye = profile._time('Pattern.isEye', (board: Board, x: XIndex, y: YIndex, color: Color) => {
             const snapshot = Pattern.take(board, x, y, color);
+            const patterns = Pattern.uceyes;
 
-            for (const p of Pattern.uceyes)
-                if (p.test(snapshot))
+            for (let i = 0; i < patterns.length; i++)
+                if (patterns[i].test(snapshot))
                     return true;
 
             return false;
