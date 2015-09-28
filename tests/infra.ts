@@ -21,8 +21,11 @@ module ut {
     declare const location;
 
     const filter: string = typeof location === 'object' ?
-        location.hash :
+        location.hash.slice(1) :
         process.argv[2];
+
+    if (filter)
+        console.warn('tests filtered by:', filter);
 
     export function group(init: ($: GroupContext) => void) {
         const _indent = indent;
@@ -203,9 +206,9 @@ declare const require: Function;
 declare const global;
 
 try {
+    require('source-map-support').install();
     global.Symbol = require('es6-symbol');
     global.regeneratorRuntime = require('../regenerator-runtime');
-    require('source-map-support').install();
 } catch (e) {
     console.log(e);
 }

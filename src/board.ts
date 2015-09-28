@@ -169,7 +169,7 @@ module tsumego {
             return this._libs[abs(block)] || 0;
         }
 
-        @profile.time
+        //@profile.time
         play(x: number, y: number, s: Color): uint {
             const $ = this, n = $.size, t = $._grid, nn = t.length, g = $._libs;
 
@@ -372,15 +372,17 @@ module tsumego {
                 s += '  ';
 
                 for (let x = 0; x <= xmax; x++)
-                    s += ' ' + String.fromCharCode(0x41 + x);
+                    s += ' ' + String.fromCharCode(0x41 + (x < 8 ? x : x + 1)); // skip I
             }
 
             for (let y = 0; y <= ymax; y++) {
                 if (s)
                     s += '\n';
 
-                if (!hideLabels)
-                    s += y < 9 ? ' ' + (y + 1) : (y + 1);
+                if (!hideLabels) {
+                    const n = (this.size - y) + '';
+                    s += n.length < 2 ? ' ' + n : n;;
+                }
 
                 for (let x = 0; x <= xmax; x++) {
                     const c = this.get(x, y);

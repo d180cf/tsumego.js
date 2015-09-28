@@ -10,7 +10,7 @@ module tests {
             const board = new Board(3);
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
-            $(board.toString()).equal('   A\n 1 -');
+            $(board.toString()).equal('   A\n 3 -');
             $(board.hash()).equal('3x3()');
         });
 
@@ -20,7 +20,7 @@ module tests {
             board.play(2, 2, +1);
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
-            $(board.toString()).equal('   A B C\n 1 - - -\n 2 - - -\n 3 - - X');
+            $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
             $(board.hash()).equal('5x5(;;--X)');
         });
 
@@ -43,15 +43,15 @@ module tests {
 
             $(board.toString()).equal([
                 '   A B C D',
-                ' 1 - X - -',
-                ' 2 X O O -',
-                ' 3 X X O -',
-                ' 4 - X O -',
+                ' 9 - X - -',
+                ' 8 X O O -',
+                ' 7 X X O -',
+                ' 6 - X O -',
                 ' 5 - X - O',
-                ' 6 - - X O',
-                ' 7 - X O -',
-                ' 8 - X O O',
-                ' 9 O O O -'
+                ' 4 - - X O',
+                ' 3 - X O -',
+                ' 2 - X O O',
+                ' 1 O O O -'
             ].join('\n'));
 
             $(board.hash()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
@@ -60,28 +60,28 @@ module tests {
         $.test($ => { 
             /// 9x9 from txt to txt
             const board = new Board(9, [
-                '-X--',
-                'XOO-',
-                'XXO-',
-                '-XO-',
-                '-X-O',
-                '--XO',
-                '-XO-',
-                '-XOO',
-                'OOO-'
+                '-X-------',
+                'XOO------',
+                'XXO-----X',
+                '-XO------',
+                '-X-O-----',
+                '--XO-----',
+                '-XO------',
+                '-XOO-----',
+                'OOO------'
             ]);
 
             $(board + '').equal([
-                '   A B C D',
-                ' 1 - X - -',
-                ' 2 X O O -',
-                ' 3 X X O -',
-                ' 4 - X O -',
-                ' 5 - X - O',
-                ' 6 - - X O',
-                ' 7 - X O -',
-                ' 8 - X O O',
-                ' 9 O O O -'
+                '   A B C D E F G H J',
+                ' 9 - X - - - - - - -',
+                ' 8 X O O - - - - - -',
+                ' 7 X X O - - - - - X',
+                ' 6 - X O - - - - - -',
+                ' 5 - X - O - - - - -',
+                ' 4 - - X O - - - - -',
+                ' 3 - X O - - - - - -',
+                ' 2 - X O O - - - - -',
+                ' 1 O O O - - - - - -'
             ].join('\n'));
         });
 
@@ -159,10 +159,10 @@ module tests {
 
             $(b + '').equal(
                 '   A B C D E F G H\n' +
-                ' 1 X - X X O O O O\n' +
-                ' 2 X X - X X O O X\n' +
-                ' 3 - - X - - X O X\n' +
-                ' 4 - - X - - - X X\n' +
+                ' 9 X - X X O O O O\n' +
+                ' 8 X X - X X O O X\n' +
+                ' 7 - - X - - X O X\n' +
+                ' 6 - - X - - - X X\n' +
                 ' 5 - - - X X X - -');
         });
 

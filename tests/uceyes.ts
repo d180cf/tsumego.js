@@ -20,6 +20,8 @@ module tests {
                 [pe][pc][pb])
             `);
 
+            console.log(board + '');
+
             const eyes = {};
 
             for (let x = 0; x < 16; x++) {
@@ -27,11 +29,15 @@ module tests {
                     // I is skipped
                     const xy = String.fromCharCode(x > 7 ? x + 0x42 : x + 0x41) + (16 - y);
 
-                    if (Pattern.isEye(board, x, y, +1))
+                    if (Pattern.isEye(board, x, y, +1)) {
+                        $(eyes[xy]).equal(void 0);
                         eyes[xy] = +1;
+                    }
 
-                    if (Pattern.isEye(board, x, y, -1))
+                    if (Pattern.isEye(board, x, y, -1)) {
+                        $(eyes[xy]).equal(void 0);
                         eyes[xy] = -1;
+                    }
                 }
             }
 

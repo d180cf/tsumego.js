@@ -5,12 +5,14 @@ module tsumego.linalg {
 
     export interface vector {
         [i: number]: number;
+        [Symbol.iterator](): IterableIterator<number>;
         length: number;
         map(f: (x: number) => number): vector;
     }
 
     export interface matrix {
         [row: number]: vector;
+        [Symbol.iterator](): IterableIterator<vector>;
         length: number;
     }
 
@@ -72,5 +74,69 @@ module tsumego.linalg {
         export const transpose = (m: matrix): matrix =>
             from(m[0].length, i =>
                 from(m.length, j => m[j][i]));
+    }
+
+    export class BitMatrix {
+        bits = 0;
+
+        constructor(public rows: number, public cols: number, init?: number | ((row: number, col: number) => boolean)) {
+            if (typeof init === 'number') {
+                this.bits = init;
+            } else if (typeof init === 'function') {
+                for (let i = 0; i < rows; i++)
+                    for (let j = 0; j < cols; j++)
+                        this.set(i, j, init(i, j));
+            }
+        }
+
+        toString() {
+            let s = '';
+
+            for (let i = 0; i < this.rows; i++ , s += '|')
+                for (let j = 0; j < this.cols; j++)
+                    s += this.get(i, j) ? '#' : '-';
+
+            return s.slice(0, -1);
+        }
+
+        get(row: number, col: number) {
+            const mask = this.mask(row, col);
+            return !!(this.bits & mask);
+        }
+
+        set(row: number, col: number, bit: boolean) {
+            const mask = this.mask(row, col);
+
+            if (bit)
+                this.bits |= mask;
+            else
+                this.bits &= ~mask;
+        }
+
+        /** transposition */
+        get t() {
+            return new BitMatrix(this.cols, this.rows,
+                (i, j) => this.get(j, i));
+        }
+
+        /** counter clock wise rotation by 90 degrees */
+        get r() {
+            return new BitMatrix(this.cols, this.rows,
+                (i, j) => this.get(j, this.cols - i - 1));
+        }
+
+        /** horizontal reflection */
+        get h() {
+            return this.r.t;
+        }
+
+        /** vertical reflection */
+        get v() {
+            return this.t.r;
+        }
+
+        private mask(row: number, col: number) {
+            return 1 << (row * this.cols + col);
+        }
     }
 }
