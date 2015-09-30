@@ -5,6 +5,7 @@ module tests {
     import solve = tsumego.solve;
     import Move = tsumego.XY;
     import s2n = tsumego.s2n;
+    import xy2s = tsumego.xy2s;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
 
@@ -185,17 +186,29 @@ module tests {
 
                 console.log(board + '');
 
-                const result = solve(
-                    [board],
-                    +1,
-                    0,
-                    new TT<Move>(),
-                    BasicMoveGen(rzone),
-                    b => b.get(aimx, aimy) < 0 ? -1 : +1);
+                for (const config of setup['TEST']) {
+                    const [lhs, rhs] = config.split(' => ');
+                    const [c2p, nkt] = lhs.split('+');
+                    const [winner, move] = rhs.split('+');
 
-                console.log(JSON.stringify(result));
+                    console.log(c2p + ' plays first');
 
-                $(result).equal(null);
+                    if (+nkt)
+                        console.log(`${+nkt > 0 ? 'B' : 'W'} has ${nkt} ko treats`);
+
+                    const result = solve(
+                        [board],
+                        c2p == 'B' ? +1 : -1,
+                        +nkt,
+                        new TT<Move>(),
+                        BasicMoveGen(rzone),
+                        b => b.get(aimx, aimy) < 0 ? -1 : +1);
+
+                    console.log('result:', JSON.stringify(result));
+
+                    $(result.color).equal(winner == 'B' ? +1 : -1);
+                    $(xy2s(result.move)).equal(move);
+                }
             }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
         }
     });

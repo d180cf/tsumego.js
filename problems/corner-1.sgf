@@ -1,4 +1,8 @@
 (;FF[4]SZ[9]MA[bb]
+
+TEST[B+0 => B+aa]
+	[W+0 => B]
+
 DD[aa]
 AB[ac][bc][cc][cb][ca]
 AW[ab][bb][ba])

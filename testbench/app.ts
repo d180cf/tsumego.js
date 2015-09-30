@@ -19,13 +19,13 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: Move) => !m ? 'null' :
+    const xy2s = (m: Move) => !Number.isFinite(m) ? 'null' :
         String.fromCharCode(0x41 + (Move.x(m) > 7 ? Move.x(m) - 1 : Move.x(m))) +
         (goban.board.size - Move.y(m));
 
     const c2s = Color.alias;
-    const cm2s = (c: Color, m: Move) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
+    const cm2s = (c: Color, m: Move) => c2s(c) + (Number,isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: Move) => n2s(Move.x(xy)) + n2s(Move.y(xy));
@@ -342,7 +342,7 @@ module testbench {
                 } else {
                     const {move} = solve(path, c, !xy ? 0 : +xy, true);
 
-                    if (!move) {
+                    if (!Number.isFinite(move)) {
                         console.log(col, 'passes');
                     } else {
                         debugger;
