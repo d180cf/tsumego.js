@@ -177,20 +177,19 @@ module tests {
         for (const path of ls('../problems/**/*.sgf')) {
             const data = cat(path, 'utf8');
 
-            $.test($ => {
-                const sgf = SGF.parse(data);
-                const setup = sgf.steps[0];
-                const [aimx, aimy] = f2xy(setup['MA'][0]);
-                const rzone = setup['DD'].map(f2xy).map(m => Move(m[0], m[1]));
-                const board = new Board(sgf);
+            const sgf = SGF.parse(data);
+            const setup = sgf.steps[0];
+            const [aimx, aimy] = f2xy(setup['MA'][0]);
+            const rzone = setup['DD'].map(f2xy).map(m => Move(m[0], m[1]));
+            const board = new Board(sgf);
 
-                console.log(board + '');
+            for (const config of setup['TEST'] || []) {
+                const [lhs, rhs] = config.split(' => ');
+                const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
+                const [winner, moves] = rhs.split('+');
 
-                for (const config of setup['TEST'] || []) {
-                    const [lhs, rhs] = config.split(' => ');
-                    const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
-                    const [winner, moves] = rhs.split('+');
-
+                $.test($ => {
+                    console.log(board + '');
                     console.log(c2p + ' plays first');
 
                     if (nkt)
@@ -212,8 +211,8 @@ module tests {
 
                     $(result.color > 0 ? 'B' : 'W').equal(winner);
                     $(xy2s(result.move)).belong(moves ? moves.split(',') : [null]);
-                }
-            }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
+                }, /([^\/\\]+)\.sgf$/.exec(path)[1] + ':' + lhs);
+            }
         }
     });
 }

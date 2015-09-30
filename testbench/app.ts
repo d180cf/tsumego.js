@@ -345,16 +345,14 @@ module testbench {
                     if (!Number.isFinite(move)) {
                         console.log(col, 'passes');
                     } else {
-                        debugger;
-
-                        const sgfp = sgfdata.replace(
-                            /\)\s*$/,
-                            '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
+                        //const sgfp = sgfdata.replace(
+                        //    /\)\s*$/,
+                        //    '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
 
                         b.play(Move.x(move), Move.y(move), c);
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
-                        renderSGF(sgfp);
+                        //renderSGF(sgfp);
                     }
                 }
                 break;
