@@ -186,23 +186,27 @@ module tests {
 
                 console.log(board + '');
 
-                for (const config of setup['TEST']) {
+                for (const config of setup['TEST'] || []) {
                     const [lhs, rhs] = config.split(' => ');
-                    const [c2p, nkt] = lhs.split('+');
+                    const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
                     const [winner, moves] = rhs.split('+');
 
                     console.log(c2p + ' plays first');
 
                     if (nkt)
-                        console.log(`${+nkt > 0 ? 'B' : 'W'} has ${nkt} ko treats`);
+                        console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt) } ko treats`);
+
+                    const tt = new TT<Move>();
+                    const mg = BasicMoveGen(rzone);
+                    const st = (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1;
 
                     const result = solve(
                         [board],
                         c2p == 'B' ? +1 : -1,
                         +(nkt || 0),
-                        new TT<Move>(),
-                        BasicMoveGen(rzone),
-                        b => b.get(aimx, aimy) < 0 ? -1 : +1);
+                        tt,
+                        mg,
+                        st);
 
                     console.log('result:', JSON.stringify(result));
 
