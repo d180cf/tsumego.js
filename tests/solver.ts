@@ -193,13 +193,13 @@ module tests {
 
                     console.log(c2p + ' plays first');
 
-                    if (+nkt)
+                    if (nkt)
                         console.log(`${+nkt > 0 ? 'B' : 'W'} has ${nkt} ko treats`);
 
                     const result = solve(
                         [board],
                         c2p == 'B' ? +1 : -1,
-                        +nkt,
+                        +(nkt || 0),
                         new TT<Move>(),
                         BasicMoveGen(rzone),
                         b => b.get(aimx, aimy) < 0 ? -1 : +1);
