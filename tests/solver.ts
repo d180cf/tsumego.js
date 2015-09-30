@@ -189,7 +189,7 @@ module tests {
                 for (const config of setup['TEST']) {
                     const [lhs, rhs] = config.split(' => ');
                     const [c2p, nkt] = lhs.split('+');
-                    const [winner, move] = rhs.split('+');
+                    const [winner, moves] = rhs.split('+');
 
                     console.log(c2p + ' plays first');
 
@@ -206,8 +206,8 @@ module tests {
 
                     console.log('result:', JSON.stringify(result));
 
-                    $(result.color).equal(winner == 'B' ? +1 : -1);
-                    $(xy2s(result.move)).equal(move);
+                    $(result.color > 0 ? 'B' : 'W').equal(winner);
+                    $(xy2s(result.move)).belong(moves ? moves.split(',') : [null]);
                 }
             }, /([^\/\\]+)\.sgf$/.exec(path)[1]);
         }

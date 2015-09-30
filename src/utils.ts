@@ -9,7 +9,7 @@ module tsumego {
     export const n2s = (n: number) => String.fromCharCode(n + 0x61);
 
     /** (2, 5) -> 'ce' */
-    export const xy2s = (xy: XY) => Number.isFinite(xy) ? n2s(XY.x(xy)) + n2s(XY.y(xy)) : xy;
+    export const xy2s = (xy: XY) => Number.isFinite(xy) ? n2s(XY.x(xy)) + n2s(XY.y(xy)) : null;
 
     /** `d` -> 43 `a` -> 0 */
     export const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
