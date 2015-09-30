@@ -19,13 +19,13 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: Move) => !m ? 'null' :
+    const xy2s = (m: Move) => !Number.isFinite(m) ? 'null' :
         String.fromCharCode(0x41 + (Move.x(m) > 7 ? Move.x(m) - 1 : Move.x(m))) +
         (goban.board.size - Move.y(m));
 
     const c2s = Color.alias;
-    const cm2s = (c: Color, m: Move) => c2s(c) + (m ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (m ? xy2s(m) : 'passing');
+    const cm2s = (c: Color, m: Move) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: Move) => n2s(Move.x(xy)) + n2s(Move.y(xy));
@@ -312,11 +312,25 @@ module testbench {
         goban.kifuReader.allowIllegalMoves(true);
     }
 
-    function parse(si: string): Move {
-        return Move(
-            si.charCodeAt(0) - 65,
-            +/\d+/.exec(si)[0] - 1
-        );
+    function makeMove(x: number, y: number, c: number) {
+        const node = new WGo.KNode({
+            _edited: true,
+            move: {
+                x: x,
+                y: y,
+                c: c > 0 ? WGo.B : WGo.W
+            }
+        });
+
+        goban.kifuReader.node.appendChild(node);
+        goban.next(goban.kifuReader.node.children.length - 1);
+    }
+
+    function parse(si: string, size: number): Move {
+        const x = si.charCodeAt(0) - 65;
+        const y = size - +/\d+/.exec(si)[0];
+
+        return Move(x, y);
     }
 
     window['$'] = data => {
@@ -326,35 +340,36 @@ module testbench {
         switch (col) {
             case 'x':
             case 'o':
-                var xy = cmd[1] && cmd[1].toUpperCase();
-                var b = path[path.length - 1].fork();
-                var c = cmd[0].toUpperCase() == 'O' ? -1 : +1;
+                const xy = cmd[1] && cmd[1].toUpperCase();
+                const b = path[path.length - 1].fork();
+                const c = cmd[0].toUpperCase() == 'O' ? -1 : +1;
 
                 if (/^[a-z]\d+$/i.test(xy)) {
-                    var p = parse(xy);
+                    const p = parse(xy, b.size);
 
                     if (!b.play(Move.x(p), Move.y(p), c)) {
                         console.log(col, 'cannot play at', xy);
                     } else {
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
+                        makeMove(Move.x(p), Move.y(p), c);
                     }
                 } else {
                     const {move} = solve(path, c, !xy ? 0 : +xy, true);
 
-                    if (!move) {
+                    if (!Number.isFinite(move)) {
                         console.log(col, 'passes');
                     } else {
-                        debugger;
-
-                        const sgfp = sgfdata.replace(
-                            /\)\s*$/,
-                            '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
+                        //const sgfp = sgfdata.replace(
+                        //    /\)\s*$/,
+                        //    '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
 
                         b.play(Move.x(move), Move.y(move), c);
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
-                        renderSGF(sgfp);
+                        //renderSGF(sgfp);
+
+                        makeMove(Move.x(move), Move.y(move), c);
                     }
                 }
                 break;

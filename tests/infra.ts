@@ -97,6 +97,11 @@ module ut {
         equal(y: T) {
             match(y)(this.value);
         }
+
+        belong(y: T[]) {
+            if (y.indexOf(this.value) < 0)
+                throw Error(`${JSON.stringify(this.value) } cannot be found in ${JSON.stringify(y) }`);
+        }
     }
 
     function match(pattern) {
