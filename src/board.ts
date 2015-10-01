@@ -7,7 +7,7 @@ module tsumego {
     'use strict';
 
     /**
-     * A block is represented by a 32 bit signed integer:
+     * A block descriptor is represented by a 32 bit signed integer:
      *
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
@@ -54,10 +54,16 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
-        /** A pseudo block with 1 liberty. */
+        /** A pseudo block descriptor with 1 liberty. */
         export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
     }
 
+    /**
+     * A square board with size up to 16x16.
+     *
+     * The board's internal representation supports
+     * very fast play(x, y, color) and undo() operations.
+     */
     export class Board {
         /** 
          * The max board size is 16x16 because boundaries
@@ -66,41 +72,46 @@ module tsumego {
         size: number;
 
         /** 
-         * table[y * size + x] contains a block id or 0.
-         *
-         * When a block is merged with another block,
-         * this table isn't changed, but the corresponding
-         * two blocks get updated in the list of blocks.
-         *
-         * When a block is captured, correponding cells in
-         * this table aren't reset to 0. Instead, the block
-         * is reset. This means that even if a table cell
-         * contains a non-zero block id, that block may have
-         * been deleted long ago.
-         */
-        private table: block.id[];
-
-        /** 
-         * blocks[id] = a block data with this block.id
+         * blocks[id] = a block descriptor with this block.id
          *
          * When block #1 is merged with block #2, its size is
-         * reset to 0 and its libs is set to #2's id: this trick allows
-         * to not modify the board table too often.
+         * reset to 0 and its libs is set to #2's id: this trick
+         * allows to not modify the board table too often.
          *
          * This means that to get the block libs and other data
          * it's necessary to walk up the chain of merged blocks.
+         * This operation is called "lifting" of the block id.
          *
          * When a block is captured, blocks[id] is reset to 0,
          * but the corresponding elements in the board table
          * aren't changed.
          *
          * Elements in this array are never removed. During the
-         * lifetime of a block, its entry in the list is changed
-         * and when the block is captured, its entry is nulled,
-         * but is never removed.
+         * lifetime of a block, its descriptor is changed and when
+         * the block is captured, its descriptor is nulled, but is
+         * never removed from the array.
          */
         blocks: block[] = [0];
 
+        /** 
+         * table[y * size + x] contains a block id or 0.
+         *
+         * When a block is merged with another block,
+         * this table isn't changed, but the corresponding
+         * descriptors of the two blocks get updated in the
+         * list of blocks.
+         *
+         * When a block is captured, correponding cells in
+         * this table aren't reset to 0. Instead, the block's
+         * descriptor is nulled. This means that even if a table cell
+         * contains a non-zero block id, that block may have
+         * been deleted long ago. Thus a naive check !table[...]
+         * is almost enevr correct: the block id needs to be
+         * lifted first before it can be said whether it even
+         * exists.
+         */
+        private table: block.id[];
+        
         /**
          * Every time a stone is added, changes in the list of blocks
          * and in the board table are stored in the history so that that
@@ -116,7 +127,7 @@ module tsumego {
              * 0               1               2               3
              *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |   x   |   y   |    changed    |    block.id   |             |C|
+             * |   x   |   y   |    changed    |    block.id   |             |c|
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             
              *
              * The coordinates are stored in the first byte.
@@ -127,9 +138,9 @@ module tsumego {
             added: number[];
 
             /**
-             * Every time a block is modified, its id and its previous version
+             * Every time a block is modified, its id and its previous descriptor
              * from blocks[id] is stored in this list. When a block is removed,
-             * its entry is nulled.
+             * its descriptor is nulled.
              */
             changed: number[];
         };
@@ -217,10 +228,10 @@ module tsumego {
         }
 
         private lift(id: block.id): block.id {
-            let b;
+            let bd;
 
-            while (id && !block.size(b = this.blocks[id]))
-                id = block.libs(b);
+            while (id && !block.size(bd = this.blocks[id]))
+                id = block.libs(bd);
 
             return id;
         }
@@ -257,37 +268,44 @@ module tsumego {
 
             next: for (let i = 0; i < 4; i++) {
                 const id = neighbors[i];
-                const b = this.blocks[id];
+                const bd = this.blocks[id];
 
-                if (b * color <= 0)
+                if (bd * color <= 0)
                     continue;
 
                 for (let j = 0; j < i; j++)
                     if (neighbors[j] == id)
                         continue next;
 
-                this.change(id, b + quantity * block.lib1);
+                this.change(id, bd + quantity * block.lib1);
             }
         }
 
+        /**
+         * emoves ablock from the board and adjusts
+         * the number of liberties of affected blocks.
+         */
         private remove(id: block.id) {
-            const b = this.blocks[id];
-            const [xmin, xmax, ymin, ymax] = block.rect(b);
+            const bd = this.blocks[id];
+            const [xmin, xmax, ymin, ymax] = block.rect(bd);
 
             this.change(id, 0);
 
             for (let y = ymin; y <= ymax; y++)
                 for (let x = xmin; x <= xmax; x++)
                     if (this.getBlockId(x, y) == id)
-                        this.adjust(x, y, -b, +1);
+                        this.adjust(x, y, -bd, +1);
         }
 
-        /** Changes the block data and makes an appropriate record in the history. */
-        private change(id: block.id, b: block) {
+        /** 
+         * Changes the block descriptor and makes
+         * an appropriate record in the history. 
+         */
+        private change(id: block.id, bd: block) {
             // adding a new block corresponds to a change from
             // blocks[blocks.length - 1] -> b
             this.history.changed.push(id, this.blocks[id] || 0);
-            this.blocks[id] = b;
+            this.blocks[id] = bd;
         }
 
         inBounds(x: number, y: number): boolean;
@@ -310,16 +328,20 @@ module tsumego {
         /** 
          * Returns the number of captured stones + 1.
          * If the move cannot be played, returns 0.
-         * The move can be undone.
+         * The move can be undone by undo().
+         *
+         * This method only sets table[y * size + x] to
+         * to an appropriate block id and changes block
+         * descriptors in the array of blocks. It doesn't
+         * allocate temporary objects and thus is pretty fast.
          */
-        //@profile.time
         play(x: number, y: number, color: number): number {
             if (this.getBlockId(x, y))
                 return 0;
 
             const size = this.size;
 
-            const n_changed = this.history.changed.length / 2; // id1, b1, id2, b2, ...
+            const n_changed = this.history.changed.length / 2; // id1, bd1, id2, bd2, ...
 
             const ids: block.id[] = this.getNbBlockIds(x, y);
             const nbs: block[] = [0, 0, 0, 0];
@@ -335,8 +357,8 @@ module tsumego {
 
             for (let i = 0; i < 4; i++)
                 if (lib[i] == 1 && color * nbs[i] < 0)
-                    result += block.size(nbs[i]),
-                    this.remove(ids[i]);
+                    this.remove(ids[i]),
+                    result += block.size(nbs[i]);
 
             if (result == 0
                 /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
@@ -380,8 +402,6 @@ module tsumego {
 
                 const fids = [id_new];
 
-                // find blocks that need to be merged
-
                 for (let i = 0; i < 4; i++)
                     if (nbs[i] * color > 0 && ids[i] != id_new)
                         fids.push(ids[i]);
@@ -395,11 +415,11 @@ module tsumego {
 
                 for (let i = 0; i < fids.length; i++) {
                     const id = fids[i];
-                    const b = this.blocks[id];
+                    const bd = this.blocks[id];
 
-                    size_new += block.size(b);
+                    size_new += block.size(bd);
 
-                    const [xmin, xmax, ymin, ymax] = block.rect(b);
+                    const [xmin, xmax, ymin, ymax] = block.rect(bd);
 
                     xmin_new = min(xmin_new, xmin);
                     ymin_new = min(ymin_new, ymin);
@@ -412,22 +432,23 @@ module tsumego {
                         this.change(id, block(0, 0, 0, 0, id_new, 0, 0));
                 }
 
-                let libs_new = 0;
-
                 // libs need to be counted in the rectangle extended by 1 intersection
+
+                let libs_new = 0;
 
                 for (let y = max(ymin_new - 1, 0); y <= min(ymax_new + 1, this.size - 1); y++) {
                     for (let x = max(xmin_new - 1, 0); x <= min(xmax_new + 1, this.size - 1); x++) {
-                        if (!this.getBlockId(x, y)) {
-                            const is_lib =
-                                this.getBlockId(x - 1, y) == id_new ||
-                                this.getBlockId(x + 1, y) == id_new ||
-                                this.getBlockId(x, y - 1) == id_new ||
-                                this.getBlockId(x, y + 1) == id_new;
+                        if (this.getBlockId(x, y))
+                            continue;
 
-                            if (is_lib)
-                                libs_new++;
-                        }
+                        const is_lib =
+                            this.getBlockId(x - 1, y) == id_new ||
+                            this.getBlockId(x + 1, y) == id_new ||
+                            this.getBlockId(x, y - 1) == id_new ||
+                            this.getBlockId(x, y + 1) == id_new;
+
+                        if (is_lib)
+                            libs_new++;
                     }
                 }
 
@@ -442,7 +463,11 @@ module tsumego {
             return result + 1;
         }
 
-        /** Reverts the last move. */
+        /** 
+         * Reverts the last move by restoring the original
+         * block id in table[y * size + x] and by reverting
+         * original values of block descriptors.
+         */
         undo() {
             const move = this.history.added.pop();
 
@@ -453,7 +478,7 @@ module tsumego {
             this.table[y * this.size + x] = move >> 16 & 255;
 
             for (let i = 0; i < n; i++) {
-                const b = this.history.changed.pop();
+                const bd = this.history.changed.pop();
                 const id = this.history.changed.pop();
 
                 // when a new block is added, the corresponding
@@ -461,7 +486,7 @@ module tsumego {
                 // the last block from 0 to something;; to undo
                 // this properly, the last element in the array
                 // needs to be removed as well
-                if (id == this.blocks.length - 1 && !b)
+                if (id == this.blocks.length - 1 && !bd)
                     this.blocks.pop();
             }
         }
