@@ -49,9 +49,39 @@ module tsumego {
     }
 
     export class Board {
-        size: uint;
+        /** up to 16x16 */
+        size: number;
 
-        private _grid: BlockId[]; // index = y * size + x
+        /** 
+         * table[y * size + x] contains a block id or 0. 
+         *
+         * When a block is merged with another block,
+         * this table isn't changed, but the corresponding
+         * two blocks get updated in the list of blocks.
+         *
+         * When a block is captured, correponding items in
+         * this table are reset to 0.
+         */
+        private table: number[];
+
+        /** 
+         * blocks[id] = a block with this block.id
+         *
+         * When block #1 is merged with block #2, its libs and size
+         * are reset to 0, and its id is set to block.id(#2): this
+         * trick allows to not modify the board table too often.
+         * This means that to get the block libs and other info
+         * it's necessary to walk up the chain of merged blocks.
+         * In a regular block, it's block.id contains its own id.
+         *
+         * When a block is captured, blocks[block.id(...)] is reset to 0
+         * and corresponding elements in the board table are erased.
+         * If there are few removed blocks in the end of the list, they
+         * are removed from the list as well. This is important as the
+         * id of the block is stored in 5 bits.
+         */
+        private blocks: block[] = [0];
+
         private _libs: uint[] = [0]; // index = abs(blockid)
         private _hash: string;
 
@@ -71,7 +101,7 @@ module tsumego {
 
         private init(size: number) {
             this.size = size;
-            this._grid = new Array(size * size);
+            this.table = new Array(size * size);
         }
 
         private initFromTXT(rows: string[]) {
@@ -114,7 +144,7 @@ module tsumego {
 
             board.size = $.size;
             board._hash = $._hash;
-            board._grid = $._grid.slice(0);
+            board.table = $.table.slice(0);
             board._libs = $._libs.slice(0);
 
             return board;
@@ -126,7 +156,7 @@ module tsumego {
                 x = XY.x(x);
             }
 
-            var $ = this, n = $.size, t = $._grid;
+            var $ = this, n = $.size, t = $.table;
             return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
         }
 
@@ -152,7 +182,7 @@ module tsumego {
         }
 
         private remove(s: BlockId): uint {
-            const $ = this, t = $._grid, n = $.size, g = $._libs;
+            const $ = this, t = $.table, n = $.size, g = $._libs;
 
             let r = 0, i = 0;
 
@@ -173,7 +203,7 @@ module tsumego {
         }
 
         private countLibs(s: BlockId): uint {
-            const $ = this, t = $._grid, n = $.size;
+            const $ = this, t = $.table, n = $.size;
             let i = 0, r = 0;
 
             for (let y = 0; y < n; y++) {
@@ -208,7 +238,7 @@ module tsumego {
 
         //@profile.time
         play(x: number, y: number, s: Color): uint {
-            const $ = this, n = $.size, t = $._grid, nn = t.length, g = $._libs;
+            const $ = this, n = $.size, t = $.table, nn = t.length, g = $._libs;
 
             if (!$.inBounds(x, y) || t[y * n + x])
                 return 0;
@@ -313,7 +343,7 @@ module tsumego {
         }
 
         totalLibs(c: Color): uint {
-            var $ = this, t = $._grid, n = $.size;
+            var $ = this, t = $.table, n = $.size;
             var i = 0, x, y, r = 0;
 
             for (y = 0; y < n; y++) {
