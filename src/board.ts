@@ -12,7 +12,7 @@ module tsumego {
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * | xmin  | xmax  | ymin  | ymax  |  libs         |  size       | |
+     * | xmin  | xmax  | ymin  | ymax  |     libs      |    size     |c|
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      *
      * The first 2 bytes describe the rectangular boundaries of the block.
@@ -34,6 +34,10 @@ module tsumego {
      */
     export type block = number;
 
+    export function block(xmin: number, xmax: number, ymin: number, ymax: number, libs: number, size: number, color: number) {
+        return xmin | xmax << 4 | ymin << 8 | ymax << 12 | libs << 16 | size << 24 | color & 0x80000000;
+    }
+
     export namespace block {
         /** 
          * The board is represented by a square matrix in which
@@ -46,8 +50,11 @@ module tsumego {
         export const xmax = (b: block) => b >> 4 & 15;
         export const ymin = (b: block) => b >> 8 & 15;
         export const ymax = (b: block) => b >> 12 & 15;
+        export const rect = (b: block) => [xmin(b), xmax(b), ymin(b), ymax(b)];
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
+
+        export const add_libs = (b: block, n: number) => b & ~0xFF0000 | libs(b) + n << 16;
     }
 
     export class Board {
@@ -97,7 +104,7 @@ module tsumego {
              * 0               1               2               3
              *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |   x   |   y   |               blocks.length                 | |
+             * |   x   |   y   |               blocks.length                 |c|
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             
              *
              * The coordinates are stored in the first byte.
@@ -111,7 +118,7 @@ module tsumego {
              * from blocks[id] is stored in this list. When a block is removed,
              * the coordinates of its stones are added to the history as well.
              */
-            blocks: number[];
+            changed: number[];
 
             /**
              * When a block is removed, coordinates of all its stones are stored in the removed list.
@@ -140,8 +147,12 @@ module tsumego {
         }
 
         private init(size: number) {
+            if (size > 16)
+                throw Error(`Board ${size}x${size} is too big. Up to 16x16 boards are supported.`);
+
             this.size = size;
             this.table = new Array(size * size);
+            this.history = { added: [], changed: [], removed: [] };
         }
 
         private initFromTXT(rows: string[]) {
@@ -179,70 +190,104 @@ module tsumego {
             place('AB', +1);
         }
 
+        /** 
+         * Clones the board and all the history of moves.
+         * This method is exceptionally slow.
+         */
         fork(): Board {
-            var $ = this, board = new Board(0);
-
-            board.size = $.size;
-            board._hash = $._hash;
-            board.table = $.table.slice(0);
-            board._libs = $._libs.slice(0);
-
-            return board;
+            const json = JSON.parse(JSON.stringify(this));
+            Object.setPrototypeOf(json, Board.prototype);
+            return json as Board;
         }
 
-        get(x: number, y?: number): BlockId {
+        get(x: number, y: number): block.id;
+        get(xy: XY): block.id;
+
+        get(x: number, y?: number): block.id {
             if (y === void 0) {
                 y = XY.y(x);
                 x = XY.x(x);
             }
 
-            var $ = this, n = $.size, t = $.table;
-            return x < 0 || y < 0 || x >= n || y >= n ? 0 : t[y * n + x];
+            return this.inBounds(x, y) ? this.blocks[this.table[y * this.size + x]] : 0;
         }
 
-        private adjustLibs(s: Color, x: XIndex, y: YIndex, q: uint): void {
-            const $ = this, g = $._libs;
+        /** Returns block id or zero. The block data can be read from blocks[id]. */
+        private getBlockId(x: number, y: number) {
+            if (!this.isInBounds(x, y))
+                return 0;
 
-            const sl = $.get(x - 1, y);
-            const sr = $.get(x + 1, y);
-            const st = $.get(x, y + 1);
-            const sb = $.get(x, y - 1);
+            let b, i = this.table[y * this.size + x];
 
-            if (sl * s < 0)
-                g[abs(sl)] += q;
+            while (i && !block.size(b = this.blocks[i]))
+                i = block.libs(b);
 
-            if (sr * s < 0 && sr != sl)
-                g[abs(sr)] += q;
-
-            if (st * s < 0 && st != sr && st != sl)
-                g[abs(st)] += q;
-
-            if (sb * s < 0 && sb != st && sb != sr && sb != sl)
-                g[abs(sb)] += q;
+            return i;
         }
 
-        private remove(s: BlockId): uint {
-            const $ = this, t = $.table, n = $.size, g = $._libs;
+        /** Returns the four neighbors of the stone in the [L, R, T, B] format. */
+        private getNbBlockIds(x: number, y: number) {
+            return [
+                this.getBlockId(x - 1, y),
+                this.getBlockId(x + 1, y),
+                this.getBlockId(x, y - 1),
+                this.getBlockId(x, y + 1)
+            ];
+        }
 
-            let r = 0, i = 0;
+        /** 
+         * Adjusts libs of the four neighboring blocks
+         * of the given color by the given quantity. 
+         */
+        private adjust(x: number, y: number, color: number, quantity: number) {
+            const neighbors = this.getNbBlockIds(x, y);
 
-            for (let y = 0; y < n; y++) {
-                for (let x = 0; x < n; x++) {
-                    if (t[i] == s) {
-                        $.adjustLibs(s, x, y, +1);
-                        t[i] = 0;
-                        r++;
+            next: for (let i = 0; i < 4; i++) {
+                const id = neighbors[i];
+                const b = this.blocks[id];
+
+                if (b * color <= 0)
+                    continue;
+
+                for (let j = 0; j < i; j++)
+                    if (neighbors[j] == id)
+                        continue next;
+
+                this.history.changed.push(id);
+                this.history.changed.push(b);
+
+                this.blocks[id] = block.add_libs(b, quantity);
+            }
+        }
+
+        private remove(id: block.id) {
+            const b = this.blocks[id];
+            const [xmin, xmax, ymin, ymax] = block.rect(b);
+
+            this.history.changed.push(id);
+            this.history.changed.push(this.blocks[id]);
+
+            this.blocks[id] = 0;
+
+            for (let y = ymin; y <= ymax; y++) {
+                for (let x = xmin; x <= xmax; x++) {
+                    const i = y * this.size + x;
+
+                    if (this.table[i] == id) {
+                        this.adjust(x, y, -b, +1);
+                        this.table[i] = 0;
+                        this.history.removed.push(x | y << 4);
                     }
-
-                    i++;
                 }
             }
-
-            g[s] = 0;
-            return r;
         }
 
-        private countLibs(s: BlockId): uint {
+        /** Adds id2 to id1. */
+        private merge(id1: block.id, id2: block.id) {
+            
+        }
+
+        private countLibs(s: block.id): uint {
             const $ = this, t = $.table, n = $.size;
             let i = 0, r = 0;
 
@@ -262,155 +307,128 @@ module tsumego {
             return r;
         }
 
+        inBounds(x: number, y: number): boolean;
+        inBounds(xy: XY): boolean;
+
         inBounds(x: number, y?: number): boolean {
             if (y === void 0) {
                 y = XY.y(x);
                 x = XY.x(x);
             }
 
-            var n = this.size;
+            const n = this.size;
             return x >= 0 && x < n && y >= 0 && y < n;
         }
 
-        libs(block: BlockId) {
-            return this._libs[abs(block)] || 0;
+        private isInBounds(x: number, y: number) {
+            const n = this.size;
+            return x >= 0 && x < n && y >= 0 && y < n;
         }
 
-        //@profile.time
-        play(x: number, y: number, s: Color): uint {
-            const $ = this, n = $.size, t = $.table, nn = t.length, g = $._libs;
+        libs(id: block.id) {
+            return block.libs(id);
+        }
 
-            if (!$.inBounds(x, y) || t[y * n + x])
+        /** 
+         * Returns the number of captured stones + 1.
+         * If the move cannot be played, returns 0.
+         * The move can be undone.
+         */
+        //@profile.time
+        play(x: number, y: number, color: number): number {
+            const n = this.size, t = this.table;
+
+            if (!this.inBounds(x, y) || t[y * n + x])
                 return 0;
 
-            // block ids
+            const ids: block.id[] = this.getNbBlockIds(x, y);
+            const nbs: block[] = [0, 0, 0, 0];
+            const lib = [0, 0, 0, 0];
 
-            const sl = $.get(x - 1, y);
-            const sr = $.get(x + 1, y);
-            const sb = $.get(x, y - 1);
-            const st = $.get(x, y + 1);
+            for (let i = 0; i < 4; i++)
+                nbs[i] = this.blocks[ids[i]],
+                lib[i] = block.libs(nbs[i]);
 
-            // libs number
+            const n_blocks = this.blocks.length;
 
-            const nl = sl && g[abs(sl)];
-            const nr = sr && g[abs(sr)];
-            const nt = st && g[abs(st)];
-            const nb = sb && g[abs(sb)];
+            let n_removed = 0;            
 
-            let r = 0;
+            // remove captured blocks
 
-            // remove captured enemy neighbors
-
-            if (nl == 1 && s * sl < 0)
-                r += $.remove(sl);
-
-            if (nr == 1 && s * sr < 0)
-                r += $.remove(sr);
-
-            if (nt == 1 && s * st < 0)
-                r += $.remove(st);
-
-            if (nb == 1 && s * sb < 0)
-                r += $.remove(sb);
+            for (let i = 0; i < 4; i++)
+                if (lib[i] == 1 && color * nbs[i] < 0)
+                    n_removed += block.size(nbs[i]),
+                    this.remove(ids[i]);
 
             // suicide is not allowed
 
-            if (r == 0
-                && (sl * s < 0 || nl == 1 || x == 0)
-                && (sr * s < 0 || nr == 1 || x == n - 1)
-                && (st * s < 0 || nt == 1 || y == n - 1)
-                && (sb * s < 0 || nb == 1 || y == 0)) {
+            if (n_removed == 0
+                /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
+                /* R */ && (nbs[1] * color < 0 || lib[1] == 1 || x == n - 1)
+                /* T */ && (nbs[2] * color < 0 || lib[2] == 1 || y == 0)
+                /* B */ && (nbs[3] * color < 0 || lib[3] == 1 || y == n - 1)) {
                 return 0;
             }
 
-            // take away a lib of every neighbor group
+            // take away a lib of every neighboring group
 
-            $.adjustLibs(s, x, y, -1);
+            this.adjust(x, y, color, -1);
 
-            // new group id = min of neighbor group ids
+            // new group id = min of neighboring group ids
 
-            let gi = g.length;
+            let id_new = n_blocks;
+            let is_new = true;
 
-            if (sl * s > 0)
-                gi = min(gi, abs(sl));
+            for (let i = 0; i < 4; i++)
+                if (nbs[i] * color > 0 && ids[i] < id_new)
+                    id_new = ids[i],
+                    is_new = false;
 
-            if (st * s > 0)
-                gi = min(gi, abs(st));
+            this.history.added.push(x | y << 4 | n_blocks << 8 | color & 0x80000000);
+            t[y * n + x] = id_new;
+            this._hash = null;
 
-            if (sr * s > 0)
-                gi = min(gi, abs(sr));
+            if (is_new) {
+                // create a new block if the new stone has no neighbors
+                let n = 0;
 
-            if (sb * s > 0)
-                gi = min(gi, abs(sb));
+                for (let i = 0; i < 4; i++)
+                    if (!nbs[i] || lib[i] == 1)
+                        n++;
 
-            // merge neighbors into one group
-
-            let gs = s < 0 ? -gi : gi;
-
-            if (sl * s > 0 && sl != gs) {
-                for (let i = 0; i < nn; i++)
-                    if (t[i] == sl)
-                        t[i] = gs;
-                g[abs(sl)] = 0;
+                this.blocks[id_new] = block(x, x, y, y, n, 1, color);
+            } else {
+                // merge neighbors into one block
+                for (let i = 0; i < 4; i++)
+                    if (nbs[i] * color > 0 && ids[i] != id_new)
+                        this.merge(id_new, ids[i]);
             }
 
-            if (st * s > 0 && st != gs) {
-                for (let i = 0; i < nn; i++)
-                    if (t[i] == st)
-                        t[i] = gs;
-                g[abs(st)] = 0;
-            }
-
-            if (sr * s > 0 && sr != gs) {
-                for (let i = 0; i < nn; i++)
-                    if (t[i] == sr)
-                        t[i] = gs;
-                g[abs(sr)] = 0;
-            }
-
-            if (sb * s > 0 && sb != gs) {
-                for (let i = 0; i < nn; i++)
-                    if (t[i] == sb)
-                        t[i] = gs;
-                g[abs(sb)] = 0;
-            }
-
-            t[y * n + x] = gs;
-            g[gi] = $.countLibs(gs);
-            $._hash = null;
-
-            return r + 1;
+            return n_removed + 1;
         }
 
-        totalLibs(c: Color): uint {
-            var $ = this, t = $.table, n = $.size;
-            var i = 0, x, y, r = 0;
+        totalLibs(color: number): number {
+            let total = 0;
 
-            for (y = 0; y < n; y++) {
-                for (x = 0; x < n; x++) {
-                    if (!t[i])
-                        if ($.get(x - 1, y) * c > 0 ||
-                            $.get(x + 1, y) * c > 0 ||
-                            $.get(x, y - 1) * c > 0 ||
-                            $.get(x, y + 1) * c > 0)
-                            r++;
+            for (let i = 1; i < this.blocks.length; i++) {
+                const b = this.blocks[i];
 
-                    i++;
-                }
+                if (b * color > 0)
+                    total += block.libs(b);
             }
 
-            return r;
+            return total;
         }
 
-        eulern(color: Color, q: number = 2): int {
-            var board = this, n = board.size, x, y, a, b, c, d, n1 = 0, n2 = 0, n3 = 0;
+        eulern(color: number, q: number = 2): number {
+            let n1 = 0, n2 = 0, n3 = 0;
 
-            for (x = -1; x < n; x++) {
-                for (y = -1; y < n; y++) {
-                    a = (board.get(x, y) * color) > 0;
-                    b = (board.get(x + 1, y) * color) > 0;
-                    c = (board.get(x + 1, y + 1) * color) > 0;
-                    d = (board.get(x, y + 1) * color) > 0;
+            for (let x = -1; x < n; x++) {
+                for (let y = -1; y < n; y++) {
+                    const a = +((this.get(x, y) * color) > 0);
+                    const b = +((this.get(x + 1, y) * color) > 0);
+                    const c = +((this.get(x + 1, y + 1) * color) > 0);
+                    const d = +((this.get(x, y + 1) * color) > 0);
 
                     switch (a + b + c + d) {
                         case 1: n1++; break;
