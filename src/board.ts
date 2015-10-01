@@ -485,27 +485,6 @@ module tsumego {
             return total;
         }
 
-        eulern(color: number, q: number = 2): number {
-            let n1 = 0, n2 = 0, n3 = 0;
-
-            for (let x = -1; x <= this.size; x++) {
-                for (let y = -1; y <= this.size; y++) {
-                    const a = +((this.get(x, y) * color) > 0);
-                    const b = +((this.get(x + 1, y) * color) > 0);
-                    const c = +((this.get(x + 1, y + 1) * color) > 0);
-                    const d = +((this.get(x, y + 1) * color) > 0);
-
-                    switch (a + b + c + d) {
-                        case 1: n1++; break;
-                        case 2: if (a == c) n2++; break;
-                        case 3: n3++; break;
-                    }
-                }
-            }
-
-            return (n1 - n3 + q * n2) / 4;
-        }
-
         hash(): string {
             if (!this._hash) {
                 const n = this.size;
