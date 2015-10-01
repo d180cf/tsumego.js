@@ -6,10 +6,47 @@
 module tsumego {
     'use strict';
 
-    /** Stones in a block cannot be separated.
-        Positive ids are for black blocks.
-        Negative ids are for white blocks. */
-    type BlockId = int;
+    /**
+     * A block is represented by a 32 bit signed integer
+     * with the following internal structure:
+     *
+     * 0               1               2               3
+     *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * | xmin  | xmax  | ymin  | ymax  |  libs   |  size    |   id   | |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *
+     * The first 2 bytes describe the rectangular boundaries of the block.
+     * This implies that blocks must fit in 16x16 board.
+     *
+     * Next 5 bits contain the number of liberties. Most of the blocks
+     * hardly have 20 libs, so 5 bits should be enough.
+     *
+     * Next 5 bits tell the number of stones in the block, which gives
+     * up to 32 stones. Most of the blocks rarely exceed 15 stones in size.
+     *
+     * Next 5 bits contain the id of the block. This allows to have up to
+     * 32 blocks on the board at the same time.
+     *
+     * The last bit is the sign bit of the number and it tells the color
+     * of the block: 0 = black, 1 = white. This implies that black blocks
+     * are positive and white blocks are negative.
+     *
+     * Blocks with libs=0 or size=0 do not exist. When a block is merged
+     * with another block, it's size and libs are set to 0 and the id is set
+     * to id of the block it's been merged with.
+     */
+    export type block = number;
+
+    export namespace block {
+        export const xmin = (b: block) => b & 15;
+        export const xmax = (b: block) => b >> 4 & 15;
+        export const ymin = (b: block) => b >> 8 & 15;
+        export const ymax = (b: block) => b >> 12 & 15;
+        export const libs = (b: block) => b >> 16 & 31;
+        export const size = (b: block) => b >> 21 & 31;
+        export const id = (b: block) => b >> 26 & 31;        
+    }
 
     export class Board {
         size: uint;
