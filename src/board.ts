@@ -66,36 +66,47 @@ module tsumego {
         size: number;
 
         /** 
-         * table[y * size + x] contains a block id or 0. 
+         * table[y * size + x] contains a block id or 0.
          *
          * When a block is merged with another block,
          * this table isn't changed, but the corresponding
          * two blocks get updated in the list of blocks.
          *
          * When a block is captured, correponding cells in
-         * this table are reset to 0.
+         * this table aren't reset to 0. Instead, the block
+         * is reset. This means that even if a table cell
+         * contains a non-zero block id, that block may have
+         * been deleted long ago.
          */
         private table: block.id[];
 
         /** 
-         * blocks[id] = a block with this block.id
+         * blocks[id] = a block data with this block.id
          *
          * When block #1 is merged with block #2, its size is
-         * reset to 0 and its libs is set to #2: this trick allows
+         * reset to 0 and its libs is set to #2's id: this trick allows
          * to not modify the board table too often.
          *
-         * This means that to get the block libs and other info
+         * This means that to get the block libs and other data
          * it's necessary to walk up the chain of merged blocks.
          *
-         * When a block is captured, blocks[id] is reset to 0
-         * and corresponding elements in the board table are erased.
+         * When a block is captured, blocks[id] is reset to 0,
+         * but the corresponding elements in the board table
+         * aren't changed.
+         *
+         * Elements in this array are never removed. During the
+         * lifetime of a block, its entry in the list is changed
+         * and when the block is captured, its entry is nulled,
+         * but is never removed.
          */
         blocks: block[] = [0];
 
         /**
          * Every time a stone is added, changes in the list of blocks
          * and in the board table are stored in the history so that that
-         * stone can be quickly undone later.
+         * stone can be quickly undone later. The history rarely exceeds
+         * 40 moves, which is considered to be a very deep search when
+         * solving a tsumego.
          */
         private history: {
             /** 
@@ -105,30 +116,22 @@ module tsumego {
              * 0               1               2               3
              *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |   x   |   y   |    changed    |    removed    |               |
+             * |   x   |   y   |    changed    |    block.id   |             |C|
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             
              *
              * The coordinates are stored in the first byte.
              * The number of changed blocks is stored in the 2nd byte.
-             * The number of removed stones is stored in the 3rd byte.
+             * The block id replaced by this move in the table is stored in the 3rd byte.
+             * The color of the stone is stored in the sign bit.
              */
             added: number[];
 
             /**
              * Every time a block is modified, its id and its previous version
              * from blocks[id] is stored in this list. When a block is removed,
-             * the coordinates of its stones are added to the history as well.
+             * its entry is nulled.
              */
             changed: number[];
-
-            /**
-             * When a block is removed, coordinates of all its stones are stored in the removed list.
-             * The format of each entry is: bits 0..3 = x, bits 4..7 = y. The color isn't stored.
-             * It's possible to not store the coordinates themselves, but only a bit mask with the
-             * size of the block's boundary rectangle. It's debatable whether this would be more
-             * efficient.
-             */
-            removed: number[];
         };
 
         private _hash: string;
@@ -153,7 +156,7 @@ module tsumego {
 
             this.size = size;
             this.table = new Array(size * size);
-            this.history = { added: [], changed: [], removed: [] };
+            this.history = { added: [], changed: [] };
         }
 
         private initFromTXT(rows: string[]) {
@@ -273,15 +276,10 @@ module tsumego {
 
             this.change(id, 0);
 
-            for (let y = ymin; y <= ymax; y++) {
-                for (let x = xmin; x <= xmax; x++) {
-                    if (this.getBlockId(x, y) == id) {
+            for (let y = ymin; y <= ymax; y++)
+                for (let x = xmin; x <= xmax; x++)
+                    if (this.getBlockId(x, y) == id)
                         this.adjust(x, y, -b, +1);
-                        this.table[y * this.size + x] = 0;
-                        this.history.removed.push(x | y << 4);
-                    }
-                }
-            }
         }
 
         /** Changes the block data and makes an appropriate record in the history. */
@@ -322,7 +320,6 @@ module tsumego {
             const size = this.size;
 
             const n_changed = this.history.changed.length / 2; // id1, b1, id2, b2, ...
-            const n_removed = this.history.removed.length;
 
             const ids: block.id[] = this.getNbBlockIds(x, y);
             const nbs: block[] = [0, 0, 0, 0];
@@ -363,6 +360,8 @@ module tsumego {
                 if (nbs[i] * color > 0 && ids[i] < id_new)
                     id_new = ids[i],
                     is_new = false;
+
+            const id_old = this.table[y * size + x];
 
             this.table[y * size + x] = id_new;
             this._hash = null;
@@ -437,7 +436,8 @@ module tsumego {
 
             this.history.added.push(x | y << 4
                 | this.history.changed.length / 2 - n_changed << 8
-                | this.history.removed.length - n_removed << 8);
+                | id_old << 16
+                | color & 0x80000000);
 
             return result + 1;
         }
@@ -448,34 +448,19 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
+            const n = move >> 8 & 255;
 
-            this.table[y * this.size + x] = 0;
+            this.table[y * this.size + x] = move >> 16 & 255;
 
-            const n_changed = move >> 8 & 255;
-
-            for (let i = 0; i < n_changed; i++) {
+            for (let i = 0; i < n; i++) {
                 const b = this.history.changed.pop();
                 const id = this.history.changed.pop();
 
-                // the block was removed - restore its stones
-                if (!this.blocks[id]) {
-                    let n = block.size(b);
-
-                    while (n-- > 0) {
-                        const r = this.history.removed.pop();
-
-                        const rx = r & 15;
-                        const ry = r >> 4 & 15;
-
-                        this.table[ry * this.size + rx] = id;
-                    }
-                }
-
-                this.blocks[id] = b;
-
-                // whena new block is added, the corresponding
+                // when a new block is added, the corresponding
                 // record in the history looks like changing
-                // the last block from 0 to something
+                // the last block from 0 to something;; to undo
+                // this properly, the last element in the array
+                // needs to be removed as well
                 if (id == this.blocks.length - 1 && !b)
                     this.blocks.pop();
             }
