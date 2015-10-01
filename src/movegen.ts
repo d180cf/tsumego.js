@@ -34,8 +34,8 @@ module tsumego {
                             b: b,
                             m: m,
                             r: r,
-                            n1: b.totalLibs(color),
-                            n2: b.totalLibs(-color),
+                            n1: sumlibs(b, color),
+                            n2: sumlibs(b, -color),
                         });
                     }
                 }
@@ -50,6 +50,19 @@ module tsumego {
                 return leafs;
             };
         }
+    }
+
+    function sumlibs(board: Board, color: number): number {
+        let total = 0;
+
+        for (let i = 1; i < board.blocks.length; i++) {
+            const b = board.blocks[i];
+
+            if (b * color > 0)
+                total += block.libs(b);
+        }
+
+        return total;
     }
 
     function eulern(board: Board, color: number, q: number = 2) {

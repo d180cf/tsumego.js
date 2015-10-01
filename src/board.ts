@@ -74,7 +74,7 @@ module tsumego {
          * When a block is captured, correponding cells in
          * this table are reset to 0.
          */
-        private table: block.id[];
+        table: block.id[];
 
         /** 
          * blocks[id] = a block with this block.id
@@ -89,7 +89,7 @@ module tsumego {
          * When a block is captured, blocks[id] is reset to 0
          * and corresponding elements in the board table are erased.
          */
-        private blocks: block[] = [0];
+        blocks: block[] = [0];
 
         /**
          * Every time a stone is added, changes in the list of blocks
@@ -470,20 +470,7 @@ module tsumego {
                 if (id == this.blocks.length - 1 && !b)
                     this.blocks.pop();
             }
-        }
-
-        totalLibs(color: number): number {
-            let total = 0;
-
-            for (let i = 1; i < this.blocks.length; i++) {
-                const b = this.blocks[i];
-
-                if (b * color > 0)
-                    total += block.libs(b);
-            }
-
-            return total;
-        }
+        }        
 
         hash(): string {
             if (!this._hash) {
