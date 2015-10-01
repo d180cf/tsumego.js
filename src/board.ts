@@ -30,7 +30,7 @@ module tsumego {
      * are positive and white blocks are negative.
      *
      * Since a block a removed when it loses its last liberty, blocks with
-     * libs = 0 or size = 0 do not exist.
+     * libs = 0 or size = 0 do not represent any real entity on the board.
      */
     export type block = number;
 
@@ -54,7 +54,8 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
-        export const add_libs = (b: block, n: number) => b & ~0xFF0000 | libs(b) + n << 16;
+        /** A pseudo block with 1 liberty. */
+        export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
     }
 
     export class Board {
@@ -74,7 +75,7 @@ module tsumego {
          * When a block is captured, correponding cells in
          * this table are reset to 0.
          */
-        table: block.id[];
+        private table: block.id[];
 
         /** 
          * blocks[id] = a block with this block.id
@@ -209,23 +210,32 @@ module tsumego {
                 x = XY.x(x);
             }
 
-            return this.inBounds(x, y) ? this.blocks[this.table[y * this.size + x]] : 0;
+            return this.blocks[this.getBlockId(x, y)];
         }
 
-        /** Returns block id or zero. The block data can be read from blocks[id]. */
+        private lift(id: block.id): block.id {
+            let b;
+
+            while (id && !block.size(b = this.blocks[id]))
+                id = block.libs(b);
+
+            return id;
+        }
+
+        /** 
+         * Returns block id or zero. 
+         * The block data can be read from blocks[id]. 
+         */
         private getBlockId(x: number, y: number) {
-            if (!this.isInBounds(x, y))
-                return 0;
-
-            let b, i = this.table[y * this.size + x];
-
-            while (i && !block.size(b = this.blocks[i]))
-                i = block.libs(b);
-
-            return i;
+            return this.isInBounds(x, y) ?
+                this.lift(this.table[y * this.size + x]) :
+                0;
         }
 
-        /** Returns the four neighbors of the stone in the [L, R, T, B] format. */
+        /** 
+         * Returns the four neighbors of the stone
+         * in the [L, R, T, B] format. 
+         */
         private getNbBlockIds(x: number, y: number) {
             return [
                 this.getBlockId(x - 1, y),
@@ -253,8 +263,7 @@ module tsumego {
                     if (neighbors[j] == id)
                         continue next;
 
-                this.change(id, block.add_libs(b, quantity));
-
+                this.change(id, b + quantity * block.lib1);
             }
         }
 
@@ -266,11 +275,9 @@ module tsumego {
 
             for (let y = ymin; y <= ymax; y++) {
                 for (let x = xmin; x <= xmax; x++) {
-                    const i = y * this.size + x;
-
-                    if (this.table[i] == id) {
+                    if (this.getBlockId(x, y) == id) {
                         this.adjust(x, y, -b, +1);
-                        this.table[i] = 0;
+                        this.table[y * this.size + x] = 0;
                         this.history.removed.push(x | y << 4);
                     }
                 }
@@ -294,8 +301,7 @@ module tsumego {
                 x = XY.x(x);
             }
 
-            const n = this.size;
-            return x >= 0 && x < n && y >= 0 && y < n;
+            return this.isInBounds(x, y);
         }
 
         private isInBounds(x: number, y: number) {
@@ -310,10 +316,10 @@ module tsumego {
          */
         //@profile.time
         play(x: number, y: number, color: number): number {
-            const size = this.size, t = this.table;
-
-            if (!this.inBounds(x, y) || t[y * size + x])
+            if (this.getBlockId(x, y))
                 return 0;
+
+            const size = this.size;
 
             const n_changed = this.history.changed.length / 2; // id1, b1, id2, b2, ...
             const n_removed = this.history.removed.length;
@@ -358,7 +364,7 @@ module tsumego {
                     id_new = ids[i],
                     is_new = false;
 
-            t[y * size + x] = id_new;
+            this.table[y * size + x] = id_new;
             this._hash = null;
 
             if (is_new) {
@@ -404,7 +410,7 @@ module tsumego {
                     // make the merged block point to the new block
 
                     if (id != id_new)
-                        this.change(id, block(xmin, xmax, ymin, ymax, id_new, 0, color));
+                        this.change(id, block(0, 0, 0, 0, id_new, 0, 0));
                 }
 
                 let libs_new = 0;
@@ -413,7 +419,7 @@ module tsumego {
 
                 for (let y = max(ymin_new - 1, 0); y <= min(ymax_new + 1, this.size - 1); y++) {
                     for (let x = max(xmin_new - 1, 0); x <= min(xmax_new + 1, this.size - 1); x++) {
-                        if (!t[y * size + x]) {
+                        if (!this.getBlockId(x, y)) {
                             const is_lib =
                                 this.getBlockId(x - 1, y) == id_new ||
                                 this.getBlockId(x + 1, y) == id_new ||
@@ -442,6 +448,9 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
+
+            this.table[y * this.size + x] = 0;
+
             const n_changed = move >> 8 & 255;
 
             for (let i = 0; i < n_changed; i++) {
@@ -470,7 +479,7 @@ module tsumego {
                 if (id == this.blocks.length - 1 && !b)
                     this.blocks.pop();
             }
-        }        
+        }
 
         hash(): string {
             if (!this._hash) {
