@@ -7,49 +7,54 @@ module tsumego {
     'use strict';
 
     /**
-     * A block is represented by a 32 bit signed integer
-     * with the following internal structure:
+     * A block is represented by a 32 bit signed integer:
      *
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * | xmin  | xmax  | ymin  | ymax  |  libs   |  size    |   id   | |
+     * | xmin  | xmax  | ymin  | ymax  |  libs         |  size       | |
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      *
      * The first 2 bytes describe the rectangular boundaries of the block.
      * This implies that blocks must fit in 16x16 board.
      *
-     * Next 5 bits contain the number of liberties. Most of the blocks
-     * hardly have 20 libs, so 5 bits should be enough.
+     * Next byte contains the number of liberties. Most of the blocks
+     * hardly have 20 libs, so 8 bits should be more than enough.
      *
-     * Next 5 bits tell the number of stones in the block, which gives
-     * up to 32 stones. Most of the blocks rarely exceed 15 stones in size.
-     *
-     * Next 5 bits contain the id of the block. This allows to have up to
-     * 32 blocks on the board at the same time.
+     * The first 7 bits of the last byte contain the number of stones
+     * in the block, which gives up to 128 stones. Most of the blocks have
+     * less than 15 stones.
      *
      * The last bit is the sign bit of the number and it tells the color
      * of the block: 0 = black, 1 = white. This implies that black blocks
      * are positive and white blocks are negative.
      *
-     * Blocks with libs=0 or size=0 do not exist. When a block is merged
-     * with another block, it's size and libs are set to 0 and the id is set
-     * to id of the block it's been merged with.
+     * Since a block a removed when it loses its last liberty, blocks with
+     * libs = 0 or size = 0 do not exist.
      */
     export type block = number;
 
     export namespace block {
+        /** 
+         * The board is represented by a square matrix in which
+         * each cell contains either block id or 0, if the intersection
+         * is unoccupied. This is why block ids start with 1.
+         */
+        export type id = number;
+
         export const xmin = (b: block) => b & 15;
         export const xmax = (b: block) => b >> 4 & 15;
         export const ymin = (b: block) => b >> 8 & 15;
         export const ymax = (b: block) => b >> 12 & 15;
-        export const libs = (b: block) => b >> 16 & 31;
-        export const size = (b: block) => b >> 21 & 31;
-        export const id = (b: block) => b >> 26 & 31;        
+        export const libs = (b: block) => b >> 16 & 255;
+        export const size = (b: block) => b >> 24 & 127;
     }
 
     export class Board {
-        /** up to 16x16 */
+        /** 
+         * The max board size is 16x16 because boundaries
+         * of each block are stored in 4 bit integers. 
+         */
         size: number;
 
         /** 
@@ -59,30 +64,65 @@ module tsumego {
          * this table isn't changed, but the corresponding
          * two blocks get updated in the list of blocks.
          *
-         * When a block is captured, correponding items in
+         * When a block is captured, correponding cells in
          * this table are reset to 0.
          */
-        private table: number[];
+        private table: block.id[];
 
         /** 
          * blocks[id] = a block with this block.id
          *
-         * When block #1 is merged with block #2, its libs and size
-         * are reset to 0, and its id is set to block.id(#2): this
-         * trick allows to not modify the board table too often.
+         * When block #1 is merged with block #2, its size is
+         * reset to 0 and its libs is set to #2: this trick allows
+         * to not modify the board table too often.
+         *
          * This means that to get the block libs and other info
          * it's necessary to walk up the chain of merged blocks.
-         * In a regular block, it's block.id contains its own id.
          *
-         * When a block is captured, blocks[block.id(...)] is reset to 0
+         * When a block is captured, blocks[id] is reset to 0
          * and corresponding elements in the board table are erased.
-         * If there are few removed blocks in the end of the list, they
-         * are removed from the list as well. This is important as the
-         * id of the block is stored in 5 bits.
          */
         private blocks: block[] = [0];
 
-        private _libs: uint[] = [0]; // index = abs(blockid)
+        /**
+         * Every time a stone is added, changes in the list of blocks
+         * and in the board table are stored in the history so that that
+         * stone can be quickly undone later.
+         */
+        private history: {
+            /** 
+             * Every time a stone is added to the board,
+             * the following record is added to this list:
+             *
+             * 0               1               2               3
+             *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
+             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+             * |   x   |   y   |               blocks.length                 | |
+             * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             
+             *
+             * The coordinates are stored in the first byte.
+             * The color is stored in the last bit (the sign bit): black = 0, white = 1.
+             * The size of the blocks array before the move is made is stored in the remaining bits.
+             */
+            added: number[];
+
+            /**
+             * Every time a block is modified, its id and its previous version
+             * from blocks[id] is stored in this list. When a block is removed,
+             * the coordinates of its stones are added to the history as well.
+             */
+            blocks: number[];
+
+            /**
+             * When a block is removed, coordinates of all its stones are stored in the removed list.
+             * The format of each entry is: bits 0..3 = x, bits 4..7 = y. The color isn't stored.
+             * It's possible to not store the coordinates themselves, but only a bit mask with the
+             * size of the block's boundary rectangle. It's debatable whether this would be more
+             * efficient.
+             */
+            removed: number[];
+        };
+
         private _hash: string;
 
         constructor(size: uint);
