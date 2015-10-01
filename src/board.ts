@@ -200,10 +200,10 @@ module tsumego {
             return json as Board;
         }
 
-        get(x: number, y: number): block.id;
-        get(xy: XY): block.id;
+        get(x: number, y: number): block;
+        get(xy: XY): block;
 
-        get(x: number, y?: number): block.id {
+        get(x: number, y?: number): block {
             if (y === void 0) {
                 y = XY.y(x);
                 x = XY.x(x);
@@ -253,10 +253,8 @@ module tsumego {
                     if (neighbors[j] == id)
                         continue next;
 
-                this.history.changed.push(id);
-                this.history.changed.push(b);
+                this.change(id, block.add_libs(b, quantity));
 
-                this.blocks[id] = block.add_libs(b, quantity);
             }
         }
 
@@ -264,10 +262,7 @@ module tsumego {
             const b = this.blocks[id];
             const [xmin, xmax, ymin, ymax] = block.rect(b);
 
-            this.history.changed.push(id);
-            this.history.changed.push(this.blocks[id]);
-
-            this.blocks[id] = 0;
+            this.change(id, 0);
 
             for (let y = ymin; y <= ymax; y++) {
                 for (let x = xmin; x <= xmax; x++) {
@@ -282,29 +277,10 @@ module tsumego {
             }
         }
 
-        /** Adds id2 to id1. */
-        private merge(id1: block.id, id2: block.id) {
-            
-        }
-
-        private countLibs(s: block.id): uint {
-            const $ = this, t = $.table, n = $.size;
-            let i = 0, r = 0;
-
-            for (let y = 0; y < n; y++) {
-                for (let x = 0; x < n; x++) {
-                    if (!t[i])
-                        if ($.get(x - 1, y) == s ||
-                            $.get(x + 1, y) == s ||
-                            $.get(x, y - 1) == s ||
-                            $.get(x, y + 1) == s)
-                            r++;
-
-                    i++;
-                }
-            }
-
-            return r;
+        /** Changes the block data and makes an appropriate record in the history. */
+        private change(id: block.id, b: block) {
+            this.history.changed.push(id, this.blocks[id]);
+            this.blocks[id] = b;
         }
 
         inBounds(x: number, y: number): boolean;
@@ -325,10 +301,6 @@ module tsumego {
             return x >= 0 && x < n && y >= 0 && y < n;
         }
 
-        libs(id: block.id) {
-            return block.libs(id);
-        }
-
         /** 
          * Returns the number of captured stones + 1.
          * If the move cannot be played, returns 0.
@@ -336,9 +308,9 @@ module tsumego {
          */
         //@profile.time
         play(x: number, y: number, color: number): number {
-            const n = this.size, t = this.table;
+            const size = this.size, t = this.table;
 
-            if (!this.inBounds(x, y) || t[y * n + x])
+            if (!this.inBounds(x, y) || t[y * size + x])
                 return 0;
 
             const ids: block.id[] = this.getNbBlockIds(x, y);
@@ -364,9 +336,9 @@ module tsumego {
 
             if (n_removed == 0
                 /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
-                /* R */ && (nbs[1] * color < 0 || lib[1] == 1 || x == n - 1)
+                /* R */ && (nbs[1] * color < 0 || lib[1] == 1 || x == size - 1)
                 /* T */ && (nbs[2] * color < 0 || lib[2] == 1 || y == 0)
-                /* B */ && (nbs[3] * color < 0 || lib[3] == 1 || y == n - 1)) {
+                /* B */ && (nbs[3] * color < 0 || lib[3] == 1 || y == size - 1)) {
                 return 0;
             }
 
@@ -385,7 +357,7 @@ module tsumego {
                     is_new = false;
 
             this.history.added.push(x | y << 4 | n_blocks << 8 | color & 0x80000000);
-            t[y * n + x] = id_new;
+            t[y * size + x] = id_new;
             this._hash = null;
 
             if (is_new) {
@@ -399,9 +371,61 @@ module tsumego {
                 this.blocks[id_new] = block(x, x, y, y, n, 1, color);
             } else {
                 // merge neighbors into one block
+
+                const fids = [id_new];
+
+                // find blocks that need to be merged
+
                 for (let i = 0; i < 4; i++)
                     if (nbs[i] * color > 0 && ids[i] != id_new)
-                        this.merge(id_new, ids[i]);
+                        fids.push(ids[i]);
+
+                let size_new = 1;
+
+                let xmin_new = x;
+                let xmax_new = x;
+                let ymin_new = y;
+                let ymax_new = y;
+
+                for (let i = 0; i < fids.length; i++) {
+                    const id = fids[i];
+                    const b = this.blocks[id];
+
+                    size_new += block.size(b);
+
+                    const [xmin, xmax, ymin, ymax] = block.rect(b);
+
+                    xmin_new = min(xmin_new, xmin);
+                    ymin_new = min(ymin_new, ymin);
+                    xmax_new = max(xmax_new, xmax);
+                    ymax_new = max(ymax_new, ymax);
+
+                    // make the merged block point to the new block
+
+                    if (id != id_new)
+                        this.change(id, block(xmin, xmax, ymin, ymax, id_new, 0, color));
+                }
+
+                let libs_new = 0;
+
+                // libs need to be counted in the rectangle extended by 1 intersection
+
+                for (let y = max(ymin_new - 1, 0); y <= min(ymax_new + 1, this.size - 1); y++) {
+                    for (let x = max(xmin_new - 1, 0); x <= min(xmax_new + 1, this.size - 1); x++) {
+                        if (!t[y * size + x]) {
+                            const is_lib =
+                                this.getBlockId(x - 1, y) == id_new ||
+                                this.getBlockId(x + 1, y) == id_new ||
+                                this.getBlockId(x, y - 1) == id_new ||
+                                this.getBlockId(x, y + 1) == id_new;
+
+                            if (is_lib)
+                                libs_new++;
+                        }
+                    }
+                }
+
+                this.change(id_new, block(xmin_new, xmax_new, ymin_new, ymax_new, libs_new, size_new, color));
             }
 
             return n_removed + 1;
@@ -510,13 +534,13 @@ module tsumego {
                 }
 
                 for (let x = 0; x <= xmax; x++) {
-                    const c = this.get(x, y);
+                    const b = this.get(x, y);
 
                     s += ' ';
 
-                    s += showLibsNum ? this.libs(c) :
-                        c > 0 ? 'X' :
-                            c < 0 ? 'O' :
+                    s += showLibsNum ? block.libs(b) :
+                        b > 0 ? 'X' :
+                            b < 0 ? 'O' :
                                 '-';
                 }
             }
