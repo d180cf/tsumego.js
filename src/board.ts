@@ -104,12 +104,12 @@ module tsumego {
              * 0               1               2               3
              *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-             * |   x   |   y   |               blocks.length                 |c|
+             * |   x   |   y   |    changed    |    removed    |               |
              * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+             
              *
              * The coordinates are stored in the first byte.
-             * The color is stored in the last bit (the sign bit): black = 0, white = 1.
-             * The size of the blocks array before the move is made is stored in the remaining bits.
+             * The number of changed blocks is stored in the 2nd byte.
+             * The number of removed stones is stored in the 3rd byte.
              */
             added: number[];
 
@@ -279,7 +279,9 @@ module tsumego {
 
         /** Changes the block data and makes an appropriate record in the history. */
         private change(id: block.id, b: block) {
-            this.history.changed.push(id, this.blocks[id]);
+            // adding a new block corresponds to a change from
+            // blocks[blocks.length - 1] -> b
+            this.history.changed.push(id, this.blocks[id] || 0);
             this.blocks[id] = b;
         }
 
@@ -313,6 +315,9 @@ module tsumego {
             if (!this.inBounds(x, y) || t[y * size + x])
                 return 0;
 
+            const n_changed = this.history.changed.length / 2; // id1, b1, id2, b2, ...
+            const n_removed = this.history.removed.length;
+
             const ids: block.id[] = this.getNbBlockIds(x, y);
             const nbs: block[] = [0, 0, 0, 0];
             const lib = [0, 0, 0, 0];
@@ -321,26 +326,23 @@ module tsumego {
                 nbs[i] = this.blocks[ids[i]],
                 lib[i] = block.libs(nbs[i]);
 
-            const n_blocks = this.blocks.length;
+            // remove captured blocks            
 
-            let n_removed = 0;            
-
-            // remove captured blocks
+            let result = 0;
 
             for (let i = 0; i < 4; i++)
                 if (lib[i] == 1 && color * nbs[i] < 0)
-                    n_removed += block.size(nbs[i]),
+                    result += block.size(nbs[i]),
                     this.remove(ids[i]);
 
-            // suicide is not allowed
-
-            if (n_removed == 0
+            if (result == 0
                 /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
                 /* R */ && (nbs[1] * color < 0 || lib[1] == 1 || x == size - 1)
                 /* T */ && (nbs[2] * color < 0 || lib[2] == 1 || y == 0)
                 /* B */ && (nbs[3] * color < 0 || lib[3] == 1 || y == size - 1)) {
+                // suicide is not allowed
                 return 0;
-            }
+            }            
 
             // take away a lib of every neighboring group
 
@@ -348,7 +350,7 @@ module tsumego {
 
             // new group id = min of neighboring group ids
 
-            let id_new = n_blocks;
+            let id_new = this.blocks.length;
             let is_new = true;
 
             for (let i = 0; i < 4; i++)
@@ -356,7 +358,6 @@ module tsumego {
                     id_new = ids[i],
                     is_new = false;
 
-            this.history.added.push(x | y << 4 | n_blocks << 8 | color & 0x80000000);
             t[y * size + x] = id_new;
             this._hash = null;
 
@@ -368,7 +369,7 @@ module tsumego {
                     if (!nbs[i] || lib[i] == 1)
                         n++;
 
-                this.blocks[id_new] = block(x, x, y, y, n, 1, color);
+                this.change(id_new, block(x, x, y, y, n, 1, color));
             } else {
                 // merge neighbors into one block
 
@@ -428,7 +429,47 @@ module tsumego {
                 this.change(id_new, block(xmin_new, xmax_new, ymin_new, ymax_new, libs_new, size_new, color));
             }
 
-            return n_removed + 1;
+            this.history.added.push(x | y << 4
+                | this.history.changed.length / 2 - n_changed << 8
+                | this.history.removed.length - n_removed << 8);
+
+            return result + 1;
+        }
+
+        /** Reverts the last move. */
+        undo() {
+            const move = this.history.added.pop();
+
+            const x = move & 15;
+            const y = move >> 4 & 15;
+            const n_changed = move >> 8 & 255;
+
+            for (let i = 0; i < n_changed; i++) {
+                const b = this.history.changed.pop();
+                const id = this.history.changed.pop();
+
+                // the block was removed - restore its stones
+                if (!this.blocks[id]) {
+                    let n = block.size(b);
+
+                    while (n-- > 0) {
+                        const r = this.history.removed.pop();
+
+                        const rx = r & 15;
+                        const ry = r >> 4 & 15;
+
+                        this.table[ry * this.size + rx] = id;
+                    }
+                }
+
+                this.blocks[id] = b;
+
+                // whena new block is added, the corresponding
+                // record in the history looks like changing
+                // the last block from 0 to something
+                if (id == this.blocks.length - 1 && !b)
+                    this.blocks.pop();
+            }
         }
 
         totalLibs(color: number): number {
@@ -447,8 +488,8 @@ module tsumego {
         eulern(color: number, q: number = 2): number {
             let n1 = 0, n2 = 0, n3 = 0;
 
-            for (let x = -1; x < n; x++) {
-                for (let y = -1; y < n; y++) {
+            for (let x = -1; x <= this.size; x++) {
+                for (let y = -1; y <= this.size; y++) {
                     const a = +((this.get(x, y) * color) > 0);
                     const b = +((this.get(x + 1, y) * color) > 0);
                     const c = +((this.get(x + 1, y + 1) * color) > 0);
