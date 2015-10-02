@@ -56,6 +56,12 @@ module tsumego {
 
         /** A pseudo block descriptor with 1 liberty. */
         export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
+
+        /** Useful when debugging. */
+        export const toString = (b: block) => !b ? null : `${b > 0 ? '+' : '-'} ` +
+            'x=[' + block.xmin(b) + ', ' + block.xmax(b) + '] ' +
+            'y=[' + block.ymin(b) + ', ' + block.ymax(b) + '] ' +
+            'libs=' + block.libs(b) + ' ' + 'size=' + block.size(b);
     }
 
     /**
@@ -168,6 +174,9 @@ module tsumego {
             this.size = size;
             this.table = new Array(size * size);
             this.history = { added: [], changed: [] };
+
+            for (let i = 0; i < size * size; i++)
+                this.table[i] = 0;
         }
 
         private initFromTXT(rows: string[]) {
@@ -369,9 +378,9 @@ module tsumego {
                 return 0;
             }            
 
-            // take away a lib of every neighboring group
+            // take away a lib of every neighboring enemy group
 
-            this.adjust(x, y, color, -1);
+            this.adjust(x, y, -color, -1);
 
             // new group id = min of neighboring group ids
 
@@ -390,11 +399,12 @@ module tsumego {
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors
-                let n = 0;
 
-                for (let i = 0; i < 4; i++)
-                    if (!nbs[i] || lib[i] == 1)
-                        n++;
+                const n = 
+                    /* L */ +(!nbs[0] && x > 0) +
+                    /* R */ +(!nbs[1] && x < size - 1) +
+                    /* T */ +(!nbs[2] && y > 0) +
+                    /* B */ +(!nbs[3] && y < size - 1);
 
                 this.change(id_new, block(x, x, y, y, n, 1, color));
             } else {
@@ -474,12 +484,13 @@ module tsumego {
             const x = move & 15;
             const y = move >> 4 & 15;
             const n = move >> 8 & 255;
+            const b = move >> 16 & 255;
 
-            this.table[y * this.size + x] = move >> 16 & 255;
+            this.table[y * this.size + x] = b;
 
             for (let i = 0; i < n; i++) {
                 const bd = this.history.changed.pop();
-                const id = this.history.changed.pop();
+                const id = this.history.changed.pop();                
 
                 // when a new block is added, the corresponding
                 // record in the history looks like changing
@@ -488,6 +499,8 @@ module tsumego {
                 // needs to be removed as well
                 if (id == this.blocks.length - 1 && !bd)
                     this.blocks.pop();
+                else
+                    this.blocks[id] = bd;
             }
         }
 

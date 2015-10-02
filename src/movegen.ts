@@ -52,7 +52,7 @@ module tsumego {
         }
     }
 
-    function sumlibs(board: Board, color: number): number {
+    export function sumlibs(board: Board, color: number) {
         let total = 0;
 
         for (let i = 1; i < board.blocks.length; i++) {
@@ -65,7 +65,7 @@ module tsumego {
         return total;
     }
 
-    function eulern(board: Board, color: number, q: number = 2) {
+    export function eulern(board: Board, color: number, q: number = 2) {
         let n1 = 0, n2 = 0, n3 = 0;
 
         for (let x = -1; x <= board.size; x++) {

@@ -1,10 +1,79 @@
 ﻿/// <reference path="infra.ts" />
 
 module tests {
+    import block = tsumego.block;
+    import sumlibs = tsumego.sumlibs;
     import Board = tsumego.Board;
 
     ut.group($ => { 
         /// board
+
+        $.test($ => {
+            /// blocks
+            const b = new Board(5);
+
+            $(b.blocks).equal([0]);
+
+            const moves: [number[], () => void][] = [
+                [[0, 0, +1, 1], () => {
+                    $(b.toString()).equal([
+                        '   A',
+                        ' 5 X',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 0] y=[0, 0] libs=2 size=1'
+                    ]);
+                }],
+
+                [[1, 0, -1, 1], () => {
+                    $(b.toString()).equal([
+                        '   A B',
+                        ' 5 X O',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
+                        '- x=[1, 1] y=[0, 0] libs=2 size=1'
+                    ]);                    
+                }]
+            ];
+
+            // play all the moves
+
+            for (let i = 0; i < moves.length; i++) {
+                const [[x, y, c, r], test] = moves[i];
+                const result = b.play(x, y, c);
+
+                try {
+                    $(result).equal(r);
+                    test();
+                } catch (reason) {
+                    const error = new Error(`Failed to play #${i} x=${x} y=${y} c=${c}`);
+                    error.reason = reason;
+                    throw error;
+                }
+            }
+
+            // undo all the moves
+
+            for (let i = moves.length - 1; i > 0; i--) {
+                const [[x, y, c], test] = moves[i - 1];
+                b.undo();
+
+                try {
+                    test();
+                } catch (reason) {
+                    const error = new Error(`Failed to undo #${i} x=${x} y=${y} c=${c}`);
+                    error.reason = reason;
+                    throw error;
+                }
+            }
+
+            b.undo();
+            $(b.blocks).equal([0]);
+        });
+
         $.test($ => { 
             /// empty 3x3
             const board = new Board(3);
@@ -89,58 +158,58 @@ module tests {
             /// total libs
             const b = new Board(5);
 
-            $(b.totalLibs(+1)).equal(0);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(0);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(0, 0, +1);
 
-            $(b.totalLibs(+1)).equal(2);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(2);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(1, 0, +1);
 
-            $(b.totalLibs(+1)).equal(3);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(3);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(4, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(5);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(3, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(5);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(2, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+            $(sumlibs(b, +1)).equal(5);
+            $(sumlibs(b, -1)).equal(0);
 
             b.play(0, 1, -1);
 
-            $(b.totalLibs(+1)).equal(4);
-            $(b.totalLibs(-1)).equal(2);
+            $(sumlibs(b, +1)).equal(4);
+            $(sumlibs(b, -1)).equal(2);
 
             b.play(1, 1, -1);
 
-            $(b.totalLibs(+1)).equal(3);
-            $(b.totalLibs(-1)).equal(3);
+            $(sumlibs(b, +1)).equal(3);
+            $(sumlibs(b, -1)).equal(3);
 
             b.play(4, 1, -1);
 
-            $(b.totalLibs(+1)).equal(2);
-            $(b.totalLibs(-1)).equal(5);
+            $(sumlibs(b, +1)).equal(2);
+            $(sumlibs(b, -1)).equal(5);
 
             b.play(3, 1, -1);
 
-            $(b.totalLibs(+1)).equal(1);
-            $(b.totalLibs(-1)).equal(5);
+            $(sumlibs(b, +1)).equal(1);
+            $(sumlibs(b, -1)).equal(5);
 
             b.play(2, 1, -1);
 
-            $(b.totalLibs(+1)).equal(0);
-            $(b.totalLibs(-1)).equal(10);
+            $(sumlibs(b, +1)).equal(0);
+            $(sumlibs(b, -1)).equal(10);
         });
 
         $.test($ => { 
