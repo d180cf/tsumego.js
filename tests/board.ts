@@ -669,58 +669,63 @@ module tests {
             /// total libs
             const b = new Board(5);
 
-            $(sumlibs(b, +1)).equal(0);
-            $(sumlibs(b, -1)).equal(0);
+            try {
+                $(sumlibs(b, +1)).equal(0);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(0, 0, +1);
+                b.play(0, 0, +1);
 
-            $(sumlibs(b, +1)).equal(2);
-            $(sumlibs(b, -1)).equal(0);
+                $(sumlibs(b, +1)).equal(2);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(1, 0, +1);
+                b.play(1, 0, +1);
 
-            $(sumlibs(b, +1)).equal(3);
-            $(sumlibs(b, -1)).equal(0);
+                $(sumlibs(b, +1)).equal(3);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(4, 0, +1);
+                b.play(4, 0, +1);
 
-            $(sumlibs(b, +1)).equal(5);
-            $(sumlibs(b, -1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(3, 0, +1);
+                b.play(3, 0, +1);
 
-            $(sumlibs(b, +1)).equal(5);
-            $(sumlibs(b, -1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(2, 0, +1);
+                b.play(2, 0, +1);
 
-            $(sumlibs(b, +1)).equal(5);
-            $(sumlibs(b, -1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(0, 1, -1);
+                b.play(0, 1, -1);
 
-            $(sumlibs(b, +1)).equal(4);
-            $(sumlibs(b, -1)).equal(2);
+                $(sumlibs(b, +1)).equal(4);
+                $(sumlibs(b, -1)).equal(2);
 
-            b.play(1, 1, -1);
+                b.play(1, 1, -1);
 
-            $(sumlibs(b, +1)).equal(3);
-            $(sumlibs(b, -1)).equal(3);
+                $(sumlibs(b, +1)).equal(3);
+                $(sumlibs(b, -1)).equal(3);
 
-            b.play(4, 1, -1);
+                b.play(4, 1, -1);
 
-            $(sumlibs(b, +1)).equal(2);
-            $(sumlibs(b, -1)).equal(5);
+                $(sumlibs(b, +1)).equal(2);
+                $(sumlibs(b, -1)).equal(5);
 
-            b.play(3, 1, -1);
+                b.play(3, 1, -1);
 
-            $(sumlibs(b, +1)).equal(1);
-            $(sumlibs(b, -1)).equal(5);
+                $(sumlibs(b, +1)).equal(1);
+                $(sumlibs(b, -1)).equal(5);
 
-            b.play(2, 1, -1);
+                b.play(2, 1, -1);
 
-            $(sumlibs(b, +1)).equal(0);
-            $(sumlibs(b, -1)).equal(10);
+                $(sumlibs(b, +1)).equal(0);
+                $(sumlibs(b, -1)).equal(10);
+            } catch (e) {
+                console.log(b + '');
+                throw e;
+            }
         });
 
         $.test($ => { 
@@ -732,7 +737,11 @@ module tests {
                 '--XOOOXX',
                 '---XXX--']);
 
+            console.log(b + '');
+
             const n = b.play(5, 2, +1);
+
+            console.log(b + '');
 
             // board is 9x9 so the rightmost column is empty
             $(n).equal(5 + 1);

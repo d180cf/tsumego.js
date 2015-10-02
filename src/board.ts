@@ -54,6 +54,13 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
+        export const join = (b1: block, b2: block) => block(
+            min(block.xmin(b1), block.xmin(b2)),
+            max(block.xmax(b1), block.xmax(b2)),
+            min(block.ymin(b1), block.ymin(b2)),
+            max(block.ymax(b1), block.ymax(b2)),
+            0, 0, 0);
+
         /** A pseudo block descriptor with 1 liberty. */
         export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
 
@@ -364,21 +371,31 @@ module tsumego {
 
             let result = 0;
 
-            for (let i = 0; i < 4; i++)
-                if (lib[i] == 1 && color * nbs[i] < 0)
-                    this.remove(ids[i]),                    
-                    result += block.size(nbs[i]),
-                    lib[i] = nbs[i] = ids[i] = 0;
+            fstr: for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < i; j++)
+                    // check if that block is already removed
+                    if (ids[j] == ids[i])
+                        continue fstr;
+
+                if (lib[i] == 1 && color * nbs[i] < 0) {
+                    this.remove(ids[i]);
+                    result += block.size(nbs[i]);
+                    lib[i] = nbs[i] = 0;
+                }
+            }
 
             // if nothing has been captured...
 
-            if (result == 0
-                /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
-                /* R */ && (nbs[1] * color < 0 || lib[1] == 1 || x == size - 1)
-                /* T */ && (nbs[2] * color < 0 || lib[2] == 1 || y == 0)
-                /* B */ && (nbs[3] * color < 0 || lib[3] == 1 || y == size - 1)) {
+            if (result == 0) {
+                const isll = 
+                /* L */ (nbs[0] * color < 0 || lib[0] == 1 || x == 0) &&
+                /* R */ (nbs[1] * color < 0 || lib[1] == 1 || x == size - 1) &&
+                /* T */ (nbs[2] * color < 0 || lib[2] == 1 || y == 0) &&
+                /* B */ (nbs[3] * color < 0 || lib[3] == 1 || y == size - 1);
+
                 // suicide is not allowed
-                return 0;
+                if (isll)
+                    return 0;
             }            
 
             // take away a lib of every neighboring enemy group
