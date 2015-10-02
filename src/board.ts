@@ -58,7 +58,7 @@ module tsumego {
         export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
 
         /** Useful when debugging. */
-        export const toString = (b: block) => !b ? null : `${b > 0 ? '+' : '-'} ` +
+        export const toString = (b: block) => !b ? null : (b > 0 ? '+' : '-') +
             '[' + block.xmin(b) + ', ' + block.xmax(b) + ']x' +
             '[' + block.ymin(b) + ', ' + block.ymax(b) + '] ' +
             'libs=' + block.libs(b) + ' ' + 'size=' + block.size(b);
