@@ -10,9 +10,7 @@ module tests {
 
         $.test($ => {
             /// blocks
-            const b = new Board(5);
-
-            $(b.blocks).equal([0]);
+            const b = new Board(5);            
 
             const moves: [string, number, () => void][] = [
                 ['+A5', 1, () => {
@@ -79,44 +77,101 @@ module tests {
                         '+ x=[0, 0] y=[0, 0] libs=1 size=0'
                     ]);
                 }],
+
+                ['-E5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
+                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
+                        '- x=[4, 4] y=[0, 0] libs=2 size=1'
+                    ]);
+                }],
+
+                ['+A1', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - - - -',
+                        ' 2 - - - - -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
+                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
+                        '- x=[4, 4] y=[0, 0] libs=2 size=1',
+                        '+ x=[0, 0] y=[4, 4] libs=2 size=1',
+                    ]);
+                }],
+
+                ['-D2', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - - - -',
+                        ' 2 - - - O -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
+                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
+                        '- x=[4, 4] y=[0, 0] libs=2 size=1',
+                        '+ x=[0, 0] y=[4, 4] libs=2 size=1',
+                        '- x=[3, 3] y=[3, 3] libs=4 size=1',
+                    ]);
+                }],
             ];
 
-            // play all the moves
+            // play and undo all the moves a few times
+            for (let j = 0; j < 1e3; j++) {
+                $(b.blocks).equal([0]);
 
-            for (let i = 0; i < moves.length; i++) {
-                const [m, r, test] = moves[i];
-                const x = m.charCodeAt(1) - 0x41;
-                const y = b.size - +m.slice(2);
-                const c = m[0] == '+' ? +1 : -1;
-                const result = b.play(x, y, c);
+                // play all the moves
+                for (let i = 0; i < moves.length; i++) {
+                    const [m, r, test] = moves[i];
+                    const x = m.charCodeAt(1) - 0x41;
+                    const y = b.size - +m.slice(2);
+                    const c = m[0] == '+' ? +1 : -1;
+                    const result = b.play(x, y, c);
 
-                try {
-                    $(result).equal(r);
-                    test();
-                } catch (reason) {
-                    const error = new Error(`Failed to play #${i} x=${x} y=${y} c=${c}`);
-                    error.reason = reason;
-                    throw error;
+                    try {
+                        $(result).equal(r);
+                        test();
+                    } catch (reason) {
+                        const error = new Error(`Failed to play #${i} x=${x} y=${y} c=${c}`);
+                        error.reason = reason;
+                        throw error;
+                    }
                 }
-            }
 
-            // undo all the moves
+                // undo all the moves
+                for (let i = moves.length - 1; i > 0; i--) {
+                    const [m, r, test] = moves[i - 1];
+                    b.undo();
 
-            for (let i = moves.length - 1; i > 0; i--) {
-                const [m, r, test] = moves[i - 1];
+                    try {
+                        test();
+                    } catch (reason) {
+                        const error = new Error(`Failed to undo #${i}`);
+                        error.reason = reason;
+                        throw error;
+                    }
+                }
+
                 b.undo();
-
-                try {
-                    test();
-                } catch (reason) {
-                    const error = new Error(`Failed to undo #${i}`);
-                    error.reason = reason;
-                    throw error;
-                }
+                $(b.blocks).equal([0]);
             }
-
-            b.undo();
-            $(b.blocks).equal([0]);
         });
 
         $.test($ => { 
