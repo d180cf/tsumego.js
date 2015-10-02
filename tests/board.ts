@@ -20,7 +20,7 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 0] y=[0, 0] libs=2 size=1'
+                        '+ [0, 0]x[0, 0] libs=2 size=1'
                     ]);
                 }],
 
@@ -31,8 +31,8 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
-                        '- x=[1, 1] y=[0, 0] libs=2 size=1'
+                        '+ [0, 0]x[0, 0] libs=1 size=1',
+                        '- [1, 1]x[0, 0] libs=2 size=1'
                     ]);
                 }],
 
@@ -44,9 +44,9 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
-                        '- x=[1, 1] y=[0, 0] libs=1 size=1',
-                        '+ x=[1, 1] y=[1, 1] libs=3 size=1'
+                        '+ [0, 0]x[0, 0] libs=1 size=1',
+                        '- [1, 1]x[0, 0] libs=1 size=1',
+                        '+ [1, 1]x[1, 1] libs=3 size=1'
                     ]);
                 }],
 
@@ -58,9 +58,9 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
-                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
-                        '+ x=[1, 1] y=[1, 1] libs=3 size=1'
+                        '+ [0, 0]x[0, 0] libs=1 size=1',
+                        '- [1, 2]x[0, 0] libs=2 size=2',
+                        '+ [1, 1]x[1, 1] libs=3 size=1'
                     ]);
                 }],
 
@@ -72,9 +72,9 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
-                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=0'
+                        '+ [0, 1]x[0, 1] libs=3 size=3',
+                        '- [1, 2]x[0, 0] libs=2 size=2',
+                        '+ [0, 0]x[0, 0] libs=1 size=0'
                     ]);
                 }],
 
@@ -86,10 +86,10 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
-                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
-                        '- x=[4, 4] y=[0, 0] libs=2 size=1'
+                        '+ [0, 1]x[0, 1] libs=3 size=3',
+                        '- [1, 2]x[0, 0] libs=2 size=2',
+                        '+ [0, 0]x[0, 0] libs=1 size=0',
+                        '- [4, 4]x[0, 0] libs=2 size=1'
                     ]);
                 }],
 
@@ -104,11 +104,11 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
-                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
-                        '- x=[4, 4] y=[0, 0] libs=2 size=1',
-                        '+ x=[0, 0] y=[4, 4] libs=2 size=1',
+                        '+ [0, 1]x[0, 1] libs=3 size=3',
+                        '- [1, 2]x[0, 0] libs=2 size=2',
+                        '+ [0, 0]x[0, 0] libs=1 size=0',
+                        '- [4, 4]x[0, 0] libs=2 size=1',
+                        '+ [0, 0]x[4, 4] libs=2 size=1',
                     ]);
                 }],
 
@@ -123,18 +123,18 @@ module tests {
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
-                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
-                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
-                        '+ x=[0, 0] y=[0, 0] libs=1 size=0',
-                        '- x=[4, 4] y=[0, 0] libs=2 size=1',
-                        '+ x=[0, 0] y=[4, 4] libs=2 size=1',
-                        '- x=[3, 3] y=[3, 3] libs=4 size=1',
+                        '+ [0, 1]x[0, 1] libs=3 size=3',
+                        '- [1, 2]x[0, 0] libs=2 size=2',
+                        '+ [0, 0]x[0, 0] libs=1 size=0',
+                        '- [4, 4]x[0, 0] libs=2 size=1',
+                        '+ [0, 0]x[4, 4] libs=2 size=1',
+                        '- [3, 3]x[3, 3] libs=4 size=1',
                     ]);
                 }],
             ];
 
             // play and undo all the moves a few times
-            for (let j = 0; j < 1e3; j++) {
+            for (let j = 0; j < 1e4; j++) {
                 $(b.blocks).equal([0]);
 
                 // play all the moves

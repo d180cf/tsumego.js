@@ -59,8 +59,8 @@ module tsumego {
 
         /** Useful when debugging. */
         export const toString = (b: block) => !b ? null : `${b > 0 ? '+' : '-'} ` +
-            'x=[' + block.xmin(b) + ', ' + block.xmax(b) + '] ' +
-            'y=[' + block.ymin(b) + ', ' + block.ymax(b) + '] ' +
+            '[' + block.xmin(b) + ', ' + block.xmax(b) + ']x' +
+            '[' + block.ymin(b) + ', ' + block.ymax(b) + '] ' +
             'libs=' + block.libs(b) + ' ' + 'size=' + block.size(b);
     }
 
