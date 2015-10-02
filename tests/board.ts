@@ -14,8 +14,8 @@ module tests {
 
             $(b.blocks).equal([0]);
 
-            const moves: [number[], () => void][] = [
-                [[0, 0, +1, 1], () => {
+            const moves: [string, number, () => void][] = [
+                ['+A5', 1, () => {
                     $(b.toString()).equal([
                         '   A',
                         ' 5 X',
@@ -26,7 +26,7 @@ module tests {
                     ]);
                 }],
 
-                [[1, 0, -1, 1], () => {
+                ['-B5', 1, () => {
                     $(b.toString()).equal([
                         '   A B',
                         ' 5 X O',
@@ -35,14 +35,59 @@ module tests {
                     $(b.blocks.map(block.toString)).equal([null,
                         '+ x=[0, 0] y=[0, 0] libs=1 size=1',
                         '- x=[1, 1] y=[0, 0] libs=2 size=1'
-                    ]);                    
-                }]
+                    ]);
+                }],
+
+                ['+B4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B',
+                        ' 5 X O',
+                        ' 4 - X',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
+                        '- x=[1, 1] y=[0, 0] libs=1 size=1',
+                        '+ x=[1, 1] y=[1, 1] libs=3 size=1'
+                    ]);
+                }],
+
+                ['-C5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C',
+                        ' 5 X O O',
+                        ' 4 - X -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=1',
+                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
+                        '+ x=[1, 1] y=[1, 1] libs=3 size=1'
+                    ]);
+                }],
+
+                ['+A4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C',
+                        ' 5 X O O',
+                        ' 4 X X -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+ x=[0, 1] y=[0, 1] libs=3 size=3',
+                        '- x=[1, 2] y=[0, 0] libs=2 size=2',
+                        '+ x=[0, 0] y=[0, 0] libs=1 size=0'
+                    ]);
+                }],
             ];
 
             // play all the moves
 
             for (let i = 0; i < moves.length; i++) {
-                const [[x, y, c, r], test] = moves[i];
+                const [m, r, test] = moves[i];
+                const x = m.charCodeAt(1) - 0x41;
+                const y = b.size - +m.slice(2);
+                const c = m[0] == '+' ? +1 : -1;
                 const result = b.play(x, y, c);
 
                 try {
@@ -58,13 +103,13 @@ module tests {
             // undo all the moves
 
             for (let i = moves.length - 1; i > 0; i--) {
-                const [[x, y, c], test] = moves[i - 1];
+                const [m, r, test] = moves[i - 1];
                 b.undo();
 
                 try {
                     test();
                 } catch (reason) {
-                    const error = new Error(`Failed to undo #${i} x=${x} y=${y} c=${c}`);
+                    const error = new Error(`Failed to undo #${i}`);
                     error.reason = reason;
                     throw error;
                 }
