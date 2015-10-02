@@ -298,12 +298,12 @@ module tsumego {
             const bd = this.blocks[id];
             const [xmin, xmax, ymin, ymax] = block.rect(bd);
 
-            this.change(id, 0);
-
             for (let y = ymin; y <= ymax; y++)
                 for (let x = xmin; x <= xmax; x++)
                     if (this.getBlockId(x, y) == id)
                         this.adjust(x, y, -bd, +1);
+
+            this.change(id, 0);
         }
 
         /** 
@@ -366,8 +366,11 @@ module tsumego {
 
             for (let i = 0; i < 4; i++)
                 if (lib[i] == 1 && color * nbs[i] < 0)
-                    this.remove(ids[i]),
-                    result += block.size(nbs[i]);
+                    this.remove(ids[i]),                    
+                    result += block.size(nbs[i]),
+                    lib[i] = nbs[i] = ids[i] = 0;
+
+            // if nothing has been captured...
 
             if (result == 0
                 /* L */ && (nbs[0] * color < 0 || lib[0] == 1 || x == 0)
