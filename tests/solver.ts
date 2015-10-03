@@ -41,20 +41,17 @@ module tests {
                     if (nkt)
                         console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt) } ko treats`);
 
-                    const tt = new TT<Move>();
                     const seed = Date.now();
-                    const mg = BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed));
-                    const st = (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1;
-
                     console.log('rand seed:', seed);
 
-                    const result = solve(
-                        [board],
-                        c2p == 'B' ? +1 : -1,
-                        +(nkt || 0),
-                        tt,
-                        mg,
-                        st);
+                    const result = solve({
+                        path: [board],
+                        color: c2p == 'B' ? +1 : -1,
+                        nkt: +nkt | 0,
+                        tt: new TT<Move>(),
+                        expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
+                        status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1
+                    });
 
                     console.log('result:', JSON.stringify(result));
 

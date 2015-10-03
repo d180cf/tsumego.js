@@ -58,9 +58,14 @@ module testbench {
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         profile.reset();
 
-        const rs = tsumego.solve(path, color, nkotreats, tt,
-            tsumego.generators.Basic(rzone),
-            status);
+        const rs = tsumego.solve({
+            path: path,
+            color: color,
+            nkt: nkotreats,
+            tt: tt,
+            expand: tsumego.generators.Basic(rzone),
+            status: status
+        });
 
         if (log) {
             profile.log();
@@ -122,10 +127,15 @@ module testbench {
             }
         };
 
-        const solver = tsumego._solve(path, color, nkotreats, tt,
-            tsumego.generators.Basic(rzone),
-            status,
-            player);
+        const solver = tsumego._solve({
+            path: path,
+            color: color,
+            nkt: nkotreats,
+            tt: tt,
+            expand: tsumego.generators.Basic(rzone),
+            status: status,
+            player: player
+        });
 
         window['solver'] = solver;
 

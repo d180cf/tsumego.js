@@ -57,33 +57,22 @@ module tsumego {
 
     const wins = (color: number, result: number) => color * result > 0;
 
-    Array.from = Array.from || function (iterable) {
-        const array = [];
-        for (const item of iterable)
-            array.push(item);
-        return array;
-    };
+    interface Args<Move> {
+        path: Node<Move>[];
+        color: number;
+        nkt: number;
+        tt: TT<Move>;
+        expand: Generator<Node<Move>, Move>;
+        status: Estimator<Node<Move>>;
+        player?: Player<Move>;
+    }
 
-    export function* _solve<Move>(
-        path: Node<Move>[],
-        color: Color,
-        nkt: number,
-        tt: TT<Move>,
-        expand: Generator<Node<Move>, Move>,
-        status: Estimator<Node<Move>>,
-        player?: Player<Move>) {
-
+    export function* _solve<Move>({path, color, nkt, tt, expand, status, player}: Args<Move>) {
         type R = Result<Move>;
-
         let nknodes = 0;
 
-        function* solve(
-            path: Node<Move>[],
-            color: Color,
-            nkt: number,
-            ko: boolean): IterableIterator<R> {
-
-            yield; // entering the node
+        function* solve(path: Node<Move>[], color: Color, nkt: number, ko: boolean): IterableIterator<R> {
+            yield;
             nknodes++;
 
             if (ko) {
@@ -235,16 +224,8 @@ module tsumego {
         return result;
     }
 
-    export function solve<Move>(
-        path: Node<Move>[],
-        color: Color,
-        nkt: number,
-        tt: TT<Move>,
-        expand: Generator<Node<Move>, Move>,
-        status: Estimator<Node<Move>>,
-        player?: Player<Move>) {
-
-        const r = result(_solve(path, color, nkt, tt, expand, status, player));
+    export function solve<Move>(args: Args<Move>) {
+        const r = result(_solve(args));
         if (r.repd == infty || !r.repd)
             delete r.repd;
         return r;

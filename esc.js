@@ -13,6 +13,7 @@ var es6map = fs.readFileSync(srcPath + '.map', 'utf8');
 var es5 = babel.transform(es6src, {
     inputSourceMap: JSON.parse(es6map),
     sourceMaps: true,
+    loose: 'all',
     compact: false
 });
 
