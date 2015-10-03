@@ -3,10 +3,9 @@
 module tests {
     import Board = tsumego.Board;
     import solve = tsumego.solve;
-    import Move = tsumego.XY;
+    import stone = tsumego.stone;
     import s2n = tsumego.s2n;
     import xy2s = tsumego.xy2s;
-    import XY = tsumego.XY;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
 
@@ -27,7 +26,7 @@ module tests {
             const sgf = SGF.parse(data);
             const setup = sgf.steps[0];
             const [aimx, aimy] = f2xy(setup['MA'][0]);
-            const rzone = setup['DD'].map(f2xy).map(m => Move(m[0], m[1]));
+            const rzone = setup['DD'].map(f2xy).map(m => stone(m[0], m[1]));
             const board = new Board(sgf);
 
             for (const config of setup['TEST'] || []) {
@@ -49,10 +48,10 @@ module tests {
                         path: [board],
                         color: c2p == 'B' ? +1 : -1,
                         nkt: +nkt | 0,
-                        tt: new TT<Move>(),
+                        tt: new TT<stone>(),
                         expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
                         status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                        alive: (b: Board) => tsumego.benson.alive(b, XY(aimx, aimy))
+                        alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
                     });
 
                     console.log('result:', JSON.stringify(result));

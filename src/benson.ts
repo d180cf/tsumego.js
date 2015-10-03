@@ -22,9 +22,9 @@ module tsumego.benson {
      * If the two requirements are met, the opponent cannot approach the chain from inside
      * the region and thus cannot capture the chain since there are two such regions.
      */
-    export function alive(b: Board, root: XY, path: number[] = []) {
+    export function alive(b: Board, root: stone, path: number[] = []) {
         const chainId = b.get(root);
-        const sameColor = (s: XY) => b.get(s) * chainId > 0;
+        const sameColor = (s: stone) => b.get(s) * chainId > 0;
         const visited: { [move: number]: boolean } = [];
 
         let nEyes = 0;
@@ -37,7 +37,7 @@ module tsumego.benson {
 
             // chains adjacent to the region
             const adjacent: number[] = [];
-            const adjacentXY: XY[] = [];
+            const adjacentXY: stone[] = [];
 
             for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t))) {
                 // has this region been already marked as non vital to this chain?
@@ -48,7 +48,7 @@ module tsumego.benson {
 
                 let isAdjacent = false;
 
-                for (const q of XY.nb.lrtb(p)) {
+                for (const q of stone.nb.all(p)) {
                     const ch = b.get(q);
 
                     if (ch == chainId) {

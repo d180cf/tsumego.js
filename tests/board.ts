@@ -1,7 +1,7 @@
 ﻿/// <reference path="infra.ts" />
 
 module tests {
-    import XY = tsumego.XY;
+    import stone = tsumego.stone;
     import block = tsumego.block;
     import sumlibs = tsumego.sumlibs;
     import Board = tsumego.Board;
@@ -553,7 +553,7 @@ module tests {
                     const x = m.charCodeAt(1) - 0x41;
                     const y = b.size - +m.slice(2);
                     const c = m[0] == '+' ? +1 : -1;
-                    const result = b.play(XY(x, y, c));
+                    const result = b.play(stone(x, y, c));
 
                     try {
                         $(result).equal(r);
@@ -598,7 +598,7 @@ module tests {
         $.test($ => { 
             /// 5x5 with a stone
             const board = new Board(5);
-            board.play(XY(2, 2, +1));
+            board.play(stone(2, 2, +1));
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
             $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
@@ -674,52 +674,52 @@ module tests {
                 $(sumlibs(b, +1)).equal(0);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(0, 0, +1));
+                b.play(stone(0, 0, +1));
 
                 $(sumlibs(b, +1)).equal(2);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(1, 0, +1));
+                b.play(stone(1, 0, +1));
 
                 $(sumlibs(b, +1)).equal(3);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(4, 0, +1));
+                b.play(stone(4, 0, +1));
 
                 $(sumlibs(b, +1)).equal(5);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(3, 0, +1));
+                b.play(stone(3, 0, +1));
 
                 $(sumlibs(b, +1)).equal(5);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(2, 0, +1));
+                b.play(stone(2, 0, +1));
 
                 $(sumlibs(b, +1)).equal(5);
                 $(sumlibs(b, -1)).equal(0);
 
-                b.play(XY(0, 1, -1));
+                b.play(stone(0, 1, -1));
 
                 $(sumlibs(b, +1)).equal(4);
                 $(sumlibs(b, -1)).equal(2);
 
-                b.play(XY(1, 1, -1));
+                b.play(stone(1, 1, -1));
 
                 $(sumlibs(b, +1)).equal(3);
                 $(sumlibs(b, -1)).equal(3);
 
-                b.play(XY(4, 1, -1));
+                b.play(stone(4, 1, -1));
 
                 $(sumlibs(b, +1)).equal(2);
                 $(sumlibs(b, -1)).equal(5);
 
-                b.play(XY(3, 1, -1));
+                b.play(stone(3, 1, -1));
 
                 $(sumlibs(b, +1)).equal(1);
                 $(sumlibs(b, -1)).equal(5);
 
-                b.play(XY(2, 1, -1));
+                b.play(stone(2, 1, -1));
 
                 $(sumlibs(b, +1)).equal(0);
                 $(sumlibs(b, -1)).equal(10);
@@ -740,7 +740,7 @@ module tests {
 
             console.log(b + '');
 
-            const n = b.play(XY(5, 2, +1));
+            const n = b.play(stone(5, 2, +1));
 
             console.log(b + '');
 
@@ -764,7 +764,7 @@ module tests {
                 '- -'
             ]);
 
-            const r = b.play(XY(0, 1, 1));
+            const r = b.play(stone(0, 1, 1));
 
             $(r).equal(2);
 
@@ -782,7 +782,7 @@ module tests {
                 'X X'
             ]);
 
-            const r = b.play(XY(0, 0, -1));
+            const r = b.play(stone(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -795,7 +795,7 @@ module tests {
                 'X X X'
             ]);
 
-            const r = b.play(XY(0, 0, -1));
+            const r = b.play(stone(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -809,7 +809,7 @@ module tests {
                 'X X X'
             ]);
 
-            const r = b.play(XY(0, 0, -1));
+            const r = b.play(stone(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -823,7 +823,7 @@ module tests {
                 'X X X'
             ]);
 
-            const r = b.play(XY(0, 0, -1));
+            const r = b.play(stone(0, 0, -1));
 
             $(r).equal(0);
         });

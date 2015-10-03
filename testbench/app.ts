@@ -8,7 +8,7 @@ module testbench {
     import s2n = tsumego.s2n;
     import Result = tsumego.Result;
     import Color = tsumego.Color;
-    import Move = tsumego.XY;
+    import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
 
@@ -19,24 +19,24 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: Move) => !Number.isFinite(m) ? 'null' :
-        String.fromCharCode(0x41 + (Move.x(m) > 7 ? Move.x(m) - 1 : Move.x(m))) +
-        (goban.board.size - Move.y(m));
+    const xy2s = (m: stone) => !Number.isFinite(m) ? 'null' :
+        String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
+        (goban.board.size - stone.y(m));
 
     const c2s = Color.alias;
-    const cm2s = (c: Color, m: Move) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: Color, m: Move) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
+    const cm2s = (c: Color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: Color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
-    const xy2f = (xy: Move) => n2s(Move.x(xy)) + n2s(Move.y(xy));
+    const xy2f = (xy: stone) => n2s(stone.x(xy)) + n2s(stone.y(xy));
 
     /** -1, { x: 2, y: 3 } -> `W[cd]` */
-    const xyc2f = (c: Color, xy: Move) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
+    const xyc2f = (c: Color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
 
     /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => Move(s2n(s, 0), s2n(s, 1));
+    const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1));
 
-    function parseSGF(source: string): [Board, Move[], Move] {
+    function parseSGF(source: string): [Board, stone[], stone] {
         const brd = new Board(source);
         const sgf = SGF.parse(source);
         const setup = sgf.steps[0];
@@ -45,7 +45,7 @@ module testbench {
         return [brd, rzn, aim];
     }
 
-    function s2s(c: Color, s: Result<Move>) {
+    function s2s(c: Color, s: Result<stone>) {
         let isDraw = s.color == 0;
         let isLoss = s.color * c < 0;
 
@@ -53,7 +53,7 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    export var tt = new tsumego.TT<Move>();
+    export var tt = new tsumego.TT<stone>();
 
     function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
         profile.reset();
@@ -86,7 +86,7 @@ module testbench {
     function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
         let log = true;
 
-        const player: tsumego.Player<Move> = {
+        const player: tsumego.Player<stone> = {
             play: (color, move) => {
                 if (!log) return;
 
@@ -96,8 +96,8 @@ module testbench {
                     _edited: true,
                     move: {
                         pass: pass,
-                        x: Move.x(move),
-                        y: Move.y(move),
+                        x: stone.x(move),
+                        y: stone.y(move),
                         c: color > 0 ? WGo.B : WGo.W
                     }
                 });
@@ -134,14 +134,15 @@ module testbench {
             tt: tt,
             expand: tsumego.generators.Basic(rzone),
             status: status,
-            player: player
+            player: player,
+            alive: (b: Board) => tsumego.benson.alive(b, aim)
         });
 
         window['solver'] = solver;
 
         let tick = 0;
         let board: Board;
-        let result: Result<Move>;
+        let result: Result<stone>;
 
         const next = () => {
             const {done, value} = solver.next();
@@ -163,7 +164,7 @@ module testbench {
             const i = path.length - 1;
             const b = path[i];
 
-            while (path[i] === b && !ct.cancelled)
+            while (path[i].hash() == b.hash() && !ct.cancelled)
                 next();
         };
 
@@ -230,7 +231,7 @@ module testbench {
             return null;
 
         const b = path[path.length - 1].fork();
-        if (!b.play(Move(Move.x(move), Move.y(move), color))) {
+        if (!b.play(stone(stone.x(move), stone.y(move), color))) {
             debugger;
             throw new Error('Impossible move: ' + xy2s(move));
         }
@@ -252,10 +253,10 @@ module testbench {
 
         let vars = '';
 
-        if (b.get(Move.x(aim), Move.y(aim))) {
+        if (b.get(stone.x(aim), stone.y(aim))) {
             for (const m of rzone) {
                 const bm = b.fork();
-                if (!bm.play(Move(Move.x(m), Move.y(m), -color)))
+                if (!bm.play(stone(stone.x(m), stone.y(m), -color)))
                     continue;
 
                 // check for repetitions
@@ -284,10 +285,10 @@ module testbench {
     }
 
     function status(b: Board) {
-        return b.get(Move.x(aim), Move.y(aim)) < 0 ? -1 : +1;
+        return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var board: Board, rzone: Move[], aim, path: Board[];
+    var board: Board, rzone: stone[], aim, path: Board[];
 
     const source = location.search.slice(1);
     let sgfdata = '';
@@ -336,11 +337,11 @@ module testbench {
         goban.next(goban.kifuReader.node.children.length - 1);
     }
 
-    function parse(si: string, size: number): Move {
+    function parse(si: string, size: number): stone {
         const x = si.charCodeAt(0) - 65;
         const y = size - +/\d+/.exec(si)[0];
 
-        return Move(x, y);
+        return stone(x, y);
     }
 
     window['$'] = data => {
@@ -357,12 +358,12 @@ module testbench {
                 if (/^[a-z]\d+$/i.test(xy)) {
                     const p = parse(xy, b.size);
 
-                    if (!b.play(Move(Move.x(p), Move.y(p), c))) {
+                    if (!b.play(stone(stone.x(p), stone.y(p), c))) {
                         console.log(col, 'cannot play at', xy);
                     } else {
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
-                        makeMove(Move.x(p), Move.y(p), c);
+                        makeMove(stone.x(p), stone.y(p), c);
                     }
                 } else {
                     const {move} = solve(path, c, !xy ? 0 : +xy, true);
@@ -379,7 +380,7 @@ module testbench {
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                         //renderSGF(sgfp);
 
-                        makeMove(Move.x(move), Move.y(move), c);
+                        makeMove(stone.x(move), stone.y(move), c);
                     }
                 }
                 break;

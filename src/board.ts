@@ -186,7 +186,7 @@ module tsumego {
             rows.map((row, y) => {
                 row.replace(/\s/g, '').split('').map((chr, x) => {
                     let c = chr == 'X' ? +1 : chr == 'O' ? -1 : 0;
-                    if (c && !this.play(XY(x, y, c)))
+                    if (c && !this.play(stone(x, y, c)))
                         throw new Error('Invalid setup.');
                 });
             });
@@ -208,7 +208,7 @@ module tsumego {
                     const x = s2n(xy, 0);
                     const y = s2n(xy, 1);
 
-                    if (!this.play(XY(x, y, color)))
+                    if (!this.play(stone(x, y, color)))
                         throw new Error(tag + '[' + xy + '] cannot be added.');
                 }
             };
@@ -232,12 +232,12 @@ module tsumego {
         }
 
         get(x: number, y: number): block;
-        get(xy: XY): block;
+        get(xy: stone): block;
 
         get(x: number, y?: number): block {
             if (y === void 0) {
-                y = XY.y(x);
-                x = XY.x(x);
+                y = stone.y(x);
+                x = stone.x(x);
             }
 
             return this.blocks[this.getBlockId(x, y)];
@@ -325,12 +325,12 @@ module tsumego {
         }
 
         inBounds(x: number, y: number): boolean;
-        inBounds(xy: XY): boolean;
+        inBounds(xy: stone): boolean;
 
         inBounds(x: number, y?: number): boolean {
             if (y === void 0) {
-                y = XY.y(x);
-                x = XY.x(x);
+                y = stone.y(x);
+                x = stone.x(x);
             }
 
             return this.isInBounds(x, y);
@@ -351,11 +351,11 @@ module tsumego {
          * descriptors in the array of blocks. It doesn't
          * allocate temporary objects and thus is pretty fast.
          */
-        play(move: XY): number {
-            const color = XY.c(move);
+        play(move: stone): number {
+            const color = stone.c(move);
 
-            const x = XY.x(move);
-            const y = XY.y(move);
+            const x = stone.x(move);
+            const y = stone.y(move);
 
             if (this.getBlockId(x, y))
                 return 0;

@@ -1,7 +1,7 @@
 module test {
     import benson = tsumego.benson;
     import Board = tsumego.Board;
-    import XY = tsumego.XY;
+    import stone = tsumego.stone;
 
     ut.group($ => {
         /// benson's pass-alive test
@@ -27,7 +27,7 @@ module test {
                         const color = { x: +1, o: -1 }[marker.toLowerCase()] || 0;
 
                         if (color)
-                            board.play(XY(x, y, color));
+                            board.play(stone(x, y, color));
                     }
                 }
 
@@ -41,7 +41,7 @@ module test {
                         const marker = chain > 0 ? 'X' : 'O';
 
                         tags.push(!chain ? '-' :
-                            benson.alive(board, XY(x, y)) ? marker :
+                            benson.alive(board, stone(x, y)) ? marker :
                                 marker.toLowerCase());
                     }
 
@@ -64,7 +64,7 @@ module test {
         $.test($ => {
             /// start from a vacant point
             const b = new Board(9, []);
-            const p = XY(0, 0);
+            const p = stone(0, 0);
             const r = benson.alive(b, p);
             $(r).equal(false);
         });

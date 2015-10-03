@@ -5,21 +5,21 @@ module tsumego {
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: XY[], random = rand.LCG.NR01(Date.now())): Generator<Board, XY> {
+        export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())): Generator<Board, stone> {
             return (board: Board, color: number) => {
-                const leafs: { m: XY; r: number; n1: number; n2: number }[] = [];
+                const leafs: { m: stone; r: number; n1: number; n2: number }[] = [];
 
                 for (const m of rzone) {
-                    const [x, y] = XY.coords(m);
+                    const [x, y] = stone.coords(m);
 
                     if (!Pattern.isEye(board, x, y, color)) {
-                        const r = board.play(XY(x, y, color));
+                        const r = board.play(stone(x, y, color));
 
                         if (!r)
                             continue;
 
                         leafs.push({
-                            m: XY(x, y, color),
+                            m: stone(x, y, color),
                             r: r,
                             n1: sumlibs(board, color),
                             n2: sumlibs(board, -color),

@@ -2,29 +2,31 @@ module tsumego {
     /**
      * bits 0..3 - the X coord
      * bits 5..7 - the Y coord
+     *
+     * the sign bit - the color; black = 0, white = 1
      */
-    export type XY = number;
+    export type stone = number;
 
-    export function XY(x: number, y: number, c = 0) {
+    export function stone(x: number, y: number, c = 0) {
         return x | y << 4 | c & 0x80000000;
     }
 
-    export module XY {
-        export const c = (m: XY) => m < 0 ? -1 : +1;
+    export module stone {
+        export const c = (m: stone) => m < 0 ? -1 : +1;
 
-        export const x = (m: XY) => m & 15;
-        export const y = (m: XY) => (m >> 4) & 15;
+        export const x = (m: stone) => m & 15;
+        export const y = (m: stone) => (m >> 4) & 15;
 
-        export const coords = (m: XY) => [x(m), y(m)];
+        export const coords = (m: stone) => [x(m), y(m)];
 
         export module nb {
-            export const l = (m: XY) => XY(x(m) - 1, y(m));
-            export const r = (m: XY) => XY(x(m) + 1, y(m));
-            export const t = (m: XY) => XY(x(m), y(m) - 1);
-            export const b = (m: XY) => XY(x(m), y(m) + 1);
+            export const l = (m: stone) => stone(x(m) - 1, y(m));
+            export const r = (m: stone) => stone(x(m) + 1, y(m));
+            export const t = (m: stone) => stone(x(m), y(m) - 1);
+            export const b = (m: stone) => stone(x(m), y(m) + 1);
 
-            /** the 4 neighbors */
-            export const lrtb = (m: XY) => [l(m), r(m), t(m), b(m)];
+            /** the 4 neighbors: L, R, T, B */
+            export const all = (m: stone) => [l(m), r(m), t(m), b(m)];
         }
     }
 }

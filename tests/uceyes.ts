@@ -3,7 +3,7 @@ module tests {
 
     import Board = tsumego.Board;
     import Pattern = tsumego.Pattern;
-    import XY = tsumego.XY;
+    import stone = tsumego.stone;
     import LCG = tsumego.rand.LCG.NR01;
 
     function apply(board: Board, fn: (b: Board, x: number, y: number, c: number) => boolean) {
@@ -77,7 +77,7 @@ module tests {
                 const y = rand() * board.size | 0;
                 const c = rand() > 0.5 ? +1 : -1;
 
-                const r = board.play(XY(x, y, c));
+                const r = board.play(stone(x, y, c));
             }
 
             const eyes = apply(board, Pattern.isEye);
