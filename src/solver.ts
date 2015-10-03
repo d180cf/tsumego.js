@@ -19,14 +19,6 @@ module tsumego {
         loss(color: Color, move: Move, response: Move): void;
     }
 
-    /** Returns values in 1..path.length-1 range.
-    If no repetition found, returns nothing.  */
-    function findrepd(path: string[], b: string) {
-        for (let i = path.length - 1; i > 0; i--)
-            if (b == path[i - 1])
-                return i;
-    }
-
     function best<Move>(s1: Result<Move>, s2: Result<Move>, c: Color) {
         let r1 = s1 && s1.color;
         let r2 = s2 && s2.color;
@@ -97,10 +89,10 @@ module tsumego {
             for (const m of expand(board, color)) {
                 board.play(m);
 
-                const d = findrepd(path, board.hash());
-                const ko = d < depth;
+                const d = path.lastIndexOf(board.hash(), -2) + 1;
+                const ko = d && d < depth;
 
-                if (d < mindepth)
+                if (ko)
                     mindepth = d;
 
                 // the move makes sense if it doesn't repeat
