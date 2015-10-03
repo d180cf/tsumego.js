@@ -65,9 +65,10 @@ module tsumego {
         expand: Generator<Node<Move>, Move>;
         status: Estimator<Node<Move>>;
         player?: Player<Move>;
+        alive?: (node: Node<Move>) => boolean;
     }
 
-    export function* _solve<Move>({path, color, nkt, tt, expand, status, player}: Args<Move>) {
+    export function* _solve<Move>({path, color, nkt, tt, expand, status, player, alive}: Args<Move>) {
         type R = Result<Move>;
         let nknodes = 0;
 
@@ -136,6 +137,9 @@ module tsumego {
                 if (status(b) > 0) {
                     // black wins by capturing the white's stones
                     s = { color: +1, repd: infty };
+                } else if (alive && alive(b)) {
+                    // white secures the group that black needed to capture
+                    s = { color: -1, repd: infty };
                 } else {
                     path.push(b);
                     player && player.play(color, m);

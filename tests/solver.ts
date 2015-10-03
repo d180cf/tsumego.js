@@ -6,6 +6,7 @@ module tests {
     import Move = tsumego.XY;
     import s2n = tsumego.s2n;
     import xy2s = tsumego.xy2s;
+    import XY = tsumego.XY;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
 
@@ -50,7 +51,8 @@ module tests {
                         nkt: +nkt | 0,
                         tt: new TT<Move>(),
                         expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
-                        status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1
+                        status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
+                        alive: (b: Board) => tsumego.benson.alive(b, XY(aimx, aimy))
                     });
 
                     console.log('result:', JSON.stringify(result));
