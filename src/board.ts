@@ -229,8 +229,8 @@ module tsumego {
             const b = new Board(0);
 
             b.size = this.size;
-            b.table = this.table.slice();
-            b.blocks = this.blocks.slice();
+            b.table = this.table.slice(0);
+            b.blocks = this.blocks.slice(0);
 
             return b;
         }
