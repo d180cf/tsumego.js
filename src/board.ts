@@ -529,10 +529,10 @@ module tsumego {
                 // the last block from 0 to something;; to undo
                 // this properly, the last element in the array
                 // needs to be removed as well
-                if (id < this.blocks.length)
-                    this.blocks[id] = bd;
-                else if (!bd)
+                if (id == this.blocks.length - 1 && !bd)
                     this.blocks.pop();
+                else
+                    this.blocks[id] = bd;
             }
 
             return n;
