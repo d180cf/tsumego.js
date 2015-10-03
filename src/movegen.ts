@@ -1,6 +1,4 @@
 module tsumego {
-    'use strict';
-
     export interface Generator<Node, Move> {
         (node: Node, color: number): Move[];
     }

@@ -2,8 +2,6 @@
 /// <reference path="linalg.ts" />
 
 module tsumego {
-    'use strict';
-
     import BitMatrix = linalg.BitMatrix;
 
     enum Tags {

@@ -6,8 +6,6 @@
  * https://en.wikipedia.org/wiki/Backpropagation
  */
 module tsumego.ann {
-    'use strict';
-
     import vector = linalg.vector;
     import matrix = linalg.matrix;
 

@@ -1,6 +1,4 @@
 module tsumego {
-    'use strict';
-
     /**
      * bits 0..3 - the X coord
      * bits 5..7 - the Y coord

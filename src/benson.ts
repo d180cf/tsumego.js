@@ -8,8 +8,6 @@
  * http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
  */
 module tsumego.benson {
-    'use strict';
-
     /** 
      * A chain of stones is said to be pass-alive or unconditionally alive
      * if the opponent cannot capture the chain even if the chain is not defended.

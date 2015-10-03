@@ -6,8 +6,6 @@
 /// <reference path="ann.ts" />
 
 module tsumego {
-    'use strict';
-
     interface Node<Move> extends Hasheable {
         play(move: Move): number;
         undo(): void;

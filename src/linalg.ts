@@ -1,8 +1,6 @@
 /// <reference path="rand.ts" />
 
 module tsumego.linalg {
-    'use strict';
-
     export interface vector {
         [i: number]: number;
         [Symbol.iterator](): IterableIterator<number>;

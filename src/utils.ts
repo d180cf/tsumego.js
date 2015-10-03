@@ -1,8 +1,6 @@
 ﻿/// <reference path="types.ts" />
 
 module tsumego {
-    'use strict';
-
     export const infty = 777;
 
     /** 0 -> `a`, 3 -> `d` */

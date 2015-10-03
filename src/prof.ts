@@ -1,6 +1,4 @@
 module tsumego.profile {
-    'use strict';
-
     export const enabled = true;
 
     export const now = typeof performance === 'undefined' ?

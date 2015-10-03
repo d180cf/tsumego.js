@@ -1,6 +1,4 @@
 module tsumego {
-    'use strict';
-
     export interface Hasheable {
         hash(): string;
     }

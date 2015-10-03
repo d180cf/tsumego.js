@@ -4,8 +4,6 @@
 /// <reference path="sgf.ts" />
 
 module tsumego {
-    'use strict';
-
     /**
      * A block descriptor is represented by a 32 bit signed integer:
      *

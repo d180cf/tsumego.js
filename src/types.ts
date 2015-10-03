@@ -1,6 +1,4 @@
 ﻿module tsumego {
-    'use strict';
-
     export type int = number;
     export type uint = number;
     export type XIndex = uint;

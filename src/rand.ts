@@ -1,6 +1,4 @@
 module tsumego.rand {
-    'use strict';
-
     export module LCG {
         /**     
          * The LCG has the max period iff:

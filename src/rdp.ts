@@ -1,7 +1,5 @@
 ﻿/** Generic LL(*) recursive descent parser. */
 module SDP {
-    'use strict';
-
     interface ParsingFunction<T> {
         (str: string, pos: number): [T, number];
     }

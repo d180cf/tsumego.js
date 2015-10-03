@@ -1,8 +1,6 @@
 ﻿/// <reference path="rdp.ts" />
 
 module SGF {
-    'use strict';
-
     const $ = SDP.$;
 
     /**
