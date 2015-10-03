@@ -220,7 +220,7 @@ module testbench {
             return null;
 
         const b = path[path.length - 1].fork();
-        if (!b.play(Move.x(move), Move.y(move), color)) {
+        if (!b.play(Move(Move.x(move), Move.y(move), color))) {
             debugger;
             throw new Error('Impossible move: ' + xy2s(move));
         }
@@ -245,7 +245,7 @@ module testbench {
         if (b.get(Move.x(aim), Move.y(aim))) {
             for (const m of rzone) {
                 const bm = b.fork();
-                if (!bm.play(Move.x(m), Move.y(m), -color))
+                if (!bm.play(Move(Move.x(m), Move.y(m), -color)))
                     continue;
 
                 // check for repetitions
@@ -347,7 +347,7 @@ module testbench {
                 if (/^[a-z]\d+$/i.test(xy)) {
                     const p = parse(xy, b.size);
 
-                    if (!b.play(Move.x(p), Move.y(p), c)) {
+                    if (!b.play(Move(Move.x(p), Move.y(p), c))) {
                         console.log(col, 'cannot play at', xy);
                     } else {
                         path.push(b);
@@ -364,7 +364,7 @@ module testbench {
                         //    /\)\s*$/,
                         //    '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
 
-                        b.play(Move.x(move), Move.y(move), c);
+                        b.play(move);
                         path.push(b);
                         console.log('\n\n' + b.hash() + '\n\n' + b);
                         //renderSGF(sgfp);

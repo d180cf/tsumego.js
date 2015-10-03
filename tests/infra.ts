@@ -26,16 +26,16 @@ module ut {
         process.argv[2];
 
     if (filter)
-        console.warn('tests filtered by:', filter);
+        console.warn('tests filtered by: ' + JSON.stringify(filter));
 
-    export function group(init: ($: GroupContext) => void) {
+    export function group(init: ($: GroupContext) => void, gname = fname(init)) {
         const _indent = indent;
-        console.log(indent, fname(init));
+        console.log(indent, gname);
         indent += '--';
 
         init({
-            test: (test, name = fname(test)) => {
-                if (filter && name.indexOf(filter) < 0)
+            test: (test, tname = fname(test)) => {
+                if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
                     return;
 
                 const logs = [];
@@ -56,10 +56,10 @@ module ut {
                     }
 
                     const duration = +new Date - started;
-                    console.log(indent, name, duration, 'ms');
+                    console.log(indent, tname, duration, 'ms');
                 } catch (err) {
                     failed = true;
-                    console.log(indent, name, ':', 'FAILED');
+                    console.log(indent, tname, ':', 'FAILED');
 
                     for (const log of logs)
                         console.log(log);

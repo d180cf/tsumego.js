@@ -8,8 +8,14 @@
 module tsumego {
     'use strict';
 
+    interface Node<Move> extends Hasheable {
+        //play(move: Move): number;
+        //undo(): void;
+        //fork(): Node<Move>;
+    }
+
     interface Estimator<Node> {
-        (board: Node): number;
+        (node: Node): number;
     }
 
     export interface Player<Move> {
@@ -58,13 +64,13 @@ module tsumego {
         return array;
     };
 
-    export function* _solve<Node extends Hasheable, Move>(
-        path: Node[],
+    export function* _solve<Move>(
+        path: Node<Move>[],
         color: Color,
         nkt: number,
         tt: TT<Move>,
-        expand: Generator<Node, Move>,
-        status: Estimator<Node>,
+        expand: Generator<Node<Move>, Move>,
+        status: Estimator<Node<Move>>,
         player?: Player<Move>) {
 
         type R = Result<Move>;
@@ -72,7 +78,7 @@ module tsumego {
         let nknodes = 0;
 
         function* solve(
-            path: Node[],
+            path: Node<Move>[],
             color: Color,
             nkt: number,
             ko: boolean): IterableIterator<R> {
@@ -222,13 +228,13 @@ module tsumego {
         return result;
     }
 
-    export function solve<Node extends Hasheable, Move>(
-        path: Node[],
+    export function solve<Move>(
+        path: Node<Move>[],
         color: Color,
         nkt: number,
         tt: TT<Move>,
-        expand: Generator<Node, Move>,
-        status: Estimator<Node>,
+        expand: Generator<Node<Move>, Move>,
+        status: Estimator<Node<Move>>,
         player?: Player<Move>) {
 
         const r = result(_solve(path, color, nkt, tt, expand, status, player));

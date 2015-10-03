@@ -27,7 +27,7 @@ module test {
                         const color = { x: +1, o: -1 }[marker.toLowerCase()] || 0;
 
                         if (color)
-                            board.play(x, y, color);
+                            board.play(XY(x, y, color));
                     }
                 }
 

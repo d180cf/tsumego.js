@@ -8,10 +8,10 @@ module tsumego {
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
         export function Basic(rzone: XY[]): Generator<Board, XY> {
-            const random = rand.LCG.NR01(Date.now());
+            const random = rand.LCG.NR01(8132783);
 
             return (board: Board, color: number) => {
-                const leafs = [];
+                const leafs: { b: Board; m: XY; r: number; n1: number; n2: number }[] = [];
 
                 let forked: Board;
 
@@ -21,7 +21,7 @@ module tsumego {
 
                     if (!Pattern.isEye(board, x, y, color)) {
                         const b = forked || board.fork();
-                        const r = b.play(x, y, color);
+                        const r = b.play(XY(x, y, color));
 
                         if (!r) {
                             forked = b;
@@ -32,7 +32,7 @@ module tsumego {
 
                         leafs.push({
                             b: b,
-                            m: m,
+                            m: XY(x, y, color),
                             r: r,
                             n1: sumlibs(b, color),
                             n2: sumlibs(b, -color),

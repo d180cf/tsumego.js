@@ -190,7 +190,7 @@ module tsumego {
             rows.map((row, y) => {
                 row.replace(/\s/g, '').split('').map((chr, x) => {
                     let c = chr == 'X' ? +1 : chr == 'O' ? -1 : 0;
-                    if (c && !this.play(x, y, c))
+                    if (c && !this.play(XY(x, y, c)))
                         throw new Error('Invalid setup.');
                 });
             });
@@ -212,7 +212,7 @@ module tsumego {
                     const x = s2n(xy, 0);
                     const y = s2n(xy, 1);
 
-                    if (!this.play(x, y, color))
+                    if (!this.play(XY(x, y, color)))
                         throw new Error(tag + '[' + xy + '] cannot be added.');
                 }
             };
@@ -355,7 +355,12 @@ module tsumego {
          * descriptors in the array of blocks. It doesn't
          * allocate temporary objects and thus is pretty fast.
          */
-        play(x: number, y: number, color: number): number {
+        play(move: XY): number {
+            const color = XY.c(move);
+
+            const x = XY.x(move);
+            const y = XY.y(move);
+
             if (this.getBlockId(x, y))
                 return 0;
 
