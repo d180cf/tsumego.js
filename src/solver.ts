@@ -20,10 +20,10 @@ module tsumego {
     }
 
     /** Returns values in 1..path.length-1 range.
-        If no repetition found, returns nothing.  */
-    function findrepd<Node extends Hasheable>(path: Node[], b: Node) {
+    If no repetition found, returns nothing.  */
+    function findrepd(path: string[], b: string) {
         for (let i = path.length - 1; i > 0; i--)
-            if (b.hash() == path[i - 1].hash())
+            if (b == path[i - 1])
                 return i;
     }
 
@@ -65,8 +65,9 @@ module tsumego {
     export function* _solve<Move>({path, color, nkt, tt, expand, status, player, alive}: Args<Move>) {
         type R = Result<Move>;
         let nknodes = 0;
+        const board = path[path.length - 1].fork();
 
-        function* solve(path: Node<Move>[], color: Color, nkt: number, ko: boolean): IterableIterator<R> {
+        function* solve(path: string[], color: number, nkt: number, ko: boolean): IterableIterator<R> {
             yield;
             nknodes++;
 
@@ -80,8 +81,11 @@ module tsumego {
             }
 
             const depth = path.length;
-            const board = path[depth - 1];
-            const ttres = tt.get(board, color, nkt);
+            const hashb = path[depth - 1];
+            const ttres = tt.get(hashb, color, nkt);
+
+            if (board.hash() != hashb)
+                throw Error('Inconsistent path.');
 
             if (ttres) {
                 player && player.done(ttres.color, ttres.move, null);
@@ -96,7 +100,7 @@ module tsumego {
             for (const m of expand(board, color)) {
                 board.play(m);
 
-                const d = findrepd(path, board);
+                const d = findrepd(path, board.hash());
                 const ko = d < depth;
 
                 if (d < mindepth)
@@ -122,20 +126,18 @@ module tsumego {
             leafs.sort((lhs, rhs) => (rhs.nkt - lhs.nkt) * color);
 
             for (const {m, ko} of leafs) {
-                const b = board.fork();
-
-                b.play(m);
+                board.play(m);
 
                 let s: R;
 
-                if (status(b) > 0) {
+                if (status(board) > 0) {
                     // black wins by capturing the white's stones
                     s = { color: +1, repd: infty };
-                } else if (alive && alive(b)) {
+                } else if (alive && alive(board)) {
                     // white secures the group that black needed to capture
                     s = { color: -1, repd: infty };
                 } else {
-                    path.push(b);
+                    path.push(board.hash());
                     player && player.play(color, m);
 
                     // the opponent makes a move
@@ -148,7 +150,7 @@ module tsumego {
                         player && player.play(-color, null);
                         const s_pass: R = yield* solve(path, color, nkt, ko);
                         player && player.undo();
-                        const s_asis: R = { color: status(b), repd: infty };
+                        const s_asis: R = { color: status(board), repd: infty };
 
                         // the opponent can either make a move or pass if it thinks
                         // that making a move is a loss, while the current player
@@ -160,6 +162,8 @@ module tsumego {
                     path.pop();
                     player && player.undo();
                 }
+
+                board.undo();
 
                 // the min value of repd is counted only for the case
                 // if all moves result in a loss; if this happens, then
@@ -200,6 +204,9 @@ module tsumego {
                 result.repd = 0;
             }
 
+            if (board.hash() != hashb)
+                throw Error('Inconsistent path.');
+
             // if the solution doesn't depend on a ko above the current node,
             // it can be stored and later used unconditionally as it doesn't
             // depend on a path that leads to the node; this stands true if all
@@ -207,7 +214,7 @@ module tsumego {
             // can be proved by trying to construct a path from a node in the
             // proof tree to the root node
             if (result.repd > depth) {
-                tt.set(board, color, {
+                tt.set(hashb, color, {
                     color: result.color,
                     move: result.move,
                     repd: infty
@@ -217,7 +224,7 @@ module tsumego {
             return result;
         }
 
-        const result = yield* solve(path, color, nkt, false);
+        const result = yield* solve(path.map(b => b.hash()), color, nkt, false);
         console.log(nknodes + ' nodes explored');
         return result;
     }

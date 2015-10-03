@@ -27,7 +27,7 @@ module tsumego {
         move?: Move;
     }
 
-    const hash = (b: Hasheable, c: Color) => (c > 0 ? 'X' : 'O') + ':' + b.hash();
+    const hash = (b: string, c: Color) => (c > 0 ? 'X' : 'O') + ':' + b;
 
     /** Transposition table. */
     export class TT<Move> {
@@ -36,7 +36,7 @@ module tsumego {
         /**
          * @param n The number of available ko treats.
          */
-        get(b: Hasheable, c: Color, n: number): Result<Move> {
+        get(b: string, c: Color, n: number): Result<Move> {
             const h = hash(b, c);
             const s = this._[h];
 
@@ -52,7 +52,7 @@ module tsumego {
         /**
          * @param n - The number of ko treats that was needed to get the result.
          */
-        set(b: Hasheable, c: Color, r: Result<Move>, n: number) {
+        set(b: string, c: Color, r: Result<Move>, n: number) {
             const h = hash(b, c);
             const s = this._[h] || { wmin: -infty, bmax: +infty, move: r.move };
 
