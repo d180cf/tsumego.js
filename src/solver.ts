@@ -12,10 +12,6 @@ module tsumego {
         fork(): Node<Move>;
     }
 
-    interface Estimator<Node> {
-        (node: Node): number;
-    }
-
     export interface Player<Move> {
         play(color: Color, move: Move): void;
         undo(): void;
@@ -61,7 +57,7 @@ module tsumego {
         nkt: number;
         tt: TT<Move>;
         expand: Generator<Node<Move>, Move>;
-        status: Estimator<Node<Move>>;
+        status: (node: Node<Move>) => number;
         player?: Player<Move>;
         alive?: (node: Node<Move>) => boolean;
     }
