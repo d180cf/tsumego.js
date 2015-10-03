@@ -9,6 +9,10 @@
 /// <reference path="solver.ts" />
 /// <reference path="benson.ts" />
 
+console.log(`\nTotal: ${((Date.now() - _dt0) / 1000).toFixed(1) }s`);
+
+tsumego.profile.log();
+
 declare const process;
 
 if (typeof process !== 'undefined')

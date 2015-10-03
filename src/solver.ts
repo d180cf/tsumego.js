@@ -9,9 +9,9 @@ module tsumego {
     'use strict';
 
     interface Node<Move> extends Hasheable {
-        //play(move: Move): number;
-        //undo(): void;
-        //fork(): Node<Move>;
+        play(move: Move): number;
+        undo(): void;
+        fork(): Node<Move>;
     }
 
     interface Estimator<Node> {
@@ -107,34 +107,41 @@ module tsumego {
             let result: R;
             let mindepth = infty;
 
-            const leafs = [...function* () {
-                for (const {b, m} of expand(board, color)) {
-                    const d = findrepd(path, b);
-                    const ko = d < depth;
+            const leafs: { m: Move; ko: boolean; nkt: number }[] = [];
 
-                    if (d < mindepth)
-                        mindepth = d;
+            for (const m of expand(board, color)) {
+                board.play(m);
 
-                    // the move makes sense if it doesn't repeat
-                    // a previous position or the current player
-                    // has a ko treat elsewhere on the board and
-                    // can use it to repeat the local position
-                    if (!ko || color * nkt > 0) {
-                        yield {
-                            b: b,
-                            m: m,
-                            ko: ko,
-                            nkt: ko ? nkt - color : nkt
-                        };
-                    }
+                const d = findrepd(path, board);
+                const ko = d < depth;
+
+                if (d < mindepth)
+                    mindepth = d;
+
+                // the move makes sense if it doesn't repeat
+                // a previous position or the current player
+                // has a ko treat elsewhere on the board and
+                // can use it to repeat the local position
+                if (!ko || color * nkt > 0) {
+                    leafs.push({
+                        m: m,
+                        ko: ko,
+                        nkt: ko ? nkt - color : nkt
+                    });
                 }
-            } ()];
+
+                board.undo();
+            }
 
             // moves that require a ko treat are considered last
             // that's not just perf optimization: the search depends on this
             leafs.sort((lhs, rhs) => (rhs.nkt - lhs.nkt) * color);
 
-            for (const {b, m, ko} of leafs) {
+            for (const {m, ko} of leafs) {
+                const b = board.fork();
+
+                b.play(m);
+
                 let s: R;
 
                 if (status(b) > 0) {

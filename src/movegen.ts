@@ -2,41 +2,32 @@ module tsumego {
     'use strict';
 
     export interface Generator<Node, Move> {
-        (node: Node, color: number): { b: Node; m: Move }[];
+        (node: Node, color: number): Move[];
     }
 
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: XY[]): Generator<Board, XY> {
-            const random = rand.LCG.NR01(8132783);
-
+        export function Basic(rzone: XY[], random = rand.LCG.NR01(Date.now())): Generator<Board, XY> {
             return (board: Board, color: number) => {
-                const leafs: { b: Board; m: XY; r: number; n1: number; n2: number }[] = [];
-
-                let forked: Board;
+                const leafs: { m: XY; r: number; n1: number; n2: number }[] = [];
 
                 for (const m of rzone) {
-                    const x = XY.x(m);
-                    const y = XY.y(m);
+                    const [x, y] = XY.coords(m);
 
                     if (!Pattern.isEye(board, x, y, color)) {
-                        const b = forked || board.fork();
-                        const r = b.play(XY(x, y, color));
+                        const r = board.play(XY(x, y, color));
 
-                        if (!r) {
-                            forked = b;
+                        if (!r)
                             continue;
-                        }
-
-                        forked = null;
 
                         leafs.push({
-                            b: b,
                             m: XY(x, y, color),
                             r: r,
-                            n1: sumlibs(b, color),
-                            n2: sumlibs(b, -color),
+                            n1: sumlibs(board, color),
+                            n2: sumlibs(board, -color),
                         });
+
+                        board.undo();
                     }
                 }
 
@@ -47,7 +38,7 @@ module tsumego {
                         || random() - 0.5;
                 });
 
-                return leafs;
+                return leafs.map(x => x.m);
             };
         }
     }

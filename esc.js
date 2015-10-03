@@ -12,7 +12,8 @@ var es6map = fs.readFileSync(srcPath + '.map', 'utf8');
 
 var es5 = babel.transform(es6src, {
     inputSourceMap: JSON.parse(es6map),
-    sourceMaps: true
+    sourceMaps: true,
+    compact: false
 });
 
 es5.code = es5.code.replace(/(\r?\n\/\/# sourceMappingURL=)(.+)$/img, '$1' + outPath + '.map');

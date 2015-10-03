@@ -158,8 +158,6 @@ module tsumego {
             changed: number[];
         };
 
-        private _hash: string;
-
         constructor(size: uint);
         constructor(size: uint, rows: string[]);
         constructor(sgf: string | SGF.Node);
@@ -324,7 +322,7 @@ module tsumego {
         private change(id: block.id, bd: block) {
             // adding a new block corresponds to a change from
             // blocks[blocks.length - 1] -> b
-            this.history.changed.push(id, this.blocks[id] || 0);
+            this.history.changed.push(id, this.blocks[id] | 0);
             this.blocks[id] = bd;
         }
 
@@ -424,7 +422,6 @@ module tsumego {
             const id_old = this.table[y * size + x];
 
             this.table[y * size + x] = id_new;
-            this._hash = null;
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors
@@ -510,6 +507,9 @@ module tsumego {
         undo() {
             const move = this.history.added.pop();
 
+            if (!move)
+                throw Error('Nothing to undo.');
+
             const x = move & 15;
             const y = move >> 4 & 15;
             const n = move >> 8 & 255;
@@ -519,41 +519,42 @@ module tsumego {
 
             for (let i = 0; i < n; i++) {
                 const bd = this.history.changed.pop();
-                const id = this.history.changed.pop();                
+                const id = this.history.changed.pop();
+
+                if (!id)
+                    throw Error('Cannot undo the null block.');
 
                 // when a new block is added, the corresponding
                 // record in the history looks like changing
                 // the last block from 0 to something;; to undo
                 // this properly, the last element in the array
                 // needs to be removed as well
-                if (id == this.blocks.length - 1 && !bd)
-                    this.blocks.pop();
-                else
+                if (id < this.blocks.length)
                     this.blocks[id] = bd;
+                else if (!bd)
+                    this.blocks.pop();
             }
+
+            return n;
         }
 
         hash(): string {
-            if (!this._hash) {
-                const n = this.size;
-                let h = '', len = 0;
+            const n = this.size;
+            let h = '', len = 0;
 
-                for (let y = 0; y < n; y++) {
-                    let rx = h.length;
+            for (let y = 0; y < n; y++) {
+                let rx = h.length;
 
-                    for (let x = 0; x < n; x++) {
-                        const b = this.get(x, y);
-                        h += b > 0 ? 'X' : b < 0 ? 'O' : '-';
-                        if (b) len = rx = h.length;
-                    }
-
-                    h = h.slice(0, rx) + ';';
+                for (let x = 0; x < n; x++) {
+                    const b = this.get(x, y);
+                    h += b > 0 ? 'X' : b < 0 ? 'O' : '-';
+                    if (b) len = rx = h.length;
                 }
 
-                this._hash = n + 'x' + n + '(' + h.slice(0, len) + ')';
+                h = h.slice(0, rx) + ';';
             }
 
-            return this._hash;
+            return n + 'x' + n + '(' + h.slice(0, len) + ')';
         }
 
         private toStringSGF() {
