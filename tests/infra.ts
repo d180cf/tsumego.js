@@ -212,11 +212,21 @@ declare const require: Function;
 declare const global;
 
 try {
-    require('source-map-support').install();
-    global.Symbol = require('es6-symbol');
-    global.regeneratorRuntime = require('../regenerator-runtime');
+    //require('source-map-support').install();
+
+    if (!global.Symbol) {
+        console.warn('loading Symbol polyfill');
+        global.Symbol = require('es6-symbol');
+    }
+
+    try {
+        new Function('function*f(){}');
+    } catch (err) {
+        console.warn('loading the regenerator runtime');
+        global.regeneratorRuntime = require('../regenerator-runtime');
+    }
 } catch (e) {
-    console.log(e);
+    console.warn(e);
 }
 
 const _dt0 = Date.now();

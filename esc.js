@@ -14,7 +14,14 @@ var es5 = babel.transform(es6src, {
     inputSourceMap: JSON.parse(es6map),
     sourceMaps: true,
     loose: 'all',
-    compact: false
+    compact: false,
+    blacklist: [
+        'regenerator',
+        //'es6.forOf',
+        //'es6.classes',
+        //'es6.blockScoping',
+        //'es6.templateLiterals',
+    ]
 });
 
 es5.code = es5.code.replace(/(\r?\n\/\/# sourceMappingURL=)(.+)$/img, '$1' + outPath + '.map');
