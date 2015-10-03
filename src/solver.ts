@@ -84,9 +84,6 @@ module tsumego {
             const hashb = path[depth - 1];
             const ttres = tt.get(hashb, color, nkt);
 
-            if (board.hash() != hashb)
-                throw Error('Inconsistent path.');
-
             if (ttres) {
                 player && player.done(ttres.color, ttres.move, null);
                 return ttres;
@@ -203,9 +200,6 @@ module tsumego {
                 // solution intersects with the path and thus cannot be reused
                 result.repd = 0;
             }
-
-            if (board.hash() != hashb)
-                throw Error('Inconsistent path.');
 
             // if the solution doesn't depend on a ko above the current node,
             // it can be stored and later used unconditionally as it doesn't
