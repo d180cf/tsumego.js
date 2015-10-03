@@ -222,13 +222,17 @@ module tsumego {
         }
 
         /** 
-         * Clones the board and all the history of moves.
-         * This method is exceptionally slow.
+         * Clones the board and without the history of moves.
+         * This method is quite slow.
          */
         fork(): Board {
-            const json = JSON.parse(JSON.stringify(this));
-            Object.setPrototypeOf(json, Board.prototype);
-            return json as Board;
+            const b = new Board(0);
+
+            b.size = this.size;
+            b.table = this.table.slice();
+            b.blocks = this.blocks.slice();
+
+            return b;
         }
 
         get(x: number, y: number): block;
