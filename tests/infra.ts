@@ -1,5 +1,6 @@
 ﻿interface Error {
     stack: string;
+    reason: Error;
 }
 
 module ut {
@@ -173,7 +174,7 @@ module ut {
 
     function MatchError(message: string, reason: Error) {
         const err = new Error(message);
-        err['reason'] = reason;
+        err.reason = reason;
         return err;
     }
 

@@ -67,11 +67,11 @@ module tests {
         });
 
         $.test($ => { 
-            /// 25x25
+            /// random
             const rand = LCG(1728382);
-            const board = new Board(25);
+            const board = new Board(16);
 
-            for (let i = 0; i < 2000; i++) {
+            for (let i = 0; i < 1000; i++) {
                 const x = rand() * board.size | 0;
                 const y = rand() * board.size | 0;
                 const c = rand() > 0.5 ? +1 : -1;
@@ -84,7 +84,7 @@ module tests {
             console.log(board + '');
             console.log(JSON.stringify(eyes));
 
-            $(eyes).equal({ "C7": -1, "F10": -1, "H7": 1, "J12": -1, "N10": 1, "N8": 1 });
+            $(eyes).equal({ "A8": -1, "E7": 1, "H6": 1, "M8": -1 });
         });
     });
 }

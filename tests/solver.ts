@@ -211,7 +211,7 @@ module tests {
 
                     $(result.color > 0 ? 'B' : 'W').equal(winner);
                     $(xy2s(result.move)).belong(moves ? moves.split(',') : [null]);
-                }, /([^\/\\]+)\.sgf$/.exec(path)[1] + ':' + lhs);
+                }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ':' + lhs);
             }
         }
     });

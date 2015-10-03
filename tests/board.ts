@@ -1,10 +1,590 @@
 ﻿/// <reference path="infra.ts" />
 
 module tests {
+    import block = tsumego.block;
+    import sumlibs = tsumego.sumlibs;
     import Board = tsumego.Board;
 
     ut.group($ => { 
         /// board
+
+        $.test($ => {
+            /// blocks
+            const b = new Board(5);
+
+            const moves: [string, number, () => void][] = [
+                ['+A5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A',
+                        ' 5 X',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 0]x[0, 0] libs=2 size=1'
+                    ]);
+                }],
+
+                ['-B5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B',
+                        ' 5 X O',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 0]x[0, 0] libs=1 size=1',
+                        '-[1, 1]x[0, 0] libs=2 size=1'
+                    ]);
+                }],
+
+                ['+B4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B',
+                        ' 5 X O',
+                        ' 4 - X',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 0]x[0, 0] libs=1 size=1',
+                        '-[1, 1]x[0, 0] libs=1 size=1',
+                        '+[1, 1]x[1, 1] libs=3 size=1'
+                    ]);
+                }],
+
+                ['-C5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C',
+                        ' 5 X O O',
+                        ' 4 - X -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 0]x[0, 0] libs=1 size=1',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[1, 1]x[1, 1] libs=3 size=1'
+                    ]);
+                }],
+
+                ['+A4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C',
+                        ' 5 X O O',
+                        ' 4 X X -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0'
+                    ]);
+                }],
+
+                ['-E5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1'
+                    ]);
+                }],
+
+                ['+A1', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - - - -',
+                        ' 2 - - - - -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                    ]);
+                }],
+
+                ['-D2', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - - - -',
+                        ' 2 - - - O -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[3, 3]x[3, 3] libs=4 size=1',
+                    ]);
+                }],
+
+                ['-B2', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - - - -',
+                        ' 2 - O - O -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[3, 3]x[3, 3] libs=4 size=1',
+                        '-[1, 1]x[3, 3] libs=4 size=1',
+                    ]);
+                }],
+
+                ['-C3', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - O - -',
+                        ' 2 - O - O -',
+                        ' 1 X - - - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[3, 3]x[3, 3] libs=4 size=1',
+                        '-[1, 1]x[3, 3] libs=4 size=1',
+                        '-[2, 2]x[2, 2] libs=4 size=1',
+                    ]);
+                }],
+
+                ['-C1', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - O - -',
+                        ' 2 - O - O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[3, 3]x[3, 3] libs=4 size=1',
+                        '-[1, 1]x[3, 3] libs=4 size=1',
+                        '-[2, 2]x[2, 2] libs=4 size=1',
+                        '-[2, 2]x[4, 4] libs=3 size=1',
+                    ]);
+                }],
+
+                ['+C2', 0, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - O - -',
+                        ' 2 - O - O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[3, 3]x[3, 3] libs=4 size=1',
+                        '-[1, 1]x[3, 3] libs=4 size=1',
+                        '-[2, 2]x[2, 2] libs=4 size=1',
+                        '-[2, 2]x[4, 4] libs=3 size=1',
+                    ]);
+                }],
+
+                ['-C2', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X - - -',
+                        ' 3 - - O - -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=2 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[1, 3]x[2, 4] libs=7 size=5',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                    ]);
+                }],
+
+                ['+D5', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X O',
+                        ' 4 X X - - -',
+                        ' 3 - - O - -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=1 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        '-[4, 4]x[0, 0] libs=1 size=1',
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[1, 3]x[2, 4] libs=7 size=5',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                    ]);
+                }],
+
+                ['+E4', 2, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X - - X',
+                        ' 3 - - O - -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=1 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[1, 3]x[2, 4] libs=7 size=5',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=2 size=1',
+                        '+[4, 4]x[1, 1] libs=3 size=1',
+                    ]);
+                }],
+
+                ['-D4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X - O X',
+                        ' 3 - - O - -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=1 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[1, 3]x[2, 4] libs=7 size=5',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[4, 4]x[1, 1] libs=2 size=1',
+                        '-[3, 3]x[1, 1] libs=2 size=1',
+                    ]);
+                }],
+
+                ['+D3', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X - O X',
+                        ' 3 - - O X -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=3 size=3',
+                        '-[1, 2]x[0, 0] libs=1 size=2',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '-[1, 3]x[2, 4] libs=6 size=5',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[4, 4]x[1, 1] libs=2 size=1',
+                        '-[3, 3]x[1, 1] libs=1 size=1',
+                        '+[3, 3]x[2, 2] libs=1 size=1',
+                    ]);
+                }],
+
+                ['-C4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X O O X',
+                        ' 3 - - O X -',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 3]x[0, 4] libs=5 size=9',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[4, 4]x[1, 1] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[3, 3]x[2, 2] libs=1 size=1',
+                    ]);
+                }],
+
+                ['+E3', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X O O X',
+                        ' 3 - - O X X',
+                        ' 2 - O O O -',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 3]x[0, 4] libs=5 size=9',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[3, 4]x[1, 2] libs=2 size=3',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                    ]);
+                }],
+
+                ['-E2', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X O O X',
+                        ' 3 - - O X X',
+                        ' 2 - O O O O',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 4]x[0, 4] libs=5 size=10',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[3, 4]x[1, 2] libs=1 size=3',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                    ]);
+                }],
+
+                ['+E5', 0, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X O O X',
+                        ' 3 - - O X X',
+                        ' 2 - O O O O',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 4]x[0, 4] libs=5 size=10',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                        '+[3, 4]x[1, 2] libs=1 size=3',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                    ]);
+                }],
+
+                ['-E5', 5, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X O O -',
+                        ' 3 - - O - -',
+                        ' 2 - O O O O',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 4]x[0, 4] libs=9 size=10',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        null,
+                        null,
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                        '-[4, 4]x[0, 0] libs=2 size=1',
+                    ]);
+                }],
+
+                ['+E4', 1, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O - O',
+                        ' 4 X X O O X',
+                        ' 3 - - O - -',
+                        ' 2 - O O O O',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 4]x[0, 4] libs=8 size=10',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        null,
+                        null,
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                        '-[4, 4]x[0, 0] libs=1 size=1',
+                        '+[4, 4]x[1, 1] libs=1 size=1',
+                    ]);
+                }],
+
+                ['+D5', 2, () => {
+                    $(b.toString()).equal([
+                        '   A B C D E',
+                        ' 5 X O O X -',
+                        ' 4 X X O O X',
+                        ' 3 - - O - -',
+                        ' 2 - O O O O',
+                        ' 1 X - O - -',
+                    ].join('\n'));
+
+                    $(b.blocks.map(block.toString)).equal([null,
+                        '+[0, 1]x[0, 1] libs=2 size=3',
+                        '-[1, 4]x[0, 4] libs=7 size=10',
+                        '+[0, 0]x[0, 0] libs=1 size=0',
+                        null,
+                        '+[0, 0]x[4, 4] libs=2 size=1',
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        '+[0, 0]x[0, 0] libs=6 size=0',
+                        null,
+                        null,
+                        '+[0, 0]x[0, 0] libs=2 size=0',
+                        '+[0, 0]x[0, 0] libs=11 size=0',
+                        null,
+                        '+[4, 4]x[1, 1] libs=2 size=1',
+                        '+[3, 3]x[0, 0] libs=1 size=1',
+                    ]);
+                }],
+            ];
+
+            // play and undo all the moves a few times
+            for (let j = 0; j < 1e2; j++) {
+                $(b.blocks).equal([0]);
+
+                // play all the moves
+                for (let i = 0; i < moves.length; i++) {
+                    const [m, r, test] = moves[i];
+                    const x = m.charCodeAt(1) - 0x41;
+                    const y = b.size - +m.slice(2);
+                    const c = m[0] == '+' ? +1 : -1;
+                    const result = b.play(x, y, c);
+
+                    try {
+                        $(result).equal(r);
+                        test();
+                    } catch (reason) {
+                        const error = new Error('Failed to play ' + m);
+                        error.reason = reason;
+                        throw error;
+                    }
+                }
+
+                // undo all the moves
+                for (let i = moves.length - 1; i > 0; i--) {
+                    const [m, r, test] = moves[i - 1];
+
+                    if (moves[i][1] > 0)
+                        b.undo();
+
+                    try {
+                        test();
+                    } catch (reason) {
+                        const error = new Error(`Failed to undo #${i}`);
+                        error.reason = reason;
+                        throw error;
+                    }
+                }
+
+                b.undo();
+                $(b.blocks).equal([0]);
+            }
+        });
+
         $.test($ => { 
             /// empty 3x3
             const board = new Board(3);
@@ -89,58 +669,63 @@ module tests {
             /// total libs
             const b = new Board(5);
 
-            $(b.totalLibs(+1)).equal(0);
-            $(b.totalLibs(-1)).equal(0);
+            try {
+                $(sumlibs(b, +1)).equal(0);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(0, 0, +1);
+                b.play(0, 0, +1);
 
-            $(b.totalLibs(+1)).equal(2);
-            $(b.totalLibs(-1)).equal(0);
+                $(sumlibs(b, +1)).equal(2);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(1, 0, +1);
+                b.play(1, 0, +1);
 
-            $(b.totalLibs(+1)).equal(3);
-            $(b.totalLibs(-1)).equal(0);
+                $(sumlibs(b, +1)).equal(3);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(4, 0, +1);
+                b.play(4, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(3, 0, +1);
+                b.play(3, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(2, 0, +1);
+                b.play(2, 0, +1);
 
-            $(b.totalLibs(+1)).equal(5);
-            $(b.totalLibs(-1)).equal(0);
+                $(sumlibs(b, +1)).equal(5);
+                $(sumlibs(b, -1)).equal(0);
 
-            b.play(0, 1, -1);
+                b.play(0, 1, -1);
 
-            $(b.totalLibs(+1)).equal(4);
-            $(b.totalLibs(-1)).equal(2);
+                $(sumlibs(b, +1)).equal(4);
+                $(sumlibs(b, -1)).equal(2);
 
-            b.play(1, 1, -1);
+                b.play(1, 1, -1);
 
-            $(b.totalLibs(+1)).equal(3);
-            $(b.totalLibs(-1)).equal(3);
+                $(sumlibs(b, +1)).equal(3);
+                $(sumlibs(b, -1)).equal(3);
 
-            b.play(4, 1, -1);
+                b.play(4, 1, -1);
 
-            $(b.totalLibs(+1)).equal(2);
-            $(b.totalLibs(-1)).equal(5);
+                $(sumlibs(b, +1)).equal(2);
+                $(sumlibs(b, -1)).equal(5);
 
-            b.play(3, 1, -1);
+                b.play(3, 1, -1);
 
-            $(b.totalLibs(+1)).equal(1);
-            $(b.totalLibs(-1)).equal(5);
+                $(sumlibs(b, +1)).equal(1);
+                $(sumlibs(b, -1)).equal(5);
 
-            b.play(2, 1, -1);
+                b.play(2, 1, -1);
 
-            $(b.totalLibs(+1)).equal(0);
-            $(b.totalLibs(-1)).equal(10);
+                $(sumlibs(b, +1)).equal(0);
+                $(sumlibs(b, -1)).equal(10);
+            } catch (e) {
+                console.log(b + '');
+                throw e;
+            }
         });
 
         $.test($ => { 
@@ -152,7 +737,11 @@ module tests {
                 '--XOOOXX',
                 '---XXX--']);
 
+            console.log(b + '');
+
             const n = b.play(5, 2, +1);
+
+            console.log(b + '');
 
             // board is 9x9 so the rightmost column is empty
             $(n).equal(5 + 1);
