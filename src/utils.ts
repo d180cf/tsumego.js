@@ -46,7 +46,7 @@ module tsumego {
         }
     }
 
-    export class SortedArray<T,U> {
+    export class SortedArray<T, U> {
         private items: T[];
         private flags: U[];
 
@@ -75,4 +75,11 @@ module tsumego {
             return i;
         }
     }
+
+    export const b4 = (b0: number, b1: number, b2: number, b3: number) => b0 | b1 << 8 | b2 << 16 | b3 << 24;
+
+    export const b0 = (b: number) => b & 255;
+    export const b1 = (b: number) => b >> 8 & 255;
+    export const b2 = (b: number) => b >> 16 & 255;
+    export const b3 = (b: number) => b >> 24 & 255;
 }
