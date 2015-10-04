@@ -47,10 +47,10 @@ module tsumego {
         status: (node: Node<Move>) => number;
         alive?: (node: Node<Move>) => boolean;
         player?: {
-            play(color: Color, move: Move): void;
+            play(color: color, move: Move): void;
             undo(): void;
-            done(color: Color, move: Move, comment: string): void;
-            loss(color: Color, move: Move, response: Move): void;
+            done(color: color, move: Move, comment: string): void;
+            loss(color: color, move: Move, response: Move): void;
         };
     }
 

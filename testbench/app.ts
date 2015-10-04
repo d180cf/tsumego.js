@@ -7,7 +7,7 @@ module testbench {
     import n2s = tsumego.n2s;
     import s2n = tsumego.s2n;
     import Result = tsumego.Result;
-    import Color = tsumego.Color;
+    import color = tsumego.color;
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
@@ -23,15 +23,15 @@ module testbench {
         String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
         (goban.board.size - stone.y(m));
 
-    const c2s = Color.alias;
-    const cm2s = (c: Color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: Color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
+    const c2s = (c: color) => c > 0 ? 'B' : 'W';
+    const cm2s = (c: color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
     /** { x: 2, y: 3 } -> `cd` */
     const xy2f = (xy: stone) => n2s(stone.x(xy)) + n2s(stone.y(xy));
 
     /** -1, { x: 2, y: 3 } -> `W[cd]` */
-    const xyc2f = (c: Color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
+    const xyc2f = (c: color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
 
     /** `cd` -> { x: 2, y: 3 } */
     const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1));
@@ -45,7 +45,7 @@ module testbench {
         return [brd, rzn, aim];
     }
 
-    function s2s(c: Color, s: Result<stone>) {
+    function s2s(c: color, s: Result<stone>) {
         let isDraw = s.color == 0;
         let isLoss = s.color * c < 0;
 
@@ -55,7 +55,7 @@ module testbench {
     /** shared transposition table for black and white */
     export var tt = new tsumego.TT<stone>();
 
-    function solve(board: Board, color: Color, nkotreats: number = 0, log = false) {
+    function solve(board: Board, color: color, nkotreats: number = 0, log = false) {
         profile.reset();
 
         const rs = tsumego.solve({
@@ -83,7 +83,7 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(board: Board, color: Color, nkotreats = 0) {
+    function dbgsolve(board: Board, color: color, nkotreats = 0) {
         let log = true;
 
         const player = {

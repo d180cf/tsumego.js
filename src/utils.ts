@@ -1,7 +1,11 @@
-﻿/// <reference path="types.ts" />
-
-module tsumego {
+﻿module tsumego {
     export const infty = 777;
+
+    export type uint = number;
+
+    /** Positive values = black.
+        Negative values = white. */
+    export type color = number;
 
     /** 0 -> `a`, 3 -> `d` */
     export const n2s = (n: number) => String.fromCharCode(n + 0x61);
