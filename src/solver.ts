@@ -63,7 +63,6 @@ module tsumego {
         const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt1 >= nkt2);
 
         function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
-            yield;
             nknodes++;
 
             if (ko) {
@@ -80,7 +79,7 @@ module tsumego {
             const ttres = tt.get(hashb, color, nkt);
 
             if (ttres) {
-                player && player.done(ttres.color, ttres.move, null);
+                player && (player.done(ttres.color, ttres.move, null), yield);
                 return ttres;
             }
 
@@ -121,7 +120,7 @@ module tsumego {
                     s = new Result<Move>(-1);
                 } else {
                     path.push(board.hash);
-                    player && player.play(color, move);
+                    player && (player.play(color, move), yield);
 
                     // the opponent makes a move
                     const s_move: R = yield* solve(path, -color, nkt, isko);
@@ -130,9 +129,9 @@ module tsumego {
                         s = s_move;
                     } else {
                         // the opponent passes
-                        player && player.play(-color, null);
+                        player && (player.play(-color, null), yield);
                         const s_pass: R = yield* solve(path, color, nkt, isko);
-                        player && player.undo();
+                        player && (player.undo(), yield);
                         const s_asis = new Result<Move>(status(board));
 
                         // the opponent can either make a move or pass if it thinks
@@ -143,7 +142,7 @@ module tsumego {
                     }
 
                     path.pop();
-                    player && player.undo();
+                    player && (player.undo(), yield);
                 }
 
                 board.undo();
@@ -169,9 +168,9 @@ module tsumego {
             // if there is no winning move, record a loss
             if (!result) {
                 result = new Result<Move>(-color, null, mindepth);
-                player && player.loss(color, null, null);
+                player && (player.loss(color, null, null), yield);
             } else {
-                player && player.done(result.color, result.move, null);
+                player && (player.done(result.color, result.move, null), yield);
             }
 
             if (ko) {
