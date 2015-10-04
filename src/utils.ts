@@ -50,6 +50,18 @@ module tsumego {
         private items: T[];
         private flags: U[];
 
+        get length() {
+            return this.items.length;
+        }
+
+        /** 
+         * The order function tells whether it's ok to
+         * place lhs before rhs in the sorted array. 
+         * The order function must satisfy the following
+         * condition: order(a, b) || order(b, a); in other
+         * words it must allow either (a, b) placement or
+         * (b, a) placement.
+         */
         constructor(private order: (lhs: U, rhs: U) => boolean) {
 
         }
@@ -69,6 +81,8 @@ module tsumego {
             while (i > 0 && !order(flags[i - 1], flag))
                 i--;
 
+            // using .push when i == n and .unshift when i == 0
+            // won't make the solver run faster
             items.splice(i, 0, item);
             flags.splice(i, 0, flag);
 

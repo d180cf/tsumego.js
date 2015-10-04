@@ -21,6 +21,9 @@ module tsumego {
                         if (!r)
                             continue;
 
+                        // the three parameters can be easily packed
+                        // in one 32 bit number, but packing and unpacking
+                        // will only slow things down
                         sa.insert(stone(x, y, color), {
                             r: r,
                             p: sumlibs(board, color),
