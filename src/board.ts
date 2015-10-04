@@ -501,12 +501,15 @@ module tsumego {
          * Reverts the last move by restoring the original
          * block id in table[y * size + x] and by reverting
          * original values of block descriptors.
+         *
+         * Returns the restored move or zero. The returned
+         * move can be given to .play to redo the position.
          */
         undo() {
             const move = this.history.added.pop();
 
             if (!move)
-                throw Error('Nothing to undo.');
+                return 0;
 
             const x = move & 15;
             const y = move >> 4 & 15;
@@ -519,9 +522,6 @@ module tsumego {
                 const bd = this.history.changed.pop();
                 const id = this.history.changed.pop();
 
-                if (!id)
-                    throw Error('Cannot undo the null block.');
-
                 // when a new block is added, the corresponding
                 // record in the history looks like changing
                 // the last block from 0 to something;; to undo
@@ -533,7 +533,7 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return n;
+            return move;
         }
 
         hash(): string {

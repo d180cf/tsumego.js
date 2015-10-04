@@ -55,11 +55,11 @@ module testbench {
     /** shared transposition table for black and white */
     export var tt = new tsumego.TT<stone>();
 
-    function solve(path: Board[], color: Color, nkotreats: number = 0, log = false) {
+    function solve(board: Board, color: Color, nkotreats: number = 0, log = false) {
         profile.reset();
 
         const rs = tsumego.solve({
-            path: path,
+            root: board,
             color: color,
             nkt: nkotreats,
             tt: tt,
@@ -83,7 +83,7 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(path: Board[], color: Color, nkotreats: number = 0) {
+    function dbgsolve(board: Board, color: Color, nkotreats = 0) {
         let log = true;
 
         const player: tsumego.Player<stone> = {
@@ -128,7 +128,7 @@ module testbench {
         };
 
         const solver = tsumego._solve({
-            path: path,
+            root: board,
             color: color,
             nkt: nkotreats,
             tt: tt,
@@ -141,13 +141,11 @@ module testbench {
         window['solver'] = solver;
 
         let tick = 0;
-        let board: Board;
         let result: Result<stone>;
 
         const next = () => {
             const {done, value} = solver.next();
             tick++;
-            board = path[path.length - 1];
             result = value;
 
             if (log) {
@@ -161,11 +159,13 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const i = path.length - 1;
-            const b = path[i];
+            const hash = board.hash();
 
-            while (path[i].hash() == b.hash() && !ct.cancelled)
+            do {
                 next();
+            } while (board.hash() != hash && !ct.cancelled);
+
+            next();
         };
 
         const stepOut = () => {
@@ -222,80 +222,17 @@ module testbench {
         });
     }
 
-    /** Constructs the proof tree in the SGF format.
-        The tree's root is a winning move and its
-        branches are all possible answers of the opponent. */
-    function proof(path: Board[], color: Color, nkt = 0, depth = 0) {
-        const {move} = solve(path, color, nkt);
-        if (!move)
-            return null;
-
-        const b = path[path.length - 1].fork();
-        if (!b.play(stone(stone.x(move), stone.y(move), color))) {
-            debugger;
-            throw new Error('Impossible move: ' + xy2s(move));
-        }
-
-        // check for repetitions
-        let d = path.length - 1;
-        while (d >= 0 && path[d].hash() != b.hash())
-            d--;
-
-        // check if -color can make this move
-        if (d >= 0) {
-            if (color * nkt > 0)
-                nkt -= color;
-            else {
-                debugger;
-                throw new Error('The play doesnt have ko treats for this repetition.');
-            }
-        }
-
-        let vars = '';
-
-        if (b.get(stone.x(aim), stone.y(aim))) {
-            for (const m of rzone) {
-                const bm = b.fork();
-                if (!bm.play(stone(stone.x(m), stone.y(m), -color)))
-                    continue;
-
-                // check for repetitions
-                let d = path.length - 1;
-                while (d >= 0 && path[d].hash() != bm.hash())
-                    d--;
-
-                // check if -color can make this move
-                if (d >= 0) {
-                    if (color * nkt < 0)
-                        nkt += color;
-                    else
-                        continue;
-                }
-
-                path.push(bm);
-                const p = proof(path, color, nkt, depth + 1);
-                path.pop();
-
-                if (p)
-                    vars += '\n ' + '  '['repeat'](depth + 1) + '(;' + xyc2f(-color, m) + p + ')';
-            }
-        }
-
-        return ';' + xyc2f(color, move) + vars;
-    }
-
     function status(b: Board) {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var board: Board, rzone: stone[], aim, path: Board[];
+    var board: Board, rzone: stone[], aim;
 
     const source = location.search.slice(1);
     let sgfdata = '';
 
     (source.slice(0, 1) == '(' ? Promise.resolve(source) : send('GET', '/problems/' + source + '.sgf')).then(res => {
         [board, rzone, aim] = parseSGF(res);
-        path = [board.fork()];
         console.log(res);
         sgfdata = res;
         console.log('\n\n' + board.hash() + '\n\n' + board);
@@ -304,7 +241,7 @@ module testbench {
 
         try {
             const [, bw, nkt] = /^#(B|W)([+-]\d+)/.exec(location.hash);
-            dbgsolve(path, bw == 'W' ? -1 : +1, +nkt);
+            dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
         } catch (_) {
             console.log(_);
         }
@@ -352,53 +289,61 @@ module testbench {
             case 'x':
             case 'o':
                 const xy = cmd[1] && cmd[1].toUpperCase();
-                const b = path[path.length - 1].fork();
                 const c = cmd[0].toUpperCase() == 'O' ? -1 : +1;
 
                 if (/^[a-z]\d+$/i.test(xy)) {
-                    const p = parse(xy, b.size);
+                    const p = parse(xy, board.size);
 
-                    if (!b.play(stone(stone.x(p), stone.y(p), c))) {
+                    if (!board.play(stone(stone.x(p), stone.y(p), c))) {
                         console.log(col, 'cannot play at', xy);
                     } else {
-                        path.push(b);
-                        console.log('\n\n' + b.hash() + '\n\n' + b);
+                        console.log(board + '');
                         makeMove(stone.x(p), stone.y(p), c);
                     }
                 } else {
-                    const {move} = solve(path, c, !xy ? 0 : +xy, true);
+                    const {move} = solve(board, c, !xy ? 0 : +xy, true);
 
                     if (!Number.isFinite(move)) {
                         console.log(col, 'passes');
                     } else {
-                        //const sgfp = sgfdata.replace(
-                        //    /\)\s*$/,
-                        //    '\n\n (' + proof(path, c, !xy ? 0 : +xy) + '))');
-
-                        b.play(move);
-                        path.push(b);
-                        console.log('\n\n' + b.hash() + '\n\n' + b);
-                        //renderSGF(sgfp);
-
+                        board.play(move);
+                        console.log(board + '');
                         makeMove(stone.x(move), stone.y(move), c);
                     }
                 }
                 break;
+
             case 'undo':
-                if (path.length > 1) {
-                    for (let n = +(cmd[1] || 1); n > 0 && path.length > 1; n--) {
-                        path.pop();
-                        board = path[path.length - 1];
+                let n = +(cmd[1] || 1);
+
+                while (n-- > 0) {
+                    const move = board.undo();
+
+                    if (move) {
+                        console.log('undo ' + stone.toString(move));
+                    } else {
+                        console.log('nothing to undo');
+                        break;
                     }
-                    console.log('\n\n' + board.hash() + '\n\n' + board);
-                } else {
-                    console.log('nothing to undo');
                 }
+
+                console.log(board + '');
                 break;
+
             case 'path':
-                for (let b of path)
-                    console.log('\n\n' + b.hash() + '\n\n' + b);
+                let move: stone, moves: stone[] = [];
+
+                while (move = board.undo())
+                    moves.unshift(move);
+
+                for (move of moves) {
+                    console.log(board + '');
+                    board.play(move);
+                }
+
+                console.log(board + '');
                 break;
+
             default:
                 console.log('unknown command');
         }

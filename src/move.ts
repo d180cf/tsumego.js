@@ -19,6 +19,8 @@ module tsumego {
 
         export const coords = (m: stone) => [x(m), y(m)];
 
+        export const toString = (m: stone) => (stone.c(m) > 0 ? '+' : '-') + stone.coords(m);
+
         export module nb {
             export const l = (m: stone) => stone(x(m) - 1, y(m));
             export const r = (m: stone) => stone(x(m) + 1, y(m));

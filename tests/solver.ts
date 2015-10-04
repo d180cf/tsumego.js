@@ -45,7 +45,7 @@ module tests {
                     console.log('rand seed:', seed);
 
                     const result = solve({
-                        path: [board],
+                        root: board,
                         color: c2p == 'B' ? +1 : -1,
                         nkt: +nkt | 0,
                         tt: new TT<stone>(),

@@ -8,7 +8,7 @@
 module tsumego {
     interface Node<Move> extends Hasheable {
         play(move: Move): number;
-        undo(): void;
+        undo(): Move;
         fork(): Node<Move>;
     }
 
@@ -44,7 +44,7 @@ module tsumego {
     const wins = (color: number, result: number) => color * result > 0;
 
     interface Args<Move> {
-        path: Node<Move>[];
+        root: Node<Move>;
         color: number;
         nkt: number;
         tt: TT<Move>;
@@ -54,12 +54,11 @@ module tsumego {
         alive?: (node: Node<Move>) => boolean;
     }
 
-    export function* _solve<Move>({path, color, nkt, tt, expand, status, player, alive}: Args<Move>) {
+    export function* _solve<Move>({root: board, color, nkt, tt, expand, status, player, alive}: Args<Move>) {
         type R = Result<Move>;
         let nknodes = 0;
-        const board = path[path.length - 1].fork();
 
-        function* solve(path: string[], color: number, nkt: number, ko: boolean): IterableIterator<R> {
+        function* solve(path: string[], color: number, nkt: number, ko = false): IterableIterator<R> {
             yield;
             nknodes++;
 
@@ -210,7 +209,22 @@ module tsumego {
             return result;
         }
 
-        const result = yield* solve(path.map(b => b.hash()), color, nkt, false);
+        const moves: Move[] = [];
+        const path: string[] = [];
+
+        let move: Move;
+
+        while (move = board.undo())
+            moves.unshift(move);
+
+        for (move of moves) {
+            path.push(board.hash());
+            board.play(move);
+        }
+
+        path.push(board.hash());
+
+        const result = yield* solve(path, color, nkt);
         console.log(nknodes + ' nodes explored');
         return result;
     }

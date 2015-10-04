@@ -543,6 +543,11 @@ module tests {
                 }],
             ];
 
+            const xyc = (m: string) => stone(
+                m.charCodeAt(1) - 0x41,
+                b.size - +m.slice(2),
+                m[0] == '+' ? +1 : -1);
+
             // play and undo all the moves a few times
             for (let j = 0; j < 1e2; j++) {
                 $(b.blocks).equal([0]);
@@ -550,16 +555,13 @@ module tests {
                 // play all the moves
                 for (let i = 0; i < moves.length; i++) {
                     const [m, r, test] = moves[i];
-                    const x = m.charCodeAt(1) - 0x41;
-                    const y = b.size - +m.slice(2);
-                    const c = m[0] == '+' ? +1 : -1;
-                    const result = b.play(stone(x, y, c));
+                    const result = b.play(xyc(m));
 
                     try {
                         $(result).equal(r);
                         test();
                     } catch (reason) {
-                        const error = new Error('Failed to play ' + m);
+                        const error = new Error('Failed to play #' + i + ' = ' + m);
                         error.reason = reason;
                         throw error;
                     }
@@ -567,15 +569,18 @@ module tests {
 
                 // undo all the moves
                 for (let i = moves.length - 1; i > 0; i--) {
-                    const [m, r, test] = moves[i - 1];
-
-                    if (moves[i][1] > 0)
-                        b.undo();
+                    const [, , test] = moves[i - 1];
+                    const [move, , ] = moves[i];
 
                     try {
+                        if (moves[i][1] > 0) {
+                            const m = b.undo();
+                            $(stone.toString(xyc(move))).equal(stone.toString(m));
+                        }
+
                         test();
                     } catch (reason) {
-                        const error = new Error(`Failed to undo #${i}`);
+                        const error = new Error(`Failed to undo #${i} = #-${moves.length - i}`);
                         error.reason = reason;
                         throw error;
                     }
