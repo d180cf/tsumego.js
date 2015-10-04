@@ -89,8 +89,8 @@ module tsumego {
 
             const leafs = sa.reset();
 
-            for (const m of expand(board, color)) {
-                board.play(m);
+            for (const move of expand(board, color)) {
+                board.play(move);
 
                 const d = path.lastIndexOf(board.hash, -2) + 1;
                 const ko = d && d < depth;
@@ -103,13 +103,13 @@ module tsumego {
                 // has a ko treat elsewhere on the board and
                 // can use it to repeat the local position
                 if (!ko || color * nkt > 0)
-                    sa.insert([m, ko], color * nkt - +ko);
+                    sa.insert([move, ko], color * nkt - +ko);
 
                 board.undo();
             }
 
-            for (const [m, ko] of leafs) {
-                board.play(m);
+            for (const [move, isko] of leafs) {
+                board.play(move);
 
                 let s: R;
 
@@ -121,17 +121,17 @@ module tsumego {
                     s = new Result<Move>(-1);
                 } else {
                     path.push(board.hash);
-                    player && player.play(color, m);
+                    player && player.play(color, move);
 
                     // the opponent makes a move
-                    const s_move: R = yield* solve(path, -color, nkt, ko);
+                    const s_move: R = yield* solve(path, -color, nkt, isko);
 
                     if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
                         // the opponent passes
                         player && player.play(-color, null);
-                        const s_pass: R = yield* solve(path, color, nkt, ko);
+                        const s_pass: R = yield* solve(path, color, nkt, isko);
                         player && player.undo();
                         const s_asis = new Result<Move>(status(board));
 
@@ -161,7 +161,7 @@ module tsumego {
                 // uncondtiionally, so it might make sense to continue
                 // searching in such cases
                 if (wins(s.color, color)) {
-                    result = new Result<Move>(color, m, s.repd);
+                    result = new Result<Move>(color, move, s.repd);
                     break;
                 }
             }
