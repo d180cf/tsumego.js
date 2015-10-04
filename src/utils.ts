@@ -45,4 +45,34 @@ module tsumego {
                     edge.push(nxy);
         }
     }
+
+    export class SortedArray<T,U> {
+        private items: T[];
+        private flags: U[];
+
+        constructor(private order: (lhs: U, rhs: U) => boolean) {
+
+        }
+
+        reset() {
+            this.flags = [];
+            this.items = [];
+
+            return this.items;
+        }
+
+        insert(item: T, flag: U) {
+            const {items, flags, order} = this;
+
+            let i = items.length;
+
+            while (i > 0 && !order(flags[i - 1], flag))
+                i--;
+
+            items.splice(i, 0, item);
+            flags.splice(i, 0, flag);
+
+            return i;
+        }
+    }
 }

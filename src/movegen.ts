@@ -2,8 +2,15 @@ module tsumego {
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
         export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())) {
+            /** Defines the order in which the solver considers moves. */
+            const sa = new SortedArray<stone, { r: number; p: number; q: number }>((a, b) =>
+                a.r >= b.r && // maximize the number of captured stones first
+                a.p >= b.p && // then maximize the number of own liberties
+                a.q <= b.q && // then minimize the number of the opponent's liberties
+                random() > 0.5);
+
             return (board: Board, color: number) => {
-                const leafs: { m: stone; r: number; n1: number; n2: number }[] = [];
+                const leafs = sa.reset();
 
                 for (const m of rzone) {
                     const [x, y] = stone.coords(m);
@@ -14,25 +21,17 @@ module tsumego {
                         if (!r)
                             continue;
 
-                        leafs.push({
-                            m: stone(x, y, color),
+                        sa.insert(stone(x, y, color), {
                             r: r,
-                            n1: sumlibs(board, color),
-                            n2: sumlibs(board, -color),
+                            p: sumlibs(board, color),
+                            q: sumlibs(board, -color),
                         });
 
                         board.undo();
                     }
                 }
 
-                leafs.sort((a, b) => {
-                    return (b.r - a.r)      // maximize the number of captured stones first
-                        || (b.n1 - a.n1)    // then maximize the number of liberties
-                        || (a.n2 - b.n2)    // then minimize the number of the opponent's liberties
-                        || random() - 0.5;
-                });
-
-                return leafs.map(x => x.m);
+                return leafs;
             };
         }
     }
