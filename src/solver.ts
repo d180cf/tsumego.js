@@ -12,14 +12,11 @@ module tsumego {
         fork(): Node<Move>;
     }
 
-    export interface Player<Move> {
-        play(color: Color, move: Move): void;
-        undo(): void;
-        done(color: Color, move: Move, comment: string): void;
-        loss(color: Color, move: Move, response: Move): void;
+    function wins(color: number, result: number) {
+        return color * result > 0;
     }
 
-    function best<Move>(s1: Result<Move>, s2: Result<Move>, c: Color) {
+    function best<Move>(s1: Result<Move>, s2: Result<Move>, color: number) {
         let r1 = s1 && s1.color;
         let r2 = s2 && s2.color;
 
@@ -27,31 +24,34 @@ module tsumego {
             return;
 
         if (!s1)
-            return r2 * c > 0 ? s2 : s1;
+            return r2 * color > 0 ? s2 : s1;
 
         if (!s2)
-            return r1 * c > 0 ? s1 : s2;
+            return r1 * color > 0 ? s1 : s2;
 
-        if (r1 * c > 0 && r2 * c > 0)
+        if (r1 * color > 0 && r2 * color > 0)
             return s1.repd > s2.repd ? s1 : s2;
 
-        if (r1 * c < 0 && r2 * c < 0)
+        if (r1 * color < 0 && r2 * color < 0)
             return s1.repd < s2.repd ? s1 : s2;
 
-        return (r1 - r2) * c > 0 ? s1 : s2;
+        return (r1 - r2) * color > 0 ? s1 : s2;
     }
-
-    const wins = (color: number, result: number) => color * result > 0;
 
     interface Args<Move> {
         root: Node<Move>;
         color: number;
         nkt: number;
         tt: TT<Move>;
-        expand: Generator<Node<Move>, Move>;
+        expand: (node: Node<Move>, color: number) => Move[];
         status: (node: Node<Move>) => number;
-        player?: Player<Move>;
         alive?: (node: Node<Move>) => boolean;
+        player?: {
+            play(color: Color, move: Move): void;
+            undo(): void;
+            done(color: Color, move: Move, comment: string): void;
+            loss(color: Color, move: Move, response: Move): void;
+        };
     }
 
     export function* _solve<Move>({root: board, color, nkt, tt, expand, status, player, alive}: Args<Move>) {

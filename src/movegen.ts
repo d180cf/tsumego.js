@@ -1,11 +1,7 @@
 module tsumego {
-    export interface Generator<Node, Move> {
-        (node: Node, color: number): Move[];
-    }
-
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())): Generator<Board, stone> {
+        export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())) {
             return (board: Board, color: number) => {
                 const leafs: { m: stone; r: number; n1: number; n2: number }[] = [];
 

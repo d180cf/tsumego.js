@@ -86,8 +86,8 @@ module testbench {
     function dbgsolve(board: Board, color: Color, nkotreats = 0) {
         let log = true;
 
-        const player: tsumego.Player<stone> = {
-            play: (color, move) => {
+        const player = {
+            play: (color: number, move: stone) => {
                 if (!log) return;
 
                 const pass = !Number.isFinite(move);
@@ -109,7 +109,7 @@ module testbench {
                 if (!log) return;
                 goban.previous();
             },
-            done: (color, move, note) => {
+            done: (color: number, move: stone, note: string) => {
                 if (!log) return;
                 const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
                 const node = goban.kifuReader.node;
@@ -117,7 +117,7 @@ module testbench {
                 node.comment += comment;
                 goban.update();
             },
-            loss: (color, move, response) => {
+            loss: (color: number, move: stone, response: stone) => {
                 if (!log) return;
                 const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
                 const node = goban.kifuReader.node;
