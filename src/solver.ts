@@ -161,14 +161,14 @@ module tsumego {
                 // uncondtiionally, so it might make sense to continue
                 // searching in such cases
                 if (wins(s.color, color)) {
-                    result = new Result<Move>(color, s.repd, m);
+                    result = new Result<Move>(color, m, s.repd);
                     break;
                 }
             }
 
             // if there is no winning move, record a loss
             if (!result) {
-                result = new Result<Move>(-color, mindepth);
+                result = new Result<Move>(-color, null, mindepth);
                 player && player.loss(color, null, null);
             } else {
                 player && player.done(result.color, result.move, null);
@@ -189,7 +189,7 @@ module tsumego {
             // can be proved by trying to construct a path from a node in the
             // proof tree to the root node
             if (result.repd > depth)
-                tt.set(hashb, color, new Result<Move>(result.color, infty, result.move), nkt);
+                tt.set(hashb, color, new Result<Move>(result.color, result.move), nkt);
 
             return result;
         }

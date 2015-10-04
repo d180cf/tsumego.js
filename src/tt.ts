@@ -36,16 +36,16 @@ module tsumego {
         /**
          * @param n The number of available ko treats.
          */
-        get(b: string, c: Color, n: number): Result<Move> {
+        get(b: string, c: Color, n: number) {
             const h = hash(b, c);
             const s = this._[h];
 
             if (s) {
                 if (n >= s.bmax)
-                    return new Result<Move>(+1, infty, s.move);
+                    return new Result<Move>(+1, s.move);
 
                 if (n <= s.wmin)
-                    return new Result<Move>(-1, infty, s.move);
+                    return new Result<Move>(-1, s.move);
             }
         }
 

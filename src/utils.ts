@@ -99,14 +99,14 @@ module tsumego {
 
     export class Result<Move> {
         constructor(
-            public color: number,
-
-            /** Tells where in the path the repetition occured. */
-            public repd = infty,
+            public color: number,            
 
             /** The winning move.
                 If the only solution is a loss, no move is stored. */
-            public move: Move = null) {
+            public move: Move = null,
+
+            /** Tells where in the path the repetition occured. */
+            public repd = infty) {
 
         }
     }
