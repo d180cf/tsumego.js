@@ -194,6 +194,8 @@ module tsumego {
                 if (setup instanceof Array)
                     this.initFromTXT(setup);
             }
+
+            this.drop();
         }
 
         private init(size: number) {
@@ -202,7 +204,7 @@ module tsumego {
 
             this.size = size;
             this.table = new Array(size * size);
-            this.history = { added: [], hashes: [], changed: [] };
+            this.drop();
 
             for (let i = 0; i < size * size; i++)
                 this.table[i] = 0;
@@ -241,6 +243,13 @@ module tsumego {
 
             place('AW', -1);
             place('AB', +1);
+        }
+
+        /**
+         * Drops all the history.
+         */
+        drop() {
+            this.history = { added: [], hashes: [], changed: [] };
         }
 
         /** 
@@ -415,7 +424,12 @@ module tsumego {
                 if (lib[i] == 1 && color * nbs[i] < 0) {
                     this.remove(ids[i]);
                     result += block.size(nbs[i]);
-                    lib[i] = nbs[i] = 0;
+
+                    // the removed block may have occupied
+                    // several liberties of the stone
+                    for (let j = 0; j < 4; j++)
+                        if (ids[j] == ids[i])
+                            lib[j] = nbs[j] = 0;
                 }
             }
 

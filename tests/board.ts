@@ -598,6 +598,49 @@ module tests {
             }
         });
 
+        $.test($ => {
+            /// snapback
+
+            const b = new Board(5, [
+                ' - O - X O ',
+                ' X X O X O ',
+                ' - - X O O ',
+            ]);
+
+            try {
+                b.play(stone(2, 0, +1));
+                $(b + '').equal(
+                    '   A B C D E' + '\n' +
+                    ' 5 - O X X O' + '\n' +
+                    ' 4 X X - X O' + '\n' +
+                    ' 3 - - X O O');
+
+                b.play(stone(2, 1, -1));
+                $(b + '').equal(
+                    '   A B C D E' + '\n' +
+                    ' 5 - O - - O' + '\n' +
+                    ' 4 X X O - O' + '\n' +
+                    ' 3 - - X O O');
+
+                b.play(stone(2, 0, +1));
+                $(b + '').equal(
+                    '   A B C D E' + '\n' +
+                    ' 5 - O X - O' + '\n' +
+                    ' 4 X X O - O' + '\n' +
+                    ' 3 - - X O O');
+
+                b.play(stone(3, 0, -1));
+                $(b + '').equal(
+                    '   A B C D E' + '\n' +
+                    ' 5 - O - O O' + '\n' +
+                    ' 4 X X O - O' + '\n' +
+                    ' 3 - - X O O');
+            } catch (e) {
+                console.log(b + '');
+                throw e;
+            }
+        });
+
         $.test($ => { 
             /// empty 3x3
             const board = new Board(3);
