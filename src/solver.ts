@@ -60,7 +60,7 @@ module tsumego {
 
         /** Moves that require a ko treat are considered last.
             That's not just perf optimization: the search depends on this. */
-        const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt1 >= nkt2);
+        const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt2 - nkt1);
 
         function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
             nknodes++;

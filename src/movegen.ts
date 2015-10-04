@@ -3,11 +3,13 @@ module tsumego {
         /** Basic moves generator. Tries to maximize libs. */
         export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())) {
             /** Defines the order in which the solver considers moves. */
-            const sa = new SortedArray<stone, { r: number; p: number; q: number }>((a, b) =>
-                a.r >= b.r && // maximize the number of captured stones first
-                a.p >= b.p && // then maximize the number of own liberties
-                a.q <= b.q && // then minimize the number of the opponent's liberties
-                random() > 0.5);
+            const sa = new SortedArray<stone, { r: number; p: number; q: number, u: number, v: number }>((a, b) =>
+                b.r - a.r || // maximize the number of captured stones first
+                a.u - b.u || // minimize the number of own blocks in atari
+                b.p - a.p || // maximize the number of own liberties
+                b.v - a.v || // maximize the number of the opponent's blocks in atari
+                a.q - b.q || // minimize the number of the opponent's liberties
+                random() - 0.5);
 
             return (board: Board, color: number) => {
                 const leafs = sa.reset();
@@ -26,8 +28,10 @@ module tsumego {
                         // will only slow things down
                         sa.insert(s, {
                             r: r,
-                            p: sumlibs(board, color),
+                            p: sumlibs(board, +color),
                             q: sumlibs(board, -color),
+                            u: ninatari(board, +color),
+                            v: ninatari(board, -color),
                         });
 
                         board.undo();
@@ -76,7 +80,20 @@ module tsumego {
         return total;
     }
 
-    export function eulern(board: Board, color: number, q: number = 2) {
+    function ninatari(board: Board, color: number) {
+        let n = 0;
+
+        for (let i = 1; i < board.blocks.length; i++) {
+            const b = board.blocks[i];
+
+            if (block.size(b) > 0 && b * color > 0 && block.libs(b) == 1)
+                n++;
+        }
+
+        return n;
+    }
+
+    function eulern(board: Board, color: number, q: number = 2) {
         let n1 = 0, n2 = 0, n3 = 0;
 
         for (let x = -1; x <= board.size; x++) {

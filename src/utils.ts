@@ -54,19 +54,24 @@
         private items: T[];
         private flags: U[];
 
-        get length() {
-            return this.items.length;
-        }
-
         /** 
-         * The order function tells whether it's ok to
-         * place lhs before rhs in the sorted array. 
-         * The order function must satisfy the following
-         * condition: order(a, b) || order(b, a); in other
-         * words it must allow either (a, b) placement or
-         * (b, a) placement.
+         * The items will be sorted in such a way that
+         * compare(flags[i], flags[i + 1]) <= 0 for every i:
+         * To sort items in a specific order:
+         *
+         *      ascending:  (a, b) => a - b
+         *      descending: (a, b) => b - a
+         *
+         * To sort first by one field in the ascneding order
+         * and then by another field in the descending order:
+         *
+         *      (a, b) => 
+         *          a[0] - b[0] ||
+         *          a[1] - b[1];
+         *
+         * This is exactly how Array::sort works.
          */
-        constructor(private order: (lhs: U, rhs: U) => boolean) {
+        constructor(private compare: (lhs: U, rhs: U) => number) {
 
         }
 
@@ -78,11 +83,11 @@
         }
 
         insert(item: T, flag: U) {
-            const {items, flags, order} = this;
+            const {items, flags, compare} = this;
 
             let i = items.length;
 
-            while (i > 0 && !order(flags[i - 1], flag))
+            while (i > 0 && compare(flags[i - 1], flag) > 0)
                 i--;
 
             // using .push when i == n and .unshift when i == 0

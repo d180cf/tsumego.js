@@ -2,6 +2,7 @@
 /// <reference path="es6aiter.ts" />
 /// <reference path="../src/solver.ts" />
 
+/// <reference path="utils.ts" />
 /// <reference path="sgf.ts" />
 /// <reference path="ann.ts" />
 /// <reference path="board.ts" />
