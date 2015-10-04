@@ -9,7 +9,6 @@ module tsumego {
     interface Node<Move> extends Hasheable {
         play(move: Move): number;
         undo(): Move;
-        fork(): Node<Move>;
     }
 
     function wins(color: number, result: number) {
