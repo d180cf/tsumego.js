@@ -12,19 +12,19 @@ module tsumego {
             return (board: Board, color: number) => {
                 const leafs = sa.reset();
 
-                for (const m of rzone) {
-                    const [x, y] = stone.coords(m);
+                for (const move of rzone) {
+                    const [x, y] = stone.coords(move);
 
                     if (!Pattern.isEye(board, x, y, color)) {
-                        const r = board.play(stone(x, y, color));
+                        const s = stone(x, y, color);
+                        const r = board.play(s);
 
-                        if (!r)
-                            continue;
+                        if (!r) continue;
 
                         // the three parameters can be easily packed
                         // in one 32 bit number, but packing and unpacking
                         // will only slow things down
-                        sa.insert(stone(x, y, color), {
+                        sa.insert(s, {
                             r: r,
                             p: sumlibs(board, color),
                             q: sumlibs(board, -color),
