@@ -48,7 +48,7 @@ module tsumego {
         export const xmax = (b: block) => b >> 4 & 15;
         export const ymin = (b: block) => b >> 8 & 15;
         export const ymax = (b: block) => b >> 12 & 15;
-        export const rect = (b: block) => [xmin(b), xmax(b), ymin(b), ymax(b)];
+        export const dims = (b: block) => [xmin(b), xmax(b), ymin(b), ymax(b)];
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
@@ -303,7 +303,7 @@ module tsumego {
          */
         private remove(id: block.id) {
             const bd = this.blocks[id];
-            const [xmin, xmax, ymin, ymax] = block.rect(bd);
+            const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
             for (let y = ymin; y <= ymax; y++)
                 for (let x = xmin; x <= xmax; x++)
@@ -453,7 +453,7 @@ module tsumego {
 
                     size_new += block.size(bd);
 
-                    const [xmin, xmax, ymin, ymax] = block.rect(bd);
+                    const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
                     xmin_new = min(xmin_new, xmin);
                     ymin_new = min(ymin_new, ymin);

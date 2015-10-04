@@ -49,7 +49,7 @@ module tsumego {
                 outer = outer ? block.join(outer, b) : b;
         }
 
-        let [xmin, xmax, ymin, ymax] = block.rect(outer);
+        let [xmin, xmax, ymin, ymax] = block.dims(outer);
 
         if (xmin > 0) xmin--;
         if (ymin > 0) ymin--;
