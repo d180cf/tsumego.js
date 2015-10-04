@@ -17,8 +17,8 @@ module tsumego {
     }
 
     function best<Move>(s1: Result<Move>, s2: Result<Move>, color: number) {
-        let r1 = s1 && s1.color;
-        let r2 = s2 && s2.color;
+        const r1 = s1 && s1.color;
+        const r2 = s2 && s2.color;
 
         if (!s1 && !s2)
             return;
@@ -59,7 +59,7 @@ module tsumego {
         let nknodes = 0;
 
         /** Moves that require a ko treat are considered last.
-            that's not just perf optimization: the search depends on this. */
+            That's not just perf optimization: the search depends on this. */
         const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt1 >= nkt2);
 
         function* solve(path: string[], color: number, nkt: number, ko = false): IterableIterator<R> {
@@ -115,10 +115,10 @@ module tsumego {
 
                 if (status(board) > 0) {
                     // black wins by capturing the white's stones
-                    s = { color: +1, repd: infty };
+                    s = new Result<Move>(+1);
                 } else if (alive && alive(board)) {
                     // white secures the group that black needed to capture
-                    s = { color: -1, repd: infty };
+                    s = new Result<Move>(-1);
                 } else {
                     path.push(board.hash);
                     player && player.play(color, m);
@@ -133,7 +133,7 @@ module tsumego {
                         player && player.play(-color, null);
                         const s_pass: R = yield* solve(path, color, nkt, ko);
                         player && player.undo();
-                        const s_asis: R = { color: status(board), repd: infty };
+                        const s_asis = new Result<Move>(status(board));
 
                         // the opponent can either make a move or pass if it thinks
                         // that making a move is a loss, while the current player
@@ -161,19 +161,14 @@ module tsumego {
                 // uncondtiionally, so it might make sense to continue
                 // searching in such cases
                 if (wins(s.color, color)) {
-                    result = {
-                        color: color,
-                        repd: s.repd,
-                        move: m
-                    };
-
+                    result = new Result<Move>(color, s.repd, m);
                     break;
                 }
             }
 
             // if there is no winning move, record a loss
             if (!result) {
-                result = { color: -color, repd: mindepth };
+                result = new Result<Move>(-color, mindepth);
                 player && player.loss(color, null, null);
             } else {
                 player && player.done(result.color, result.move, null);
@@ -193,13 +188,8 @@ module tsumego {
             // such solutions are stored and never removed from the table; this
             // can be proved by trying to construct a path from a node in the
             // proof tree to the root node
-            if (result.repd > depth) {
-                tt.set(hashb, color, {
-                    color: result.color,
-                    move: result.move,
-                    repd: infty
-                }, nkt);
-            }
+            if (result.repd > depth)
+                tt.set(hashb, color, new Result<Move>(result.color, infty, result.move), nkt);
 
             return result;
         }

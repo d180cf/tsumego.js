@@ -42,10 +42,10 @@ module tsumego {
 
             if (s) {
                 if (n >= s.bmax)
-                    return { color: +1, move: s.move };
+                    return new Result<Move>(+1, infty, s.move);
 
                 if (n <= s.wmin)
-                    return { color: -1, move: s.move };
+                    return new Result<Move>(-1, infty, s.move);
             }
         }
 
@@ -54,7 +54,7 @@ module tsumego {
          */
         set(b: string, c: Color, r: Result<Move>, n: number) {
             const h = hash(b, c);
-            const s = this._[h] || { wmin: -infty, bmax: +infty, move: r.move };
+            const s = this._[h] || { wmin: -infty, bmax: infty, move: r.move };
 
             if (r.color > 0 && n < s.bmax)
                 s.bmax = n, s.move = r.move;

@@ -96,4 +96,18 @@ module tsumego {
     export const b1 = (b: number) => b >> 8 & 255;
     export const b2 = (b: number) => b >> 16 & 255;
     export const b3 = (b: number) => b >> 24 & 255;
+
+    export class Result<Move> {
+        constructor(
+            public color: number,
+
+            /** Tells where in the path the repetition occured. */
+            public repd = infty,
+
+            /** The winning move.
+                If the only solution is a loss, no move is stored. */
+            public move: Move = null) {
+
+        }
+    }
 }
