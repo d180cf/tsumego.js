@@ -58,6 +58,10 @@ module tsumego {
         type R = Result<Move>;
         let nknodes = 0;
 
+        /** Moves that require a ko treat are considered last.
+            that's not just perf optimization: the search depends on this. */
+        const sa = new SortedArray<{ m: Move; ko: boolean }, number>((nkt1, nkt2) => nkt1 >= nkt2);
+
         function* solve(path: string[], color: number, nkt: number, ko = false): IterableIterator<R> {
             yield;
             nknodes++;
@@ -83,7 +87,7 @@ module tsumego {
             let result: R;
             let mindepth = infty;
 
-            const leafs: { m: Move; ko: boolean; nkt: number }[] = [];
+            const leafs = sa.reset();
 
             for (const m of expand(board, color)) {
                 board.play(m);
@@ -98,20 +102,11 @@ module tsumego {
                 // a previous position or the current player
                 // has a ko treat elsewhere on the board and
                 // can use it to repeat the local position
-                if (!ko || color * nkt > 0) {
-                    leafs.push({
-                        m: m,
-                        ko: ko,
-                        nkt: ko ? nkt - color : nkt
-                    });
-                }
+                if (!ko || color * nkt > 0)
+                    sa.insert({ m: m, ko: ko }, color * (ko ? nkt - color : nkt));
 
                 board.undo();
             }
-
-            // moves that require a ko treat are considered last
-            // that's not just perf optimization: the search depends on this
-            leafs.sort((lhs, rhs) => (rhs.nkt - lhs.nkt) * color);
 
             for (const {m, ko} of leafs) {
                 board.play(m);
