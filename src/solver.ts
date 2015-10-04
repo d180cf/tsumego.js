@@ -103,7 +103,7 @@ module tsumego {
                 // has a ko treat elsewhere on the board and
                 // can use it to repeat the local position
                 if (!ko || color * nkt > 0)
-                    sa.insert([m, ko], color * (ko ? nkt - color : nkt));
+                    sa.insert([m, ko], color * nkt - +ko);
 
                 board.undo();
             }
