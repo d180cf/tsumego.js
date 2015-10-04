@@ -6,7 +6,8 @@
 /// <reference path="ann.ts" />
 
 module tsumego {
-    interface Node<Move> extends Hasheable {
+    interface Node<Move> {
+        hash: number;
         play(move: Move): number;
         undo(): Move;
     }
@@ -61,7 +62,7 @@ module tsumego {
             That's not just perf optimization: the search depends on this. */
         const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt1 >= nkt2);
 
-        function* solve(path: string[], color: number, nkt: number, ko = false): IterableIterator<R> {
+        function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
             yield;
             nknodes++;
 
@@ -194,7 +195,7 @@ module tsumego {
         }
 
         const moves: Move[] = [];
-        const path: string[] = [];
+        const path: number[] = [];
 
         let move: Move;
 

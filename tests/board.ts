@@ -550,12 +550,16 @@ module tests {
 
             // play and undo all the moves a few times
             for (let j = 0; j < 1e2; j++) {
+                const hash = [b.hash];
+
                 $(b.blocks).equal([0]);
 
                 // play all the moves
                 for (let i = 0; i < moves.length; i++) {
                     const [m, r, test] = moves[i];
                     const result = b.play(xyc(m));
+
+                    hash.push(b.hash);
 
                     try {
                         $(result).equal(r);
@@ -571,11 +575,13 @@ module tests {
                 for (let i = moves.length - 1; i > 0; i--) {
                     const [, , test] = moves[i - 1];
                     const [move, , ] = moves[i];
+                    const h = hash[i];
 
                     try {
                         if (moves[i][1] > 0) {
                             const m = b.undo();
                             $(stone.toString(xyc(move))).equal(stone.toString(m));
+                            $(b.hash).equal(h);
                         }
 
                         test();
@@ -587,6 +593,7 @@ module tests {
                 }
 
                 b.undo();
+                $(b.hash).equal(hash[0]);
                 $(b.blocks).equal([0]);
             }
         });
@@ -597,7 +604,7 @@ module tests {
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
             $(board.toString()).equal('   A\n 3 -');
-            $(board.hash).equal('3x3()');
+            $(board.toStringCompact()).equal('3x3()');
         });
 
         $.test($ => { 
@@ -607,7 +614,7 @@ module tests {
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
             $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
-            $(board.hash).equal('5x5(;;--X)');
+            $(board.toStringCompact()).equal('5x5(;;--X)');
         });
 
         $.test($ => { 
@@ -640,7 +647,7 @@ module tests {
                 ' 1 O O O -'
             ].join('\n'));
 
-            $(board.hash).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
+            $(board.toStringCompact()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
         });
 
         $.test($ => { 
@@ -831,6 +838,31 @@ module tests {
             const r = b.play(stone(0, 0, -1));
 
             $(r).equal(0);
+        });
+    });
+
+    ut.group($ => {
+        /// board.hash
+
+        $.test($ => {
+            /// basic
+
+            const b1 = new Board(5, [
+                ' - O O X ',
+                ' X O O X ',
+                ' O O O X ',
+                ' X X X X ',
+            ]);
+
+            const b2 = new Board(5, [
+                ' - X O X ',
+                ' O O O X ',
+                ' O O O X ',
+                ' X X X X ',
+            ]);
+
+            if (b1.hash == b2.hash)
+                throw new Error('Hash collision');
         });
     });
 }

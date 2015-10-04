@@ -114,4 +114,13 @@
 
         }
     }
+
+    export function sequence<T>(n: number, f: () => T) {
+        const x: T[] = [];
+
+        while (n-- > 0)
+            x.push(f());
+
+        return x;
+    }
 }

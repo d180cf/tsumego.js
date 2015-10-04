@@ -1,5 +1,6 @@
 ﻿/// <reference path="utils.ts" />
 /// <reference path="move.ts" />
+/// <reference path="rand.ts" />
 /// <reference path="prof.ts" />
 /// <reference path="sgf.ts" />
 
@@ -69,6 +70,18 @@ module tsumego {
             'libs=' + block.libs(b) + ' ' + 'size=' + block.size(b);
     }
 
+    /** 
+     * A random 32 bit number for each intersection in the 16x16 board. 
+     * The hash of the board is then computed as H(B) = XOR Q(i, j) where
+     *
+     *      Q(i, j) = hashtb[i, j] if B(i, j) is a B stone
+     *      Q(i, j) = hashtw[i, j] if B(i, j) is a W stone
+     *
+     * This is also known as Zobrist hashing.
+     */
+    const hashtb = sequence(256, rand.LCG.NR32(221627394));
+    const hashtw = sequence(256, rand.LCG.NR32(473923848));
+
     /**
      * A square board with size up to 16x16.
      *
@@ -81,6 +94,12 @@ module tsumego {
          * of each block are stored in 4 bit integers. 
          */
         size: number;
+
+        /**
+         * The 32 bit hash of the board. It's efficiently
+         * recomputed after each move.
+         */
+        hash = 0;
 
         /** 
          * blocks[id] = a block descriptor with this block.id
@@ -149,6 +168,13 @@ module tsumego {
             added: number[];
 
             /**
+             * Before a stone is added, the board's hash is recorded here.
+             * It's possible to restore the hash without introducing an extra
+             * array in the history, but that solution would be less efficient.
+             */
+            hashes: number[];
+
+            /**
              * Every time a block is modified, its id and its previous descriptor
              * from blocks[id] is stored in this list. When a block is removed,
              * its descriptor is nulled.
@@ -176,7 +202,7 @@ module tsumego {
 
             this.size = size;
             this.table = new Array(size * size);
-            this.history = { added: [], changed: [] };
+            this.history = { added: [], hashes: [], changed: [] };
 
             for (let i = 0; i < size * size; i++)
                 this.table[i] = 0;
@@ -219,12 +245,13 @@ module tsumego {
 
         /** 
          * Clones the board and without the history of moves.
-         * This method is quite slow.
+         * It essentially creates a shallow copy of the board.
          */
         fork(): Board {
             const b = new Board(0);
 
             b.size = this.size;
+            b.hash = this.hash;
             b.table = this.table.slice(0);
             b.blocks = this.blocks.slice(0);
 
@@ -303,11 +330,13 @@ module tsumego {
          */
         private remove(id: block.id) {
             const bd = this.blocks[id];
+            const hasht = bd > 0 ? hashtb : hashtw;
             const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
             for (let y = ymin; y <= ymax; y++)
                 for (let x = xmin; x <= xmax; x++)
                     if (this.getBlockId(x, y) == id)
+                        this.hash ^= hasht[y * this.size + x],
                         this.adjust(x, y, -bd, +1);
 
             this.change(id, 0);
@@ -361,6 +390,7 @@ module tsumego {
                 return 0;
 
             const size = this.size;
+            const hash = this.hash;
 
             const n_changed = this.history.changed.length / 2; // id1, bd1, id2, bd2, ...
 
@@ -420,6 +450,7 @@ module tsumego {
             const id_old = this.table[y * size + x];
 
             this.table[y * size + x] = id_new;
+            this.hash ^= (color > 0 ? hashtb : hashtw)[y * size + x];
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors
@@ -494,6 +525,8 @@ module tsumego {
                 | id_old << 16
                 | color & 0x80000000);
 
+            this.history.hashes.push(hash);
+
             return result + 1;
         }
 
@@ -517,6 +550,7 @@ module tsumego {
             const b = move >> 16 & 255;
 
             this.table[y * this.size + x] = b;
+            this.hash = this.history.hashes.pop();
 
             for (let i = 0; i < n; i++) {
                 const bd = this.history.changed.pop();
@@ -536,7 +570,7 @@ module tsumego {
             return move;
         }
 
-        get hash() {
+        toStringCompact() {
             const n = this.size;
             let h = '', len = 0;
 
