@@ -536,7 +536,7 @@ module tsumego {
             return move;
         }
 
-        hash(): string {
+        get hash() {
             const n = this.size;
             let h = '', len = 0;
 

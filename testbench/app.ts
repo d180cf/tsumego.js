@@ -159,11 +159,11 @@ module testbench {
         };
 
         const stepOver = (ct: CancellationToken) => {
-            const hash = board.hash();
+            const hash = board.hash;
 
             do {
                 next();
-            } while (board.hash() != hash && !ct.cancelled);
+            } while (board.hash != hash && !ct.cancelled);
 
             next();
         };
@@ -235,7 +235,7 @@ module testbench {
         [board, rzone, aim] = parseSGF(res);
         console.log(res);
         sgfdata = res;
-        console.log('\n\n' + board.hash() + '\n\n' + board);
+        console.log(board + '');
         document.title = source;
         setTimeout(() => renderSGF(res));
 

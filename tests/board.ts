@@ -597,7 +597,7 @@ module tests {
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
             $(board.toString()).equal('   A\n 3 -');
-            $(board.hash()).equal('3x3()');
+            $(board.hash).equal('3x3()');
         });
 
         $.test($ => { 
@@ -607,7 +607,7 @@ module tests {
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
             $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
-            $(board.hash()).equal('5x5(;;--X)');
+            $(board.hash).equal('5x5(;;--X)');
         });
 
         $.test($ => { 
@@ -640,7 +640,7 @@ module tests {
                 ' 1 O O O -'
             ].join('\n'));
 
-            $(board.hash()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
+            $(board.hash).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
         });
 
         $.test($ => { 

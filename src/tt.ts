@@ -1,6 +1,6 @@
 module tsumego {
     export interface Hasheable {
-        hash(): string;
+        hash: string;
     }
 
     interface Status<Move> {

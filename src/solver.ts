@@ -88,7 +88,7 @@ module tsumego {
             for (const m of expand(board, color)) {
                 board.play(m);
 
-                const d = path.lastIndexOf(board.hash(), -2) + 1;
+                const d = path.lastIndexOf(board.hash, -2) + 1;
                 const ko = d && d < depth;
 
                 if (ko)
@@ -125,7 +125,7 @@ module tsumego {
                     // white secures the group that black needed to capture
                     s = { color: -1, repd: infty };
                 } else {
-                    path.push(board.hash());
+                    path.push(board.hash);
                     player && player.play(color, m);
 
                     // the opponent makes a move
@@ -218,11 +218,11 @@ module tsumego {
             moves.unshift(move);
 
         for (move of moves) {
-            path.push(board.hash());
+            path.push(board.hash);
             board.play(move);
         }
 
-        path.push(board.hash());
+        path.push(board.hash);
 
         const result = yield* solve(path, color, nkt);
         console.log(nknodes + ' nodes explored');
