@@ -81,11 +81,7 @@ module tsumego {
             const hashb = path[depth - 1];
             const ttres = tt.get(hashb, color, nkt);
 
-            if (stats) {
-                stats.nodes++;
-                stats.depth = depth;
-                yield;
-            }
+            stats && (stats.depth = depth, yield);
 
             if (ttres) {
                 player && (player.done(ttres.color, ttres.move, null), yield);
@@ -99,6 +95,7 @@ module tsumego {
 
             for (const move of expand(board, color)) {
                 board.play(move);
+                stats && stats.nodes++;
 
                 const d = path.lastIndexOf(board.hash, -2) + 1;
                 const ko = d && d < depth;
