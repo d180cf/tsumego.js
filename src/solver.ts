@@ -112,67 +112,56 @@ module tsumego {
 
                 const leafs = sa.reset();
 
-                for (const move of expand(board, color)) {
-                    board.play(move);
+                // consider all possible moves and then making a pass
+                for (const move of [...expand(board, color), null]) {
+                    const pass = move === null;
+
+                    !pass && board.play(move),
                     stats && stats.nodes++;
 
+                    const quit = passed && pass; // two passes is not a ko
                     const d = path.lastIndexOf(board.hash) + 1;
-                    const ko = d && d <= depth;
+                    const ko = d && d <= depth && !quit;
 
                     if (ko && d < mindepth)
                         mindepth = d;
-
-                    // check if this node has already been solved
-                    const r = tt.get(board.hash, -color, nkt - (+ko) * color);
 
                     // the move makes sense if it doesn't repeat
                     // a previous position or the current player
                     // has a ko treat elsewhere on the board and
                     // can use it to repeat the local position
-                    if (!ko || color * nkt > 0)
+                    if (!ko || color * nkt > 0) {
+                        // check if this node has already been solved
+                        const r = tt.get(board.hash, -color, nkt - (+ko) * color);
+
                         sa.insert([move, ko], {
                             ko: +ko,
                             w: (r && r.color || 0) * color
                         });
+                    }
 
-                    board.undo();
+                    !pass && board.undo();
                 }
 
                 for (const [move, isko] of leafs) {
+                    const pass = move === null;
+                    const quit = passed && pass;
+
                     path.push(board.hash);
-                    board.play(move);
+                    !pass && board.play(move);
                     player && (player.play(color, move), yield);
 
-                    let s: R;
+                    const s: R =
+                        // both players passed: check the target's status and quit
+                        quit ? new Result<Move>(status(board)) :
+                            // black has captured the target stone
+                            status(board) > 0 ? new Result<Move>(+1) :
+                                // white has secured the target stone
+                                alive && alive(board) ? new Result<Move>(-1) :
+                                    // get the best opponent's answer
+                                    yield* solve(path, -color, nkt - color * +isko, isko);
 
-                    if (status(board) > 0) {
-                        // black wins by capturing the white's stones
-                        s = new Result<Move>(+1);
-                    } else if (alive && alive(board)) {
-                        // white secures the group that black needed to capture
-                        s = new Result<Move>(-1);
-                    } else {
-                        // the opponent makes a move
-                        const s_move: R = yield* solve(path, -color, nkt - color * +isko, isko);
-
-                        if (s_move && wins(s_move.color, -color)) {
-                            s = s_move;
-                        } else {
-                            // the opponent passes
-                            player && (player.play(-color, null), yield);
-                            const s_pass: R = yield* solve(path, color, nkt - color * +isko, isko);
-                            player && (player.undo(), yield);
-                            const s_asis = new Result<Move>(status(board));
-
-                            // the opponent can either make a move or pass if it thinks
-                            // that making a move is a loss, while the current player
-                            // can either pass again to count the result or make two
-                            // moves in a row
-                            s = best(s_move, best(s_asis, s_pass, color), -color);
-                        }
-                    }
-
-                    board.undo();
+                    !pass && board.undo();
                     path.pop();
                     player && (player.undo(), yield);
 
