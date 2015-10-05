@@ -66,12 +66,7 @@ module tsumego {
         while (!s.done)
             s = g.next();
 
-        const r = s.value;
-
-        if (r.repd == infty || !r.repd)
-            delete r.repd;
-
-        return r;
+        return s.value;
     }
 
     export namespace solve {
@@ -100,8 +95,9 @@ module tsumego {
                     path = path.slice(-1);
                 }
 
-                const depth = path.length + 1;
+                const depth = path.length;
                 const hashb = board.hash;
+                const passed = board.hash == path[depth - 1];
                 const ttres = tt.get(hashb, color, nkt);
 
                 stats && (stats.depth = depth, yield);
@@ -121,9 +117,9 @@ module tsumego {
                     stats && stats.nodes++;
 
                     const d = path.lastIndexOf(board.hash) + 1;
-                    const ko = d && d < depth;
+                    const ko = d && d <= depth;
 
-                    if (ko)
+                    if (ko && d < mindepth)
                         mindepth = d;
 
                     // check if this node has already been solved
@@ -220,7 +216,7 @@ module tsumego {
                 // such solutions are stored and never removed from the table; this
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
-                if (result.repd > depth)
+                if (result.repd > depth + 1)
                     tt.set(hashb, color, new Result<Move>(result.color, result.move), nkt);
 
                 return result;
