@@ -1,4 +1,4 @@
-module test {
+namespace tests {
     import benson = tsumego.benson;
     import Board = tsumego.Board;
     import stone = tsumego.stone;

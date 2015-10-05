@@ -10,11 +10,11 @@
 /// <reference path="src/solver.ts" />
 /// <reference path="src/benson.ts" />
 
-console.log(`\nTotal: ${((Date.now() - _dt0) / 1000).toFixed(1) }s`);
+namespace tests {
+    console.log('\nTotal:', ((Date.now() - _dt0) / 1000).toFixed(1).white() + 's');
 
-tsumego.profile.log();
+    tsumego.profile.log();
 
-declare const process;
-
-if (typeof process !== 'undefined')
-    process.exit(ut.failed ? 1 : 0);
+    if (isNode)
+        process.exit(ut.failed ? 1 : 0);
+}

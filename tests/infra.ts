@@ -1,9 +1,38 @@
-﻿interface Error {
+﻿declare const process;
+
+interface Error {
     stack: string;
     reason: Error;
 }
 
-module ut {
+interface String {
+    red(): string;
+    cyan(): string;
+    white(): string;
+}
+
+namespace tests {
+    export const isNode = typeof process === 'object';
+}
+
+// https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+namespace tests {
+    Object.assign(String.prototype, {
+        red() {
+            return isNode ? '\x1b[31;1m' + this + '\x1b[0m' : this;
+        },
+
+        cyan() {
+            return isNode ? '\x1b[36;1m' + this + '\x1b[0m' : this;
+        },
+
+        white() {
+            return isNode ? '\x1b[37;1m' + this + '\x1b[0m' : this;
+        },
+    });
+}
+
+namespace tests.ut {
     export interface TestContext {
         /** Example: $(1 + 2).equal(3); */
         <T>(value: T): ValueContext<T>;
@@ -15,7 +44,7 @@ module ut {
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
-    let indent = '-';
+    let indent = '';
     export let failed = false;
 
     declare const process;
@@ -30,8 +59,8 @@ module ut {
 
     export function group(init: ($: GroupContext) => void, gname = fname(init)) {
         const _indent = indent;
-        console.log(indent, gname);
-        indent += '--';
+        console.log(indent + gname.cyan());
+        indent += '  ';
 
         init({
             test: (test, tname = fname(test)) => {
@@ -56,10 +85,10 @@ module ut {
                     }
 
                     const duration = +new Date - started;
-                    console.log(indent, tname, duration, 'ms');
+                    console.log(indent + tname, (duration / 1000).toFixed(1).white() + 's');
                 } catch (err) {
                     failed = true;
-                    console.log(indent, tname, ':', 'FAILED');
+                    console.log(indent + tname, 'failed'.red());
 
                     for (const log of logs)
                         console.log(log);

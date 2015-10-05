@@ -1,4 +1,4 @@
-module test {
+namespace tests {
     'use strict';
 
     import rand = tsumego.rand.LCG.NR01;
