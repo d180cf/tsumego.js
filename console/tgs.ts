@@ -1,4 +1,4 @@
-/// <reference path="src/solver.ts" />
+/// <reference path="../src/solver.ts" />
 
 declare const require;
 declare const process;
@@ -31,7 +31,7 @@ namespace tsumego {
         process.stdout.write('\n:> ');
     }
 
-    function xsolve<Move>(args: Args<Move>) {
+    function xsolve<Move>(args: solve.Args<Move>) {
         return new Promise<Result<Move>>((resolve, reject) => {
             let callback: (r: Result<Move>) => void;
 

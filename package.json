@@ -12,6 +12,6 @@
     "babel": "5.8.23"
   },
   "scripts": {
-    "test": "tsc; node esc; (cd testbench; tsc; node ../esc); (cd tests; npm i; tsc; node ../esc; node tests)"
+    "test": "tsc; node esc; (cd testbench; tsc; node ../esc); (cd console; tsc; node ../esc); (cd tests; npm i; tsc; node ../esc; node tests)"
   }
 }

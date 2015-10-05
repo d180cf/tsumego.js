@@ -1,0 +1,9 @@
+﻿{
+  "files": [ "tgs.ts" ],
+  "compilerOptions": {
+    "out": "tgs.js",
+    "target": "es6",
+    "experimentalDecorators": true,
+    "sourceMap": true
+  }
+}

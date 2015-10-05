@@ -12,53 +12,7 @@ module tsumego {
         undo(): Move;
     }
 
-    function wins(color: number, result: number) {
-        return color * result > 0;
-    }
-
-    function best<Move>(s1: Result<Move>, s2: Result<Move>, color: number) {
-        const r1 = s1 && s1.color;
-        const r2 = s2 && s2.color;
-
-        if (!s1 && !s2)
-            return;
-
-        if (!s1)
-            return r2 * color > 0 ? s2 : s1;
-
-        if (!s2)
-            return r1 * color > 0 ? s1 : s2;
-
-        if (r1 * color > 0 && r2 * color > 0)
-            return s1.repd > s2.repd ? s1 : s2;
-
-        if (r1 * color < 0 && r2 * color < 0)
-            return s1.repd < s2.repd ? s1 : s2;
-
-        return (r1 - r2) * color > 0 ? s1 : s2;
-    }
-
-    export interface Args<Move> {
-        root: Node<Move>;
-        color: number;
-        nkt: number;
-        tt: TT<Move>;
-        expand: (node: Node<Move>, color: number) => Move[];
-        status: (node: Node<Move>) => number;
-        alive?: (node: Node<Move>) => boolean;
-        stats?: {
-            nodes: number;
-            depth: number;
-        };
-        player?: {
-            play(color: color, move: Move): void;
-            undo(): void;
-            done(color: color, move: Move, comment: string): void;
-            loss(color: color, move: Move, response: Move): void;
-        };
-    }
-
-    export function solve<Move>(args: Args<Move>) {
+    export function solve<Move>(args: solve.Args<Move>) {
         const g = solve.start(args);
 
         let s = g.next();
@@ -70,6 +24,26 @@ module tsumego {
     }
 
     export namespace solve {
+        export interface Args<Move> {
+            root: Node<Move>;
+            color: number;
+            nkt: number;
+            tt: TT<Move>;
+            expand: (node: Node<Move>, color: number) => Move[];
+            status: (node: Node<Move>) => number;
+            alive?: (node: Node<Move>) => boolean;
+            stats?: {
+                nodes: number;
+                depth: number;
+            };
+            player?: {
+                play(color: color, move: Move): void;
+                undo(): void;
+                done(color: color, move: Move, comment: string): void;
+                loss(color: color, move: Move, response: Move): void;
+            };
+        }
+
         export function* start<Move>({root: board, color, nkt, tt, expand, status, player, alive, stats}: Args<Move>) {
             type R = Result<Move>;
 
@@ -177,7 +151,7 @@ module tsumego {
                     // there can be another move that gives the same result
                     // uncondtiionally, so it might make sense to continue
                     // searching in such cases
-                    if (wins(s.color, color)) {
+                    if (s.color * color > 0) {
                         result = new Result<Move>(color, move, s.repd);
                         break;
                     }
