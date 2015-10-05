@@ -2,13 +2,13 @@
 /// <reference path="es6aiter.ts" />
 /// <reference path="../src/solver.ts" />
 
-/// <reference path="utils.ts" />
-/// <reference path="sgf.ts" />
-/// <reference path="ann.ts" />
-/// <reference path="board.ts" />
-/// <reference path="uceyes.ts" />
-/// <reference path="solver.ts" />
-/// <reference path="benson.ts" />
+/// <reference path="src/utils.ts" />
+/// <reference path="src/sgf.ts" />
+/// <reference path="src/ann.ts" />
+/// <reference path="src/board.ts" />
+/// <reference path="src/uceyes.ts" />
+/// <reference path="src/solver.ts" />
+/// <reference path="src/benson.ts" />
 
 console.log(`\nTotal: ${((Date.now() - _dt0) / 1000).toFixed(1) }s`);
 

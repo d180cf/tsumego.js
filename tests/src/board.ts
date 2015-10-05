@@ -1,6 +1,4 @@
-﻿/// <reference path="infra.ts" />
-
-module tests {
+﻿module tests {
     import stone = tsumego.stone;
     import block = tsumego.block;
     import sumlibs = tsumego.sumlibs;

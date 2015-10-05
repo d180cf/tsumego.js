@@ -1,5 +1,3 @@
-/// <reference path="infra.ts" />
-
 module tests {
     import Board = tsumego.Board;
     import solve = tsumego.solve;
