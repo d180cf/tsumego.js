@@ -127,7 +127,7 @@ module testbench {
             }
         };
 
-        const solver = tsumego._solve({
+        const solver = tsumego.solve.start({
             root: board,
             color: color,
             nkt: nkotreats,

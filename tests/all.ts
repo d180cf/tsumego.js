@@ -1,6 +1,7 @@
+/// <reference path="../src/solver.ts" />
+
 /// <reference path="infra.ts" />
 /// <reference path="es6aiter.ts" />
-/// <reference path="../src/solver.ts" />
 
 /// <reference path="src/utils.ts" />
 /// <reference path="src/sgf.ts" />

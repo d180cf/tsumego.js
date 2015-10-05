@@ -20,6 +20,7 @@ module tsumego {
         export const coords = (m: stone) => [x(m), y(m)];
 
         export const toString = (m: stone) => (stone.c(m) > 0 ? '+' : '-') + stone.coords(m);
+        export const fromSGF = (s: string) => stone(s2n(s[0]), s2n(s[1]));
 
         export module nb {
             export const l = (m: stone) => stone(x(m) - 1, y(m));
