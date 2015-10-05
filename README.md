@@ -11,7 +11,7 @@ It's a simple tsumego solver in JS that I write in my spare time. At the moment 
 5 - - - - - - - - - 
 ```
 
-It's an example of a [problem](http://www.goproblems.com/18629) that this solver can handle: it can figure out that if white plays first at `C8`, it lives without a ko.
+It's an example of a [problem](http://www.goproblems.com/18629) that this solver can handle in a couple seconds: it can figure out that if white plays first at `C8`, it lives without a ko.
 
 The current implementation manages to investigate 4-6k moves per second and is able to tell after half an hour that if in the following tsumego black plays first, white can still save the corner:
 
