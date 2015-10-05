@@ -95,13 +95,13 @@ module tsumego {
                     // [..., b1 + m0, b1 + m0 + m1]. Positions before b1 + m0
                     // don't have the m0 stone on the board and hence it's not
                     // possible to repeat any of those positions. However it is
-                    // possible to repeat b1 + m0. This is why exactly two last
-                    // elements from the path are taken and all others are dropped.
-                    path = path.slice(-2);
+                    // possible to repeat b1 + m0. This is why only the last
+                    // element from the path is taken and all others are dropped.
+                    path = path.slice(-1);
                 }
 
-                const depth = path.length;
-                const hashb = path[depth - 1];
+                const depth = path.length + 1;
+                const hashb = board.hash;
                 const ttres = tt.get(hashb, color, nkt);
 
                 stats && (stats.depth = depth, yield);
@@ -120,7 +120,7 @@ module tsumego {
                     board.play(move);
                     stats && stats.nodes++;
 
-                    const d = path.lastIndexOf(board.hash, -2) + 1;
+                    const d = path.lastIndexOf(board.hash) + 1;
                     const ko = d && d < depth;
 
                     if (ko)
@@ -143,7 +143,9 @@ module tsumego {
                 }
 
                 for (const [move, isko] of leafs) {
+                    path.push(board.hash);
                     board.play(move);
+                    player && (player.play(color, move), yield);
 
                     let s: R;
 
@@ -154,9 +156,6 @@ module tsumego {
                         // white secures the group that black needed to capture
                         s = new Result<Move>(-1);
                     } else {
-                        path.push(board.hash);
-                        player && (player.play(color, move), yield);
-
                         // the opponent makes a move
                         const s_move: R = yield* solve(path, -color, nkt - color * +isko, isko);
 
@@ -175,12 +174,11 @@ module tsumego {
                             // moves in a row
                             s = best(s_move, best(s_asis, s_pass, color), -color);
                         }
-
-                        path.pop();
-                        player && (player.undo(), yield);
                     }
 
                     board.undo();
+                    path.pop();
+                    player && (player.undo(), yield);
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
@@ -240,8 +238,6 @@ module tsumego {
                 path.push(board.hash);
                 board.play(move);
             }
-
-            path.push(board.hash);
 
             const result = yield* solve(path, color, nkt);
             return result;
