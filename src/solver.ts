@@ -68,12 +68,18 @@ module tsumego {
             b.w - a.w);     // first consider moves that lead to a winning position  
 
         function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
-            if (ko) {
-                // since moves that require to spend a ko treat are considered
-                // last, by this moment all previous moves have been searched
-                // and resulted in a loss; hence the only option here is to spend
-                // a ko treat and repeat the position
-                nkt -= color;
+            if (ko) {                
+                // This flag is set if getting to this position required
+                // the caller to spend a ko treat elsewhere on the board.
+                // Let's say there was a position b1 and a move m1 that
+                // restored a previously played local position; in other
+                // words, b1 + m1 was found in the path. After a ko
+                // treat m0 was used, m1 could be played and the path became
+                // [..., b1 + m0, b1 + m0 + m1]. Positions before b1 + m0
+                // don't have the m0 stone on the board and hence it's not
+                // possible to repeat any of those positions. However it is
+                // possible to repeat b1 + m0. This is why exactly two last
+                // elements from the path are taken and all others are dropped.
                 path = path.slice(-2);
             }
 
@@ -135,14 +141,14 @@ module tsumego {
                     player && (player.play(color, move), yield);
 
                     // the opponent makes a move
-                    const s_move: R = yield* solve(path, -color, nkt, isko);
+                    const s_move: R = yield* solve(path, -color, nkt - color * +isko, isko);
 
                     if (s_move && wins(s_move.color, -color)) {
                         s = s_move;
                     } else {
                         // the opponent passes
                         player && (player.play(-color, null), yield);
-                        const s_pass: R = yield* solve(path, color, nkt, isko);
+                        const s_pass: R = yield* solve(path, color, nkt - color * +isko, isko);
                         player && (player.undo(), yield);
                         const s_asis = new Result<Move>(status(board));
 
