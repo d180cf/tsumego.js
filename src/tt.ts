@@ -29,6 +29,8 @@ module tsumego {
 
     /** Transposition table. */
     export class TT<Move> {
+        size = 0;
+
         /** b[h] = solution for h when B plays first */
         private b: HashT<Move> = {};
         /** w[h] = solution for h when W plays first */
@@ -50,7 +52,7 @@ module tsumego {
 
         set(hash: number, color: number, r: Result<Move>, nkt: number) {
             const t = color > 0 ? this.b : this.w
-            const s = t[hash] || { wmin: -infty, bmax: infty, move: r.move };
+            const s = t[hash] || (this.size++, { wmin: -infty, bmax: infty, move: r.move });
 
             if (r.color > 0 && nkt < s.bmax)
                 s.bmax = nkt, s.move = r.move;

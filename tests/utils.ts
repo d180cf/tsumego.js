@@ -32,5 +32,26 @@ namespace tests {
 
             $(numbers.length).equal(n);
         });
+
+        $.test($ => {
+            /// stable
+
+            const sa = new SortedArray<string, number>((a, b) => a - b);
+            const a = sa.reset();
+            const b: string[] = [];
+
+            for (let n = 1; n < 10; n++) {
+                let i = 0;
+
+                do {
+                    const x = String.fromCharCode(0x41 + i) + n;
+                    sa.insert(x, i);
+                    b.push(x);
+                    i = (i * 27 + 3) % 26;
+                } while (i > 0);
+            }
+
+            $(a).equal(b.sort());                        
+        });
     });
 }

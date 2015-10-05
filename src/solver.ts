@@ -46,6 +46,10 @@ module tsumego {
         expand: (node: Node<Move>, color: number) => Move[];
         status: (node: Node<Move>) => number;
         alive?: (node: Node<Move>) => boolean;
+        stats?: {
+            nodes: number;
+            depth: number;
+        };
         player?: {
             play(color: color, move: Move): void;
             undo(): void;
@@ -54,19 +58,16 @@ module tsumego {
         };
     }
 
-    export function* _solve<Move>({root: board, color, nkt, tt, expand, status, player, alive}: Args<Move>) {
+    export function* _solve<Move>({root: board, color, nkt, tt, expand, status, player, alive, stats}: Args<Move>) {
         type R = Result<Move>;
-        let nknodes = 0;
 
         /** Moves that require a ko treat are considered last.
             That's not just perf optimization: the search depends on this. */
         const sa = new SortedArray<[Move, boolean], { ko: number, w: number }>((a, b) =>
-            b.w - a.w ||  // first consider moves that lead to a winning position  
-            a.ko - b.ko); // moves that require a ko treat are considered last
+            a.ko - b.ko ||  // moves that require a ko treat are considered last
+            b.w - a.w);     // first consider moves that lead to a winning position  
 
         function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
-            nknodes++;
-
             if (ko) {
                 // since moves that require to spend a ko treat are considered
                 // last, by this moment all previous moves have been searched
@@ -79,6 +80,12 @@ module tsumego {
             const depth = path.length;
             const hashb = path[depth - 1];
             const ttres = tt.get(hashb, color, nkt);
+
+            if (stats) {
+                stats.nodes++;
+                stats.depth = depth;
+                yield;
+            }
 
             if (ttres) {
                 player && (player.done(ttres.color, ttres.move, null), yield);
@@ -99,6 +106,7 @@ module tsumego {
                 if (ko)
                     mindepth = d;
 
+                // check if this node has already been solved
                 const r = tt.get(board.hash, -color, nkt - (+ko) * color);
 
                 // the move makes sense if it doesn't repeat
@@ -108,7 +116,7 @@ module tsumego {
                 if (!ko || color * nkt > 0)
                     sa.insert([move, ko], {
                         ko: +ko,
-                        w: +(r && wins(r.color, color))
+                        w: (r && r.color || 0) * color
                     });
 
                 board.undo();
@@ -216,14 +224,54 @@ module tsumego {
         path.push(board.hash);
 
         const result = yield* solve(path, color, nkt);
-        console.log(nknodes + ' nodes explored');
         return result;
     }
 
+    declare const process;
+
     export function solve<Move>(args: Args<Move>) {
-        const r = result(_solve(args));
+        args = Object.create(args);
+
+        const $ = args.stats = { nodes: 0, depth: 0 };
+        const g = _solve(args);
+
+        let maxd = 0;
+        let t0 = Date.now();
+        let t = t0, n = 0, ips = typeof process === 'object' ? 0 : Infinity;
+        let s = g.next();
+
+        while (!s.done) {
+            s = g.next();
+            n++;
+
+            if ($.depth > maxd)
+                maxd = $.depth;
+
+            if (n > ips) {
+                const t1 = Date.now();
+                const dt = (t1 - t) / 1000;
+
+                if (dt > 1) {
+                    process.title = [
+                        ['time', ((t1 - t0) / 1000).toFixed(1) + 's'],
+                        ['tt.size', args.tt.size],
+                        ['nodes', $.nodes],
+                        ['nodes/s', n / dt | 0],
+                        ['maxdepth', maxd],
+                    ].map(x => x.join(' = ')).join('; ');
+
+                    ips = n / dt | 0;
+                    t = t1;
+                    n = 0;
+                }
+            }
+        }
+
+        const r = s.value;
+
         if (r.repd == infty || !r.repd)
             delete r.repd;
+
         return r;
     }
 }

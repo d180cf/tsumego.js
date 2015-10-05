@@ -23,15 +23,6 @@
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
 
-    /** Simulates yield* which can't be called in a regular function.
-        The point is to get the value that a generator returns at the end. */
-    export function result<T>(g: IterableIterator<T>) {
-        let r = g.next();
-        while (!r.done)
-            r = g.next();
-        return r.value;
-    }
-
     export const nesw = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
 
     export function* region(root: stone, belongs: (target: stone, source: stone) => boolean) {
@@ -82,6 +73,21 @@
             return this.items;
         }
 
+        /**
+         * Inserts a new item in a "stable" way, i.e.
+         * if items are taken from one array which is
+         * sorted according to some criteria #A and inserted
+         * into this array, not only the items will be
+         * sorted here by the new criteria #B, but also items
+         * for which #B doesn't define a specific order
+         * (returns zero in other words), will be correctly
+         * ordered according to #A. More strictly, for any i < j:
+         *
+         *      1. B(sa[i], sa[j]) <= 0
+         *      2. if B(sa[i], sa[j]) = 0 then A(sa[i], sa[j]) <= 0
+         *
+         * This property allows to compose a few sorted arrays.
+         */
         insert(item: T, flag: U) {
             const {items, flags, compare} = this;
 
