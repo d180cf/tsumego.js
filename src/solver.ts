@@ -60,7 +60,9 @@ module tsumego {
 
         /** Moves that require a ko treat are considered last.
             That's not just perf optimization: the search depends on this. */
-        const sa = new SortedArray<[Move, boolean], number>((nkt1, nkt2) => nkt2 - nkt1);
+        const sa = new SortedArray<[Move, boolean], { ko: number, w: number }>((a, b) =>
+            b.w - a.w ||  // first consider moves that lead to a winning position  
+            a.ko - b.ko); // moves that require a ko treat are considered last
 
         function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
             nknodes++;
@@ -97,12 +99,17 @@ module tsumego {
                 if (ko)
                     mindepth = d;
 
+                const r = tt.get(board.hash, -color, nkt - (+ko) * color);
+
                 // the move makes sense if it doesn't repeat
                 // a previous position or the current player
                 // has a ko treat elsewhere on the board and
                 // can use it to repeat the local position
                 if (!ko || color * nkt > 0)
-                    sa.insert([move, ko], color * nkt - +ko);
+                    sa.insert([move, ko], {
+                        ko: +ko,
+                        w: +(r && wins(r.color, color))
+                    });
 
                 board.undo();
             }
