@@ -53,22 +53,7 @@ module tsumego {
                 a.ko - b.ko ||  // moves that require a ko treat are considered last
                 b.w - a.w);     // first consider moves that lead to a winning position  
 
-            function* solve(path: number[], color: number, nkt: number, ko = false): IterableIterator<R> {
-                if (ko) {                
-                    // This flag is set if getting to this position required
-                    // the caller to spend a ko treat elsewhere on the board.
-                    // Let's say there was a position b1 and a move m1 that
-                    // restored a previously played local position; in other
-                    // words, b1 + m1 was found in the path. After a ko
-                    // treat m0 was used, m1 could be played and the path became
-                    // [..., b1 + m0, b1 + m0 + m1]. Positions before b1 + m0
-                    // don't have the m0 stone on the board and hence it's not
-                    // possible to repeat any of those positions. However it is
-                    // possible to repeat b1 + m0. This is why only the last
-                    // element from the path is taken and all others are dropped.
-                    path = path.slice(-1);
-                }
-
+            function* solve(path: number[], color: number, nkt: number): IterableIterator<R> {
                 const depth = path.length;
                 const hashb = board.hash;
                 const passed = board.hash == path[depth - 1];
@@ -117,7 +102,7 @@ module tsumego {
                     !pass && board.undo();
                 }
 
-                for (const [move, isko] of leafs) {
+                for (const [move, ko] of leafs) {
                     const pass = move === null;
                     const quit = passed && pass;
 
@@ -132,8 +117,10 @@ module tsumego {
                             status(board) > 0 ? new Result<Move>(+1) :
                                 // white has secured the target stone
                                 alive && alive(board) ? new Result<Move>(-1) :
-                                    // get the best opponent's answer
-                                    yield* solve(path, -color, nkt - color * +isko, isko);
+                                    // spend a ko treat get the best opponent's answer
+                                    ko ? yield* solve(path.slice(-1), -color, nkt - color) :
+                                        // get the best opponent's answer
+                                        yield* solve(path, -color, nkt);
 
                     !pass && board.undo();
                     path.pop();
@@ -144,7 +131,7 @@ module tsumego {
                     // the current player can say that the loss was caused
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
-                    if (s.repd < mindepth)
+                    if (!ko && s.repd < mindepth)
                         mindepth = s.repd;
 
                     // the winning move may depend on a repetition, while
@@ -152,7 +139,11 @@ module tsumego {
                     // uncondtiionally, so it might make sense to continue
                     // searching in such cases
                     if (s.color * color > 0) {
-                        result = new Result<Move>(color, move, s.repd);
+                        // the (dis)proof for the node may or may not intersect with
+                        // previous nodes in the path (the information about this is
+                        // not kept anywhere) and hence it has to be assumed that the
+                        // solution intersects with the path and thus cannot be reused
+                        result = new Result<Move>(color, move, ko ? 0 : s.repd);
                         break;
                     }
                 }
@@ -163,14 +154,6 @@ module tsumego {
                     player && (player.loss(color, null, null), yield);
                 } else {
                     player && (player.done(result.color, result.move, null), yield);
-                }
-
-                if (ko) {
-                    // the (dis)proof for the node may or may not intersect with
-                    // previous nodes in the path (the information about this is
-                    // not kept anywhere) and hence it has to be assumed that the
-                    // solution intersects with the path and thus cannot be reused
-                    result.repd = 0;
                 }
 
                 // if the solution doesn't depend on a ko above the current node,
