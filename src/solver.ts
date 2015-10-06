@@ -139,11 +139,13 @@ module tsumego {
                     // uncondtiionally, so it might make sense to continue
                     // searching in such cases
                     if (s.color * color > 0) {
-                        // the (dis)proof for the node may or may not intersect with
-                        // previous nodes in the path (the information about this is
-                        // not kept anywhere) and hence it has to be assumed that the
-                        // solution intersects with the path and thus cannot be reused
-                        result = new Result<Move>(color, move, ko ? 0 : s.repd);
+                        // if the board b was reached via path p has a winning
+                        // move m that required to spend a ko treat and now b
+                        // is reached via path q with at least one ko treat left,
+                        // that ko treat can be spent to play m if it appears in q
+                        // and then win the position again; this is why such moves
+                        // are stored as unconditional (repd = infty)
+                        result = new Result<Move>(color, move, ko ? infty : s.repd);
                         break;
                     }
                 }
