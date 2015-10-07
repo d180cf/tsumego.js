@@ -28,7 +28,7 @@ namespace tsumego {
     console.log('\n' + colored(board) + '\n');
 
     function prompt() {
-        process.stdout.write('\n:> ');
+        process.stdout.write('\n' + (0x100000000 + board.hash).toString(16).slice(-8) + ': ');
     }
 
     function xsolve<Move>(args: solve.Args<Move>) {
@@ -101,7 +101,7 @@ namespace tsumego {
         });
     }
 
-    function find(config: string) {
+    async function find(config: string) {
         const [c2p, nkt] = /(\w)([+-].+)?/.exec(config).slice(1);
 
         const color = c2p == 'B' ? +1 : -1;
@@ -111,7 +111,7 @@ namespace tsumego {
         console.log('rand seed:', '0x' + seed.toString(16));
         console.log('solving... look at the window title');
 
-        xsolve({
+        const { color: winner, move } = await xsolve({
             root: board,
             color: color,
             nkt: +nkt | 0,
@@ -119,25 +119,25 @@ namespace tsumego {
             expand: generators.Basic(rzone, rand.LCG.NR01(seed)),
             status: (b: Board) => b.get(target) < 0 ? -1 : +1,
             alive: (b: Board) => benson.alive(b, target)
-        }).then(({ color: winner, move }) => {
-            const dt = Date.now() - started;
-
-            console.log('\nsolved in', dt / 1000 | 0, 's');
-
-            if (winner * color < 0) {
-                console.log(color > 0 ? 'B' : 'W', 'cannot win');
-            } else {
-                console.log(
-                    winner > 0 ? 'B' : 'W',
-                    'wins with',
-                    String.fromCharCode(0x41 + stone.x(move)) + (board.size - stone.y(move)));
-
-                board.play(move);
-                console.log('\n' + colored(board));
-            }
-
-            prompt();
         });
+
+        const dt = Date.now() - started;
+
+        console.log('\nsolved in', dt / 1000 | 0, 's');
+
+        if (winner * color < 0) {
+            console.log(color > 0 ? 'B' : 'W', 'cannot win');
+        } else {
+            console.log(
+                winner > 0 ? 'B' : 'W',
+                'wins with',
+                String.fromCharCode(0x41 + stone.x(move)) + (board.size - stone.y(move)));
+
+            board.play(move);
+            console.log('\n' + colored(board));
+        }
+
+        prompt();
     }
 
     if (config) {
