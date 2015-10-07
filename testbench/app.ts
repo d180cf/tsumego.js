@@ -3,6 +3,10 @@
 /// <reference path="../src/solver.ts" />
 /// <reference path="wgo/wgo.d.ts" />
 
+declare var goban: WGo.BasicPlayer;
+
+window['goban'] = null;
+
 module testbench {
     import n2s = tsumego.n2s;
     import s2n = tsumego.s2n;
@@ -11,8 +15,6 @@ module testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
-
-    var goban: WGo.BasicPlayer = null;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban

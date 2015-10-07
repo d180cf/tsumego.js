@@ -76,7 +76,10 @@ namespace tests.ut {
                         logs.push([...args].join(' '));
                     };
 
-                    const started = +new Date;
+                    const started = new Date;
+
+                    if (isNode)
+                        process.title = tname + ' @ ' + started.toJSON();
 
                     try {
                         test(expect);
@@ -84,7 +87,7 @@ namespace tests.ut {
                         console.log = _console_log;
                     }
 
-                    const duration = +new Date - started;
+                    const duration = +new Date - +started;
                     console.log(indent + tname, (duration / 1000).toFixed(1).white() + 's');
                 } catch (err) {
                     failed = true;
