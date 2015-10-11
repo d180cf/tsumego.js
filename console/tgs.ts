@@ -19,7 +19,7 @@ namespace tsumego {
     const sgf = SGF.parse(sgfdata);
     const setup = sgf.steps[0];
     const target = stone.fromSGF(setup['MA'][0]);
-    const rzone = setup['DD'].map(stone.fromSGF);
+    const rzone = setup['SL'].map(stone.fromSGF);
     const board = new Board(sgf);
     const tt = new TT<stone>();
 

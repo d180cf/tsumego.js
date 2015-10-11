@@ -1,5 +1,5 @@
 (;FF[4]SZ[5]MA[bb]
-TEST[B => B+aa][W => B]
-DD[aa]
+C[B => B+aa][W => B]
+SL[aa]
 AB[ac][bc][cc][cb][ca]
 AW[ab][bb][ba])

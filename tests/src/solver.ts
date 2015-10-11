@@ -24,16 +24,17 @@ module tests {
             const sgf = SGF.parse(data);
             const setup = sgf.steps[0];
             const [aimx, aimy] = f2xy(setup['MA'][0]);
-            const rzone = setup['DD'].map(f2xy).map(m => stone(m[0], m[1]));
+            const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1]));
             const board = new Board(sgf);
             const tt = new TT<stone>();
 
-            for (const config of setup['TEST'] || []) {
+            for (const config of setup['C'] || []) {
                 const [lhs, rhs] = config.split(' => ');
-                const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
-                const [winner, moves] = rhs.split('+');
 
                 $.test($ => {
+                    const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
+                    const [winner, moves] = rhs.split('+');
+
                     console.log(board + '');
                     console.log(c2p + ' plays first');
 

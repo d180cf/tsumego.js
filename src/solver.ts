@@ -45,85 +45,113 @@ module tsumego {
         }
 
         export function* start<Move>({root: board, color, nkt, tt, expand, status, player, alive, stats}: Args<Move>) {
-            type R = Result<Move>;
-
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<[Move, boolean], { ko: number, w: number }>((a, b) =>
+            const sa = new SortedArray<[Move, boolean], { ko: number, w: number; }>((a, b) =>
                 a.ko - b.ko ||  // moves that require a ko treat are considered last
-                b.w - a.w);     // first consider moves that lead to a winning position  
+                b.w - a.w);     // first consider moves that lead to a winning position
 
-            function* solve(path: number[], color: number, nkt: number): IterableIterator<R> {
+            const hpath: number[] = [];
+
+            /**
+             * @param path Hashes of the nodes that leaded to the current node.
+             * @param color The side to make a move or play elsewhere.
+             * @param nkt The number of black's external ko treats minus the number of white's.
+             */
+            function* solve(path: number[], color: number, nkt: number): IterableIterator<Result<Move>> {
                 const depth = path.length;
                 const hashb = board.hash;
-                const passed = board.hash == path[depth - 1];
                 const ttres = tt.get(hashb, color, nkt);
 
                 stats && (stats.depth = depth, yield);
 
                 if (ttres) {
-                    player && (player.done(ttres.color, ttres.move, null), yield);
+                    player && (player.done(ttres.color, ttres.move, 'TT'), yield);
                     return ttres;
                 }
 
-                let result: R;
+                let result: Result<Move>;
                 let mindepth = infty;
 
-                const leafs = sa.reset();
+                const nodes = sa.reset();
 
-                // consider all possible moves and then making a pass
-                for (const move of [...expand(board, color), null]) {
-                    const pass = move === null;
+                for (let move of expand(board, color)) {
+                    board.play(move);
+                    const hash = board.hash;
+                    board.undo();
 
-                    !pass && board.play(move),
-                    stats && stats.nodes++;
-
-                    const quit = passed && pass; // two passes is not a ko
-                    const d = path.lastIndexOf(board.hash) + 1;
-                    const ko = d && d <= depth && !quit;
+                    const d = path.lastIndexOf(hash) + 1;
+                    const ko = d > 0 && d <= depth;
 
                     if (ko && d < mindepth)
                         mindepth = d;
 
-                    // the move makes sense if it doesn't repeat
-                    // a previous position or the current player
-                    // has a ko treat elsewhere on the board and
-                    // can use it to repeat the local position
-                    if (!ko || color * nkt > 0) {
-                        // check if this node has already been solved
-                        const r = tt.get(board.hash, -color, nkt - (+ko) * color);
+                    // there are no ko treats to play this move,
+                    // so play a random move elsewhere and yield
+                    // the turn to the opponent; this is needed
+                    // if the opponent is playing useless ko-like
+                    // moves that do not help even if all these
+                    // ko fights are won
+                    if (ko && nkt * color <= 0)
+                        continue;
 
-                        sa.insert([move, ko], {
-                            ko: +ko,
-                            w: (r && r.color || 0) * color
-                        });
-                    }
+                    // check if this node has already been solved
+                    const r = tt.get(hash, -color, ko ? nkt - color : nkt);
 
-                    !pass && board.undo();
+                    sa.insert([move, ko], {
+                        ko: +ko,
+                        w: (r && r.color || 0) * color
+                    });
                 }
 
-                for (const [move, ko] of leafs) {
-                    const pass = move === null;
-                    const quit = passed && pass;
+                // Consider making a pass as well. Passing locally is like
+                // playing a move elsewhere and yielding the turn to the 
+                // opponent locally: it doesn't affect the local position,
+                // but resets the local history of moves. This is why passing
+                // may be useful: a position may be unsolvable with the given
+                // history of moves, but once it's reset, the position can be
+                // solved despite the move is yilded to the opponent.
+                sa.insert([null, true], { ko: infty, w: 0 });
 
-                    path.push(board.hash);
-                    !pass && board.play(move);
+                for (const [move, ko] of nodes) {
+                    let s: Result<Move>;
+
+                    stats && stats.nodes++;
                     player && (player.play(color, move), yield);
 
-                    const s: R =
-                        // both players passed: check the target's status and quit
-                        quit ? new Result<Move>(status(board)) :
-                            // black has captured the target stone
-                            status(board) > 0 ? new Result<Move>(+1) :
-                                // white has secured the target stone
-                                alive && alive(board) ? new Result<Move>(-1) :
-                                    // spend a ko treat get the best opponent's answer
-                                    ko ? yield* solve(path.slice(-1), -color, nkt - color) :
-                                        // get the best opponent's answer
-                                        yield* solve(path, -color, nkt);
+                    if (move === null) {
+                        const h = board.hash & ~15 | (nkt & 7) << 1 | (color > 0 ? 1 : 0);
 
-                    !pass && board.undo();
-                    path.pop();
+                        if (hpath.indexOf(h) >= 0) {
+                            // yielding the turn again means that both sides agreed on
+                            // the group's status; check the target's status and quit
+                            s = new Result<Move>(status(board));
+                        } else {
+                            hpath.push(h);
+                            // play a random move elsewhere and yield
+                            // the turn to the opponent; playing a move
+                            // elsewhere resets the local history of moves
+                            s = yield* solve([], -color, nkt);
+                            hpath.pop();
+                        }
+                    } else {
+                        path.push(board.hash);
+                        board.play(move);
+
+                        s = status(board) > 0 ? new Result<Move>(+1) :
+                            // white has secured the group: black cannot
+                            // capture it no matter how well it plays
+                            alive && alive(board) ? new Result<Move>(-1) :
+                                // let the opponent play the best move
+                                !ko ? yield* solve(path, -color, nkt) :
+                                    // this move repeat a previously played position:
+                                    // spend a ko treat and yield the turn to the opponent
+                                    yield* solve(path.slice(-1), -color, nkt - color);
+
+                        board.undo();
+                        path.pop();
+                    }
+
                     player && (player.undo(), yield);
 
                     // the min value of repd is counted only for the case

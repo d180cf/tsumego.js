@@ -43,7 +43,7 @@ module testbench {
         const sgf = SGF.parse(source);
         const setup = sgf.steps[0];
         const aim = f2xy(setup['MA'][0]);
-        const rzn = setup['DD'].map(f2xy);
+        const rzn = setup['SL'].map(f2xy);
         return [brd, rzn, aim];
     }
 
@@ -253,9 +253,9 @@ module testbench {
 
     function renderSGF(sgf: string) {
         goban = new WGo.BasicPlayer(document.body, {
-            // a dummy C{...] tag is needed to
+            // a C{...] tag is needed to
             // enable the comment box in wgo
-            sgf: sgf.replace(/\)\s*$/, 'C[ ])')
+            sgf: sgf
         });
 
         goban.setCoordinates(true);

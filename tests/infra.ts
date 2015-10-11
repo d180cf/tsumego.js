@@ -30,6 +30,12 @@ namespace tests {
             return isNode ? '\x1b[37;1m' + this + '\x1b[0m' : this;
         },
     });
+
+    export function ErrorWithReason(message: string, reason: Error) {
+        const error = Error(message);
+        error.reason = reason;
+        throw error;
+    }
 }
 
 namespace tests.ut {

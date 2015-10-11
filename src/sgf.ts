@@ -1,5 +1,10 @@
 ﻿/// <reference path="rdp.ts" />
 
+/**
+ * SGF parser.
+ *
+ * http://www.red-bean.com/sgf/
+ */
 module SGF {
     const $ = SDP.$;
 

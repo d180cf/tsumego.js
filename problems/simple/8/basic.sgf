@@ -1,5 +1,18 @@
 (;FF[4]SZ[7]MA[ac]
-TEST[B => W][B+1 => W][W => W+aa,ab,ba,bb,ca,cb,da,db]
+ C[B => W][B+1 => W][W => W+aa,ab,ba,bb,ca,cb,da,db]
+ C[B => W][B+1 => W][W => W+aa,ab,ba,bb,ca,cb,da,db]
  AB[fa][fb][fc][ad][bd][cd][dd][ed][fd]
  AW[ea][eb][ac][bc][cc][dc][ec]
- DD[aa][ab][ba][bb][ca][cb][da][db])
+ SL[aa][ab][ba][bb][ca][cb][da][db]
+
+	(;B[aa];B[ba];B[ca];B[cb]
+	 ;W[bb];W[da]
+	  C[seki][B => W][W => W])
+
+	(;B[aa];B[ca];B[cb];B[bb]
+	 ;W[ab]
+	  C[one step late ko][B => W][B+1 => B+da,db][W+1 => W])
+
+	(;B[ba];B[da];B[cb]
+	 ;W[bb]
+	  C[seki or ko][B => W][W => W][W+1 => W+ab][B+1 => B+ca,ab]))
