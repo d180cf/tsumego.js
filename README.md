@@ -3,15 +3,15 @@
 It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to about 10) and the target to capture are set manually. The plan is to implement the [lambda df-pn(r)](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
 ```
-  A B C D E F G H J
-9 - - - - - - O X -
-8 X O - - O O O X -
-7 - X O O X X X X -
-6 - X X X - - - - -
-5 - - - - - - - - - 
+   A B C D E F G H
+ 9 - O - - - - X -
+ 8 X X O - - O O X
+ 7 - - X O O - O X
+ 6 - - X - O O X X
+ 5 - - - X X X - - 
 ```
 
-It's an example of a [problem](http://www.goproblems.com/18629) that this solver can handle in a couple seconds: it can figure out that if white plays first at `C8`, it lives without a ko.
+It's an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in a minute: it can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at `E9`.
 
 The current implementation manages to investigate 4-6k moves per second and is able to tell after half an hour that if in the following tsumego black plays first, white can still save the corner:
 
