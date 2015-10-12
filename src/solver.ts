@@ -120,7 +120,11 @@ module tsumego {
                     player && (player.play(color, move), yield);
 
                     if (move === null) {
-                        const h = board.hash & ~15 | (nkt & 7) << 1 | (color > 0 ? 1 : 0);
+                        // this is the hash of the path after the turn is yilded to the opponent:
+                        // the path will contain only board.hash, there will be nkt ko treats and
+                        // it will be the turn of -color; this way of hashing the 3 parameters is
+                        // far from perfection, but the chance of collisions is very low
+                        const h = board.hash & ~15 | (nkt & 7) << 1 | (color > 0 ? -1 : 0);
 
                         if (hpath.indexOf(h) >= 0) {
                             // yielding the turn again means that both sides agreed on

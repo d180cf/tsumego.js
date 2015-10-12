@@ -4,8 +4,10 @@
 /// <reference path="wgo/wgo.d.ts" />
 
 declare var goban: WGo.BasicPlayer;
+declare var board: tsumego.Board;
 
 window['goban'] = null;
+window['board'] = null;
 
 module testbench {
     import n2s = tsumego.n2s;
@@ -228,7 +230,7 @@ module testbench {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var board: Board, rzone: stone[], aim;
+    var rzone: stone[], aim;
 
     const source = location.search.slice(1);
     let sgfdata = '';
