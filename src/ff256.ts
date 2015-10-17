@@ -5,7 +5,7 @@
  * www.cs.utsa.edu/~wagner/laws/FFM.html
  */
 namespace tsumego.ff256 {
-    const mul3 = (x: number) => x ^ (x & 0x80 ? (x << 1) ^ 0x11b : (x << 1)); // x * 3
+    const mul3 = (x: number) => x ^ (x & 0x80 ? x << 1 ^ 0x11b : x << 1); // x * 3
 
     const exp3 = new Array<number>(256); // exp3[x] = 3**x
     const log3 = new Array<number>(256); // y = exp3[x], x = log3[y]
