@@ -121,7 +121,7 @@ module tsumego {
                 for (const [move, d] of nodes) {
                     let s: Result<Move>;
 
-                    const t = ff256.mul4(prevb != hashb ? prevb : 0, 0x03030303) ^ hashb;
+                    const t = ff256.q.mul(prevb != hashb ? prevb : 0, 0x12345678) ^ hashb;
 
                     tags.push(t & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
