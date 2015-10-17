@@ -4,6 +4,7 @@
 /// <reference path="es6aiter.ts" />
 
 /// <reference path="src/utils.ts" />
+/// <reference path="src/ff256.ts" />
 /// <reference path="src/sgf.ts" />
 /// <reference path="src/ann.ts" />
 /// <reference path="src/board.ts" />

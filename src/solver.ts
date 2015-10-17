@@ -4,6 +4,7 @@
 /// <reference path="benson.ts" />
 /// <reference path="benson.ts" />
 /// <reference path="ann.ts" />
+/// <reference path="ff256.ts" />
 
 module tsumego {
     interface Node<Move> {
