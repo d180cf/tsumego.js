@@ -112,6 +112,8 @@
     export const b2 = (b: number) => b >> 16 & 255;
     export const b3 = (b: number) => b >> 24 & 255;
 
+    export const b_ = (b: number) => [b0(b), b1(b), b2(b), b3(b)];
+
     export class Result<Move> {
         constructor(
             public color: number,            
