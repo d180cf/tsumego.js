@@ -12,6 +12,7 @@ window['board'] = null;
 module testbench {
     import n2s = tsumego.n2s;
     import s2n = tsumego.s2n;
+    import s2xy = tsumego.s2xy;
     import Result = tsumego.Result;
     import color = tsumego.color;
     import stone = tsumego.stone;
@@ -39,15 +40,6 @@ module testbench {
 
     /** `cd` -> { x: 2, y: 3 } */
     const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1));
-
-    function parseSGF(source: string): [Board, stone[], stone] {
-        const brd = new Board(source);
-        const sgf = SGF.parse(source);
-        const setup = sgf.steps[0];
-        const aim = f2xy(setup['MA'][0]);
-        const rzn = setup['SL'].map(f2xy);
-        return [brd, rzn, aim];
-    }
 
     function s2s(c: color, s: Result<stone>) {
         let isDraw = s.color == 0;
@@ -149,17 +141,11 @@ module testbench {
 
         const next = () => {
             const {done, value} = solver.next();
-            tick++;
+            !done && tick++;
             result = value;
 
-            if (log) {
-                const bp = ';bp=' + tick;
-                const rx = /;bp=\d+/;
-
-                location.href = rx.test(location.hash) ?
-                    location.href.replace(rx, bp) :
-                    location.href + bp;
-            }
+            if (log)
+                location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
         };
 
         const stepOver = (ct: CancellationToken) => {
@@ -208,7 +194,7 @@ module testbench {
             }
         });
 
-        console.log('debug mode:', c2s(color), 'to play with', nkotreats, 'external ko treats\n',
+        console.log(c2s(color), 'to play with', nkotreats, 'external ko treats\n',
             'F11 - step into\n',
             'Ctrl+F11 - step into and debug\n',
             'F10 - step over\n',
@@ -222,7 +208,7 @@ module testbench {
             console.log('skipping first', stopat, 'steps...');
             while (tick < stopat)
                 next();
-            renderSGF(board.toString('SGF'));
+            renderBoard();
         });
     }
 
@@ -232,32 +218,45 @@ module testbench {
 
     var rzone: stone[], aim;
 
-    const source = location.search.slice(1);
-    let sgfdata = '';
+    (async() => {
+        const [, source, bw, nkt, nvar] = /^\?(.+):(B|W)([+-]\d+)(?::(\d+))?/.exec(location.search);
 
-    (source.slice(0, 1) == '(' ? Promise.resolve(source) : send('GET', '/problems/' + source + '.sgf')).then(res => {
-        [board, rzone, aim] = parseSGF(res);
-        console.log(res);
-        sgfdata = res;
-        console.log(board + '');
         document.title = source;
-        setTimeout(() => renderSGF(res));
 
-        try {
-            const [, bw, nkt] = /^#(B|W)([+-]\d+)/.exec(location.hash);
-            dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
-        } catch (_) {
-            console.log(_);
+        const sgfdata = source.slice(0, 1) == '(' ?
+            source :
+            await send('GET', '/problems/' + source + '.sgf');
+
+        const sgf = SGF.parse(sgfdata);
+        const setup = sgf.steps[0];
+
+        board = new Board(sgfdata);
+        aim = f2xy(setup['MA'][0]);
+        rzone = setup['SL'].map(f2xy);
+
+        if (+nvar) {
+            for (const [tag, color] of [['AB', +1], ['AW', -1]])
+                for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
+                    board.play(s2xy(xy, +color));
+
+            board = board.fork(); // drop the history of moves
         }
-    }).catch(err => {
-        console.error(err);
+
+        console.log(sgfdata);
+        console.log(board + '');
+        console.log(board.toStringSGF());
+
+        setTimeout(() => renderBoard());
+        dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
+    })().catch(err => {
+        console.error(err.stack);
     });
 
-    function renderSGF(sgf: string) {
+    function renderBoard() {
         goban = new WGo.BasicPlayer(document.body, {
             // a C{...] tag is needed to
             // enable the comment box in wgo
-            sgf: sgf
+            sgf: board.toStringSGF('WGo')
         });
 
         goban.setCoordinates(true);

@@ -17,7 +17,7 @@
     export const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
 
     /** 'ce' -> (2, 5) */
-    export const s2xy = (s: string) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)));
+    export const s2xy = (s: string, color?: number) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)), color);
 
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
