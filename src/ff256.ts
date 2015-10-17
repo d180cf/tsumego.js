@@ -13,10 +13,10 @@ namespace tsumego.ff256 {
     for (let x = 0, y = 1; x < 256; x++ , y = mul3(y))
         log3[exp3[x] = y] = x;
 
-    const inv1 = log3.map(x => exp3[255 ^ x]); // x * inv1[x] = 1
+    const inv = log3.map(x => exp3[255 ^ x]); // x * inv1[x] = 1
 
-    export const mul = (a: number, b: number) => a && b && exp3[log3[a] + log3[b] & 255];
-    export const inv = (y: number) => inv1[y];
+    const mul = (a: number, b: number) => a && b && exp3[log3[a] + log3[b] & 255];
+    const div = (a: number, b: number) => a && b && exp3[log3[a] - log3[b] & 255];
 
     export const mul4 = (a: number, b: number) => b4(
         mul(b0(a), b0(b)),
@@ -24,9 +24,15 @@ namespace tsumego.ff256 {
         mul(b2(a), b2(b)),
         mul(b3(a), b3(b)));
 
+    export const div4 = (a: number, b: number) => b4(
+        div(b0(a), b0(b)),
+        div(b1(a), b1(b)),
+        div(b2(a), b2(b)),
+        div(b3(a), b3(b)));
+
     export const inv4 = (x: number) => b4(
-        inv(b0(x)),
-        inv(b1(x)),
-        inv(b2(x)),
-        inv(b3(x)));
+        inv[b0(x)],
+        inv[b1(x)],
+        inv[b2(x)],
+        inv[b3(x)]);
 }
