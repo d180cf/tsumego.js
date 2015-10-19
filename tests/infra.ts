@@ -85,7 +85,7 @@ namespace tests.ut {
                     const started = new Date;
 
                     if (isNode)
-                        process.title = tname + ' @ ' + started.toJSON();
+                        process.title = tname + ' @ ' + started.toLocaleTimeString();
 
                     try {
                         test(expect);

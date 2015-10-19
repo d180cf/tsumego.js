@@ -5,8 +5,10 @@ module tests {
     import s2n = tsumego.s2n;
     import s2xy = tsumego.s2xy;
     import xy2s = tsumego.xy2s;
+    import hex = tsumego.hex;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
+    import srand = tsumego.rand.LCG.NR01;
 
     const f2xy = (s: string) => [s2n(s, 0), s2n(s, 1)];
 
@@ -27,7 +29,7 @@ module tests {
             const [aimx, aimy] = f2xy(setup['MA'][0]);
             const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1]));
             const board = new Board(sgf);
-            const tt = new TT<stone>();
+            const tt = new TT<stone>(); // shared by all variations
 
             for (const variation of [null, ...sgf.vars]) {
                 const solutions = variation ? variation.steps[0]['C'] : setup['C'];
@@ -62,7 +64,7 @@ module tests {
                             console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt) } ko treats`);
 
                         const seed = Date.now() | 0;
-                        console.log('rand seed:', seed);
+                        console.log('rand seed:', hex(seed));
 
                         const result = solve({
                             root: b.fork(),
@@ -70,12 +72,12 @@ module tests {
                             nkt: +nkt | 0,
                             tt: tt,
                             //htag: (b: Board) => b.fork(),
-                            expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
+                            expand: BasicMoveGen(rzone, srand(seed)),
                             status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
                         });
 
-                        console.log(b.hash + ' => ' + JSON.stringify(result));
+                        console.log(hex(b.hash) + ' => ' + result + ' (found solution)');
 
                         try {
                             $(result.color > 0 ? 'B' : 'W').equal(winner);
@@ -89,12 +91,12 @@ module tests {
                                 nkt: +nkt | 0,
                                 tt: tt2,
                                 htag: (b: Board) => b.fork(),
-                                expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
+                                expand: BasicMoveGen(rzone, srand(seed)),
                                 status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
                                 alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
                             });
 
-                            console.log(b.hash + ' => ' + JSON.stringify(result2));
+                            console.log(hex(b.hash) + ' => ' + result2 + ' (expected solution)');
 
                             console.log('wrong tt entires:');
 
@@ -127,7 +129,7 @@ module tests {
                                 }
                             }
 
-                            console.log(nn);
+                            console.log(nn || 'no wrong tt entires found');
 
                             throw err;
                         }

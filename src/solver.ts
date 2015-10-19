@@ -216,8 +216,7 @@ module tsumego {
                 board.play(move);
             }
 
-            const result = yield* solve(color, nkt);
-            return result;
+            return yield* solve(color, nkt);
         }
     }
 }

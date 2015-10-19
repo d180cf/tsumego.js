@@ -126,6 +126,12 @@
             public repd = infty) {
 
         }
+
+        toString() {
+            return (this.color > 0 ? 'B' : 'W')
+                + ' ' + (this.move === null ? 'null' : stone.toString(<any>this.move))
+                + ' ' + (this.repd < infty ? this.repd : '');
+        }
     }
 
     export function sequence<T>(n: number, f: () => T) {
@@ -136,4 +142,6 @@
 
         return x;
     }
+
+    export const hex = (x: number) => (0x100000000 + x).toString(16).slice(-8);
 }

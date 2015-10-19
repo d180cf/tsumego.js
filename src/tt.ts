@@ -45,10 +45,10 @@ module tsumego {
                 return null;
 
             if (nkt >= s.bmax)
-                return new Result<Move>(+1, s.move);
+                return new Result<Move>(+1, color > 0 ? s.move : null);
 
             if (nkt <= s.wmin)
-                return new Result<Move>(-1, s.move);
+                return new Result<Move>(-1, color < 0 ? s.move : null);
         }
 
         set(hash: number, color: number, r: Result<Move>, nkt: number, htag?) {
