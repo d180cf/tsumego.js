@@ -53,8 +53,8 @@ module tsumego {
                 b.d - a.d || // moves that require a ko treat are considered last
                 b.w - a.w);  // first consider moves that lead to a winning position
 
-            const path: number[] = [];
-            const tags: number[] = [];
+            const path: number[] = []; // path[i] = hash of the i-th position
+            const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
             function* solve(color: number, nkt: number): IterableIterator<Result<Move>> {
                 const depth = path.length;
@@ -167,7 +167,7 @@ module tsumego {
                     // the current player can say that the loss was caused
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
-                    if (s.color * color < 0 && move)
+                    if (s.color * color < 0 && move !== null)
                         mindepth = min(mindepth, d > depth ? s.repd : d);
 
                     // the winning move may depend on a repetition, while
@@ -181,7 +181,7 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = new Result<Move>(color, move, d > depth && move ? s.repd : d);
+                        result = new Result<Move>(color, move, d > depth && move !== null ? s.repd : d);
                         break;
                     }
                 }

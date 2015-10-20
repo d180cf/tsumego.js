@@ -44,6 +44,8 @@ module tsumego {
             if (!s)
                 return null;
 
+            // the move must be set to null if this is a loss
+
             if (nkt >= s.bmax)
                 return new Result<Move>(+1, color > 0 ? s.move : null);
 
