@@ -33,6 +33,7 @@ module tsumego {
             expand: (node: Node<Move>, color: number) => Move[];
             status: (node: Node<Move>) => number;
             alive?: (node: Node<Move>) => boolean;
+            htag?: (node: Node<Move>) => any;
             stats?: {
                 nodes: number;
                 depth: number;
@@ -45,22 +46,19 @@ module tsumego {
             };
         }
 
-        export function* start<Move>({root: board, color, nkt, tt, expand, status, player, alive, stats}: Args<Move>) {
+        export function* start<Move>({root: board, color, nkt, tt, expand, status, player, alive, stats, htag}: Args<Move>) {
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<[Move, boolean], { ko: number, w: number; }>((a, b) =>
-                a.ko - b.ko ||  // moves that require a ko treat are considered last
-                b.w - a.w);     // first consider moves that lead to a winning position
+            const sa = new SortedArray<[Move, number], { d: number, w: number; }>((a, b) =>
+                b.d - a.d || // moves that require a ko treat are considered last
+                b.w - a.w);  // first consider moves that lead to a winning position
 
-            const hpath: number[] = [];
+            const path: number[] = []; // path[i] = hash of the i-th position
+            const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
-            /**
-             * @param path Hashes of the nodes that leaded to the current node.
-             * @param color The side to make a move or play elsewhere.
-             * @param nkt The number of black's external ko treats minus the number of white's.
-             */
-            function* solve(path: number[], color: number, nkt: number): IterableIterator<Result<Move>> {
+            function* solve(color: number, nkt: number): IterableIterator<Result<Move>> {
                 const depth = path.length;
+                const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
                 const ttres = tt.get(hashb, color, nkt);
 
@@ -76,15 +74,21 @@ module tsumego {
 
                 const nodes = sa.reset();
 
-                for (let move of expand(board, color)) {
+                for (const move of expand(board, color)) {
                     board.play(move);
                     const hash = board.hash;
                     board.undo();
 
-                    const d = path.lastIndexOf(hash) + 1;
-                    const ko = d > 0 && d <= depth;
+                    let d = depth - 1;
 
-                    if (ko && d < mindepth)
+                    while (d >= 0 && path[d] != hash)
+                        d = d > 0 && path[d] == path[d - 1] ? -1 : d - 1;
+
+                    d++;
+
+                    if (!d) d = infty;
+
+                    if (d < mindepth)
                         mindepth = d;
 
                     // there are no ko treats to play this move,
@@ -93,14 +97,14 @@ module tsumego {
                     // if the opponent is playing useless ko-like
                     // moves that do not help even if all these
                     // ko fights are won
-                    if (ko && nkt * color <= 0)
+                    if (d <= depth && nkt * color <= 0)
                         continue;
 
                     // check if this node has already been solved
-                    const r = tt.get(hash, -color, ko ? nkt - color : nkt);
+                    const r = tt.get(hash, -color, d <= depth ? nkt - color : nkt);
 
-                    sa.insert([move, ko], {
-                        ko: +ko,
+                    sa.insert([move, d], {
+                        d: d,
                         w: (r && r.color || 0) * color
                     });
                 }
@@ -112,35 +116,33 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert([null, true], { ko: infty, w: 0 });
+                sa.insert([null, infty], { d: infty, w: 0 });
 
-                for (const [move, ko] of nodes) {
+                for (const [move, d] of nodes) {
                     let s: Result<Move>;
 
+                    // this is a hash of the path: reordering moves must change the hash
+                    const h = rcl(prevb != hashb ? prevb : 0, depth * 17 % 32) ^ hashb;
+
+                    tags.push(h & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
+                    path.push(hashb);
                     stats && stats.nodes++;
                     player && (player.play(color, move), yield);
 
                     if (move === null) {
-                        // this is the hash of the path after the turn is yilded to the opponent:
-                        // the path will contain only board.hash, there will be nkt ko treats and
-                        // it will be the turn of -color; this way of hashing the 3 parameters is
-                        // far from perfection, but the chance of collisions is very low
-                        const h = board.hash & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0);
+                        const i = tags.lastIndexOf(tags[depth], -2);
 
-                        if (hpath.indexOf(h) >= 0) {
+                        if (i >= 0) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = new Result<Move>(status(board));
+                            s = new Result<Move>(status(board), null, i + 1);
                         } else {
-                            hpath.push(h);
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
                             // elsewhere resets the local history of moves
-                            s = yield* solve([], -color, nkt);
-                            hpath.pop();
+                            s = yield* solve(-color, nkt);
                         }
                     } else {
-                        path.push(board.hash);
                         board.play(move);
 
                         s = status(board) > 0 ? new Result<Move>(+1) :
@@ -148,15 +150,16 @@ module tsumego {
                             // capture it no matter how well it plays
                             alive && alive(board) ? new Result<Move>(-1) :
                                 // let the opponent play the best move
-                                !ko ? yield* solve(path, -color, nkt) :
+                                d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    yield* solve(path.slice(-1), -color, nkt - color);
+                                    yield* solve(-color, nkt - color);
 
                         board.undo();
-                        path.pop();
                     }
 
+                    path.pop();
+                    tags.pop();
                     player && (player.undo(), yield);
 
                     // the min value of repd is counted only for the case
@@ -164,8 +167,8 @@ module tsumego {
                     // the current player can say that the loss was caused
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
-                    if (!ko && s.repd < mindepth)
-                        mindepth = s.repd;
+                    if (s.color * color < 0 && move !== null)
+                        mindepth = min(mindepth, d > depth ? s.repd : d);
 
                     // the winning move may depend on a repetition, while
                     // there can be another move that gives the same result
@@ -178,7 +181,7 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = new Result<Move>(color, move, ko ? infty : s.repd);
+                        result = new Result<Move>(color, move, d > depth && move !== null ? s.repd : d);
                         break;
                     }
                 }
@@ -198,14 +201,12 @@ module tsumego {
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
                 if (result.repd > depth + 1)
-                    tt.set(hashb, color, new Result<Move>(result.color, result.move), nkt);
+                    tt.set(hashb, color, new Result<Move>(result.color, result.move), nkt, htag && htag(board));
 
                 return result;
             }
 
             const moves: Move[] = [];
-            const path: number[] = [];
-
             let move: Move;
 
             while (move = board.undo())
@@ -216,8 +217,7 @@ module tsumego {
                 board.play(move);
             }
 
-            const result = yield* solve(path, color, nkt);
-            return result;
+            return yield* solve(color, nkt);
         }
     }
 }

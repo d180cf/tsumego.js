@@ -17,7 +17,7 @@
     export const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
 
     /** 'ce' -> (2, 5) */
-    export const s2xy = (s: string) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)));
+    export const s2xy = (s: string, color?: number) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)), color);
 
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
@@ -126,6 +126,12 @@
             public repd = infty) {
 
         }
+
+        toString() {
+            return (this.color > 0 ? 'B' : 'W')
+                + ' ' + (this.move === null ? 'null' : stone.toString(<any>this.move))
+                + ' ' + (this.repd < infty ? this.repd : '');
+        }
     }
 
     export function sequence<T>(n: number, f: () => T) {
@@ -136,4 +142,7 @@
 
         return x;
     }
+
+    export const hex = (x: number) => (0x100000000 + x).toString(16).slice(-8);
+    export const rcl = (x: number, n: number) => x << n | x >>> (32 - n);
 }

@@ -603,7 +603,7 @@ module tsumego {
             return n + 'x' + n + '(' + h.slice(0, len) + ')';
         }
 
-        private toStringSGF() {
+        toStringSGF(comment = '') {
             const take = (pf: string, fn: (g: number) => boolean) => {
                 let list = '';
 
@@ -616,11 +616,12 @@ module tsumego {
             }
 
             return '(;FF[4]SZ[' + this.size + ']'
+                + (comment ? 'C[' + comment + ']' : '')
                 + take('AB', c => c > 0)
                 + take('AW', c => c < 0) + ')';
         }
 
-        private toStringTXT(mode = '') {
+        toStringTXT(mode = '') {
             const hideLabels = /L-/.test(mode);
             const showLibsNum = /R/.test(mode);
 
@@ -667,6 +668,21 @@ module tsumego {
             return mode == 'SGF' ?
                 this.toStringSGF() :
                 this.toStringTXT(mode);
+        }
+
+        private path() {
+            const moves: number[] = [];
+            const path: Board[] = [];
+
+            let move: number;
+
+            while (move = this.undo())
+                moves.unshift(move);
+
+            for (move of moves) {
+                path.push(this.fork());
+                this.play(move);
+            }
         }
     }
 }

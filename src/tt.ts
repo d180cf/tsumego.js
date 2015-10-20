@@ -20,10 +20,11 @@ module tsumego {
              */
             bmax: number;
 
-            /**
-             * The best move. Obviously, it's absent if there is no way to win.
-             */
+            /** The best move. Obviously, it's absent if there is no way to win. */
             move: Move;
+
+            /** Useful when debugging. */
+            htag: any;
         }
     }
 
@@ -43,16 +44,18 @@ module tsumego {
             if (!s)
                 return null;
 
+            // the move must be set to null if this is a loss
+
             if (nkt >= s.bmax)
-                return new Result<Move>(+1, s.move);
+                return new Result<Move>(+1, color > 0 ? s.move : null);
 
             if (nkt <= s.wmin)
-                return new Result<Move>(-1, s.move);
+                return new Result<Move>(-1, color < 0 ? s.move : null);
         }
 
-        set(hash: number, color: number, r: Result<Move>, nkt: number) {
+        set(hash: number, color: number, r: Result<Move>, nkt: number, htag?) {
             const t = color > 0 ? this.b : this.w
-            const s = t[hash] || (this.size++, { wmin: -infty, bmax: infty, move: r.move });
+            const s = t[hash] || (this.size++ , { wmin: -infty, bmax: infty, move: r.move, htag: htag });
 
             if (r.color > 0 && nkt < s.bmax)
                 s.bmax = nkt, s.move = r.move;
@@ -61,6 +64,14 @@ module tsumego {
                 s.wmin = nkt, s.move = r.move;
 
             t[hash] = s;
+        }
+
+        *[Symbol.iterator]() {
+            for (const h in this.b)
+                yield { hash: +h, color: +1, status: this.b[h] };
+
+            for (const h in this.w)
+                yield { hash: +h, color: -1, status: this.w[h] };
         }
     }
 }
