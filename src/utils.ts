@@ -144,4 +144,5 @@
     }
 
     export const hex = (x: number) => (0x100000000 + x).toString(16).slice(-8);
+    export const rcl = (x: number, n: number) => x << n | x >>> (32 - n);
 }
