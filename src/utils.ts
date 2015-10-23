@@ -129,7 +129,7 @@
 
         toString() {
             return (this.color > 0 ? 'B' : 'W')
-                + ' ' + (this.move === null ? 'null' : stone.toString(<any>this.move))
+                + ' ' + (!this.move ? 'null' : stone.toString(<any>this.move))
                 + ' ' + (this.repd < infty ? this.repd : '');
         }
     }
