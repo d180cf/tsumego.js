@@ -129,7 +129,7 @@ module tsumego {
                     stats && stats.nodes++;
                     player && (player.play(color, move), yield);
 
-                    if (move === null) {
+                    if (!move) {
                         const i = tags.lastIndexOf(tags[depth], -2);
 
                         if (i >= 0) {
@@ -167,7 +167,7 @@ module tsumego {
                     // the current player can say that the loss was caused
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
-                    if (s.color * color < 0 && move !== null)
+                    if (s.color * color < 0 && move)
                         mindepth = min(mindepth, d > depth ? s.repd : d);
 
                     // the winning move may depend on a repetition, while
@@ -181,7 +181,7 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = new Result<Move>(color, move, d > depth && move !== null ? s.repd : d);
+                        result = new Result<Move>(color, move, d > depth && move ? s.repd : d);
                         break;
                     }
                 }

@@ -272,6 +272,8 @@ module tsumego {
 
         get(x: number, y?: number): block {
             if (y === void 0) {
+                if (!x) return 0;
+
                 y = stone.y(x);
                 x = stone.x(x);
             }
@@ -367,6 +369,8 @@ module tsumego {
 
         inBounds(x: number, y?: number): boolean {
             if (y === void 0) {
+                if (!x) return false;
+
                 y = stone.y(x);
                 x = stone.x(x);
             }
@@ -390,12 +394,12 @@ module tsumego {
          * allocate temporary objects and thus is pretty fast.
          */
         play(move: stone): number {
-            const color = stone.c(move);
+            const color = stone.color(move);
 
             const x = stone.x(move);
             const y = stone.y(move);
 
-            if (this.getBlockId(x, y))
+            if (!color || this.getBlockId(x, y))
                 return 0;
 
             const size = this.size;
@@ -552,7 +556,7 @@ module tsumego {
          * Returns the restored move or zero. The returned
          * move can be given to .play to redo the position.
          */
-        undo() {
+        undo(): stone {
             const move = this.history.added.pop();
 
             if (!move)
@@ -560,6 +564,7 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
+            const c = move & 0x80000000;
             const n = move >> 8 & 255;
             const b = move >> 16 & 255;
 
@@ -581,7 +586,7 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return move;
+            return stone(x, y, c);
         }
 
         toStringCompact() {
