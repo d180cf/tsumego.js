@@ -556,7 +556,7 @@ module tsumego {
          * Returns the restored move or zero. The returned
          * move can be given to .play to redo the position.
          */
-        undo() {
+        undo(): stone {
             const move = this.history.added.pop();
 
             if (!move)
@@ -564,6 +564,7 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
+            const c = move & 0x80000000;
             const n = move >> 8 & 255;
             const b = move >> 16 & 255;
 
@@ -585,7 +586,7 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return move;
+            return stone(x, y, c);
         }
 
         toStringCompact() {
