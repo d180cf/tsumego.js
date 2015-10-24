@@ -39,7 +39,7 @@ module testbench {
     const xyc2f = (c: color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
 
     /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1));
+    const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1), 0);
 
     function s2s(c: color, s: Result<stone>) {
         let isDraw = s.color == 0;
@@ -281,7 +281,7 @@ module testbench {
         const x = si.charCodeAt(0) - 65;
         const y = size - +/\d+/.exec(si)[0];
 
-        return stone(x, y);
+        return stone(x, y, 0);
     }
 
     window['$'] = data => {
