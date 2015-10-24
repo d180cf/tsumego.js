@@ -27,7 +27,7 @@ module tests {
 
             const setup = sgf.steps[0];
             const [aimx, aimy] = f2xy(setup['MA'][0]);
-            const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1]));
+            const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1], 0));
             const board = new Board(sgf);
             const tt = new TT<stone>(); // shared by all variations
 
@@ -74,7 +74,7 @@ module tests {
                             //htag: (b: Board) => b.fork(),
                             expand: BasicMoveGen(rzone, srand(seed)),
                             status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                            alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
+                            alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
                         });
 
                         console.log(hex(b.hash) + ' => ' + result + ' (found solution)');
@@ -93,7 +93,7 @@ module tests {
                                 htag: (b: Board) => b.fork(),
                                 expand: BasicMoveGen(rzone, srand(seed)),
                                 status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                                alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
+                                alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
                             });
 
                             console.log(hex(b.hash) + ' => ' + result2 + ' (expected solution)');
@@ -116,7 +116,7 @@ module tests {
                                     tt: new TT<stone>(),
                                     expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
                                     status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                                    alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy))
+                                    alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
                                 });
 
                                 if (!r1 != !r2 || r1.color != r2.color) {

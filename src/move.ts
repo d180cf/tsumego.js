@@ -1,38 +1,35 @@
 module tsumego {
-    const $vm = 0x40000000; // validity mask
-    const $cm = 0x80000000; // color mask
+    const $vm = 0x20000000; // validity
+    const $pm = 0x40000000; // has color
+    const $wm = 0x80000000; // is white
 
-    /**
-     * bits 0..3 - the X coord
-     * bits 5..7 - the Y coord
-     * bit 30 - validity
-     * bit 31 - color (1 = white, 0 = black)
-     */
     export type stone = number;
 
-    export function stone(x: number, y: number, color = 0) {
-        return x | y << 4 | color & $cm | $vm;
+    export function stone(x: number, y: number, color: number) {
+        return x | y << 4 | $vm | (color && $pm) | color & $wm;
     }
 
     export module stone {
-        export const color = (m: stone) => m & $vm ? m : 0;
+        export const color = (m: stone) => !(m & $pm) ? 0 : (m & $wm) ? -1 : +1;
 
         export const x = (m: stone) => m & 15;
         export const y = (m: stone) => m >> 4 & 15;
 
         export const coords = (m: stone) => [x(m), y(m)];
 
-        export const toString = (m: stone) => !m ? 'null' : (stone.color(m) > 0 ? '+' : '-') + stone.coords(m);
-        export const fromSGF = (s: string) => stone(s2n(s[0]), s2n(s[1]));
+        export const toString = (m: stone) => stone.color(m) ? 'null' : (stone.color(m) > 0 ? '+' : '-') + stone.coords(m);
+        export const fromSGF = (s: string) => stone(s2n(s[0]), s2n(s[1]), 0);
 
-        export module nb {
-            export const l = (m: stone) => x(m) > 0x0 ? stone(x(m) - 1, y(m)) : 0;
-            export const r = (m: stone) => x(m) < 0xF ? stone(x(m) + 1, y(m)) : 0;
-            export const t = (m: stone) => y(m) > 0x0 ? stone(x(m), y(m) - 1) : 0;
-            export const b = (m: stone) => y(m) < 0xF ? stone(x(m), y(m) + 1) : 0;
+        export const neighbors = (m: stone) => {
+            const x = stone.x(m);
+            const y = stone.y(m);
+            const c = stone.color(m);
 
-            /** the 4 neighbors: L, R, T, B */
-            export const all = (m: stone) => [l(m), r(m), t(m), b(m)];
+            return [
+                x <= 0x0 ? 0 : stone(x - 1, y, c),
+                x >= 0xF ? 0 : stone(x + 1, y, c),
+                y <= 0x0 ? 0 : stone(x, y - 1, c),
+                y >= 0xF ? 0 : stone(x, y + 1, c)];
         }
     }
 }

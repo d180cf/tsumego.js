@@ -586,7 +586,7 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return stone(x, y, c);
+            return stone(x, y, c || +1);
         }
 
         toStringCompact() {

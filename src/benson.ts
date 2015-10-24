@@ -48,7 +48,7 @@ module tsumego.benson {
 
                 let isAdjacent = false;
 
-                for (const q of stone.nb.all(p)) {
+                for (const q of stone.neighbors(p)) {
                     const ch = b.get(q);
 
                     if (ch == chainId) {

@@ -41,7 +41,7 @@ namespace tests {
                         const marker = chain > 0 ? 'X' : 'O';
 
                         tags.push(!chain ? '-' :
-                            benson.alive(board, stone(x, y)) ? marker :
+                            benson.alive(board, stone(x, y, 0)) ? marker :
                                 marker.toLowerCase());
                     }
 
@@ -64,7 +64,7 @@ namespace tests {
         $.test($ => {
             /// start from a vacant point
             const b = new Board(9, []);
-            const p = stone(0, 0);
+            const p = stone(0, 0, 0);
             const r = benson.alive(b, p);
             $(r).equal(false);
         });
