@@ -5,8 +5,8 @@ module tsumego {
 
     export type stone = number;
 
-    export function stone(x: number, y: number, color: number) {
-        return x | y << 4 | $vm | (color && $pm) | color & $wm;
+    export function stone(x: number, y: number, color: number, tag = 0) {
+        return x | y << 4 | tag << 8 | $vm | (color && $pm) | color & $wm;
     }
 
     export module stone {
