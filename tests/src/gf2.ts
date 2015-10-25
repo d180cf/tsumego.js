@@ -2,12 +2,13 @@ namespace tests {
     import gf32 = tsumego.gf32;
     import srand = tsumego.rand.LCG.NR32;
 
-    const {mul: qm, div: qd, inv: qi} = gf32;
+    const {mul: qm, inv: qi} = gf32;
+    const qd = (a, b) => qm(a, qi(b));
 
     ut.group($ => {
         /// GF(2**32)
 
-        const trials = 1e5;
+        const trials = 1e4;
         const rand = srand(0x12345678);
 
         $.test($ => {

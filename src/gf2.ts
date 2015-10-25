@@ -23,60 +23,16 @@ namespace tsumego.gf8 {
 }
 
 /** 
- * The galois finite field GF(2**32) over 2**32 + 0x8d. 
+ * The galois finite field GF(2**32) over 2**32 + 0x8d.
+ * This implementation isn't fast, but simple.
  *
  * en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm
  * search.cpan.org/~dmalone/Math-FastGF2-0.04/lib/Math/FastGF2.pm
  */
 namespace tsumego.gf32 {
-    /** x * 2**n */
-    const shl = (x, n = 1) => {
-        while (n-- > 0)
-            x = x << 1 ^ (x < 0 ? 0x8d : 0); // x * 2 + m
-        return x;
-    };
-
-    /** a * b */
-    export const mul = (a: number, b: number) => {
-        let ab = 0;
-
-        while (b) {
-            if (b & 1)
-                ab ^= a;
-
-            b >>>= 1;
-            a = shl(a);
-        }
-
-        return ab;
-    };
-
-    const rank = x => {
-        let n = 0;
-        while (x) x >>>= 1, n++;
-        return n;
-    };
-
-    /** [x, y] where a*x + b*y = gcd(a, b) */
-    const egcd = (a, b, rb) => {
-        if (a == 1)
-            return [1, 0];
-
-        const ra = rank(a);
-        const n = rb - ra;
-
-        if (n < 0) {
-            const [y, x] = egcd(b, a, ra);
-            return [x, y];
-        } else {
-            const [y, z] = egcd(b ^ a << n, a, ra);
-            return [z ^ shl(y, n), y];
-        }
-    };
-
-    /** x where a*x = 1 */
-    export const inv = (a: number): number => a && egcd(a, 0x8d, 33)[0];
-
-    /** x where b*x = a */
-    export const div = (a: number, b: number): number => mul(a, inv(b));
+    const shl = x => x = x << 1 ^ (x < 0 ? 0x8d : 0); // x * 2 + m
+    export const mul = (a: number, b: number): number => b && ((b & 1 ? a : 0) ^ shl(mul(a, b >>> 1)));
+    const sqr = x => x && mul(x, x);
+    const pow = (a, b) => b ? mul(b & 1 ? a : 1, sqr(pow(a, b >>> 1))) : 1;
+    export const inv = (a: number): number => a && pow(a, -2);
 }
