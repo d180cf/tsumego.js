@@ -26,13 +26,14 @@ namespace tsumego.gf8 {
  * The galois finite field GF(2**32) over 2**32 + 0x8d.
  * This implementation isn't fast, but simple.
  *
+ * en.wikipedia.org/wiki/Primitive_root_modulo_n
  * en.wikibooks.org/wiki/Algorithm_Implementation/Mathematics/Extended_Euclidean_algorithm
  * search.cpan.org/~dmalone/Math-FastGF2-0.04/lib/Math/FastGF2.pm
  */
 namespace tsumego.gf32 {
-    const shl = x => x = x << 1 ^ (x < 0 ? 0x8d : 0); // x * 2 + m
+    const shl = x => x = x << 1 ^ (x < 0 ? 0x8d : 0); // x * 2 + 2**32 + 0x8d
     export const mul = (a: number, b: number): number => b && ((b & 1 ? a : 0) ^ shl(mul(a, b >>> 1)));
-    const sqr = x => x && mul(x, x);
-    const pow = (a, b) => b ? mul(b & 1 ? a : 1, sqr(pow(a, b >>> 1))) : 1;
-    export const inv = (a: number): number => a && pow(a, -2);
+    const sqr = x => mul(x, x);
+    const pow = (a, b) => !b ? 1 : mul(b & 1 ? a : 1, sqr(pow(a, b >>> 1))); // simpler than EGCD
+    export const inv = (x: number): number => pow(x, -2); // x**q = x (the little Fermat's theorem)
 }
