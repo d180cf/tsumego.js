@@ -1,13 +1,13 @@
 namespace tests {
-    import ff256 = tsumego.ff256;
+    import gf32 = tsumego.gf32;
     import srand = tsumego.rand.LCG.NR32;
 
-    const {mul: qm, div: qd, inv: qi} = ff256.q;
+    const {mul: qm, div: qd, inv: qi} = gf32;
 
     ut.group($ => {
-        /// FF(2**8)
+        /// GF(2**32)
 
-        const trials = 10;
+        const trials = 1e5;
         const rand = srand(0x12345678);
 
         $.test($ => {
@@ -35,6 +35,7 @@ namespace tests {
 
                 //console.warn(a, b, c);
                 $(c | 0).equal(c);
+                $(a != 0 && b != 0).equal(c != 0);
             }
         });
 
@@ -89,7 +90,10 @@ namespace tests {
         });
 
         $.test($ => {
-            /// existence of inverses
+            /// inversion
+
+            $(qi(0)).equal(0);
+            $(qi(1)).equal(1);
 
             for (let i = 0; i < trials; i++) {
                 const a = rand();

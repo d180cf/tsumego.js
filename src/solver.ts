@@ -4,7 +4,7 @@
 /// <reference path="benson.ts" />
 /// <reference path="benson.ts" />
 /// <reference path="ann.ts" />
-/// <reference path="ff256.ts" />
+/// <reference path="gf2.ts" />
 
 module tsumego {
     interface Node<Move> {
@@ -121,8 +121,11 @@ module tsumego {
                 for (const [move, d] of nodes) {
                     let s: Result<Move>;
 
-                    // this is a hash of the path: reordering moves must change the hash
-                    const h = rcl(prevb != hashb ? prevb : 0, depth * 17 % 32) ^ hashb;
+                    // this is a hash of the path: reordering moves must change the hash;
+                    // 0x87654321 is meant to be a generator of the field, but I didn't
+                    // know how to find such a generator, so I just checked that first
+                    // million powers of this element are unique
+                    const h = gf32.mul(prevb != hashb ? prevb : 0, 0x87654321) ^ hashb;
 
                     tags.push(h & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
