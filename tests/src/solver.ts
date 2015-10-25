@@ -21,8 +21,8 @@ module tests {
             const sgf = SGF.parse(data);
 
             const setup = sgf.steps[0];
-            const aim = stone.fromString('[' + setup['MA'][0] + ']');
-            const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1], 0));
+            const aim = stone.fromString(setup['MA'][0]);
+            const rzone = setup['SL'].map(stone.fromString);
             const board = new Board(sgf);
             const tt = new TT<stone>(); // shared by all variations
 
@@ -39,12 +39,12 @@ module tests {
                         const b = board.fork();
 
                         if (variation) {
-                            for (const [tag, color] of [['AB', +1], ['AW', -1]]) {
+                            for (const tag of ['AB', 'AW']) {
                                 for (const xy of variation.steps[0][tag]) {
-                                    const s = s2xy(xy, +color);
+                                    const s = tag[1] + '[' + xy + ']';
 
-                                    if (!b.play(s))
-                                        throw Error('Cannot play ' + stone.toString(s));
+                                    if (!b.play(stone.fromString(s)))
+                                        throw Error('Cannot play ' + s);
                                 }
                             }
                         }
@@ -68,8 +68,8 @@ module tests {
                             tt: tt,
                             //htag: (b: Board) => b.fork(),
                             expand: BasicMoveGen(rzone, srand(seed)),
-                            status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                            alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
+                            status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
+                            alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });
 
                         console.log(hex(b.hash) + ' => ' + result + ' (found solution)');
@@ -87,8 +87,8 @@ module tests {
                                 tt: tt2,
                                 htag: (b: Board) => b.fork(),
                                 expand: BasicMoveGen(rzone, srand(seed)),
-                                status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                                alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
+                                status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
+                                alive: (b: Board) => tsumego.benson.alive(b, aim)
                             });
 
                             console.log(hex(b.hash) + ' => ' + result2 + ' (expected solution)');
@@ -110,8 +110,8 @@ module tests {
                                     nkt: nkt,
                                     tt: new TT<stone>(),
                                     expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
-                                    status: (b: Board) => b.get(aimx, aimy) < 0 ? -1 : +1,
-                                    alive: (b: Board) => tsumego.benson.alive(b, stone(aimx, aimy, 0))
+                                    status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
+                                    alive: (b: Board) => tsumego.benson.alive(b, aim)
                                 });
 
                                 if (!r1 != !r2 || r1.color != r2.color) {

@@ -614,7 +614,7 @@ module tsumego {
                 for (let y = 0; y < this.size; y++)
                     for (let x = 0; x < this.size; x++)
                         if (fn(this.get(x, y)))
-                            list += stone.toString(stone(x, y, 0));
+                            list += stone.toString(stone(x, y, +1)).slice(1);
 
                 return list && pf + list;
             }

@@ -43,18 +43,18 @@ module tsumego {
             const s = n2s(x) + n2s(y);
             const t = c > 0 ? 'B' : c < 0 ? 'W' : '';
 
-            return t + '[' + s + ']';
+            return !t ? s : t + '[' + s + ']';
         }
 
         export function fromString(s: string) {
-            if (!/^[BW]\[[a-z][a-z]\]/.test(s))
+            if (!/^[BW]\[[a-z]{2}\]|[a-z]{2}$/.test(s))
                 throw SyntaxError('Invalid move: ' + s);
 
             const c = { B: +1, W: -1 }[s[0]] || 0;
-            if (c) s = s.slice(1);
+            if (c) s = s.slice(2);
 
-            const x = s2n(s[1]);
-            const y = s2n(s[2]);
+            const x = s2n(s[0]);
+            const y = s2n(s[1]);
 
             return stone(x, y, c);
         }

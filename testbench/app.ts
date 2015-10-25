@@ -219,8 +219,8 @@ module testbench {
         const setup = sgf.steps[0];
 
         board = new Board(sgfdata);
-        aim = stone.fromString('[' + setup['MA'][0] + ']');
-        rzone = setup['SL'].map(s => stone.fromString('[' + s + ']'));
+        aim = stone.fromString(setup['MA'][0]);
+        rzone = setup['SL'].map(stone.fromString);
 
         if (+nvar) {
             for (const tag of ['AB', 'AW'])
