@@ -17,9 +17,6 @@ module tsumego {
 
         export const coords = (m: stone) => [x(m), y(m)];
 
-        export const toString = (m: stone) => stone.color(m) ? 'null' : (stone.color(m) > 0 ? '+' : '-') + stone.coords(m);
-        export const fromSGF = (s: string) => stone(s2n(s[0]), s2n(s[1]), 0);
-
         export const neighbors = (m: stone) => {
             const x = stone.x(m);
             const y = stone.y(m);
@@ -30,6 +27,36 @@ module tsumego {
                 x >= 0xF ? 0 : stone(x + 1, y, c),
                 y <= 0x0 ? 0 : stone(x, y - 1, c),
                 y >= 0xF ? 0 : stone(x, y + 1, c)];
+        }
+    }
+
+    export module stone {
+        const n2s = (n: number) => String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
+        const s2n = (s: string) => s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
+
+        export function toString(m: stone) {
+            // check if it's a valid move
+            if (!(m & $vm)) return null;
+
+            const c = stone.color(m);
+            const [x, y] = stone.coords(m);
+            const s = n2s(x) + n2s(y);
+            const t = c > 0 ? 'B' : c < 0 ? 'W' : '';
+
+            return t + '[' + s + ']';
+        }
+
+        export function fromString(s: string) {
+            if (!/^[BW]\[[a-z][a-z]\]/.test(s))
+                throw SyntaxError('Invalid move: ' + s);
+
+            const c = { B: +1, W: -1 }[s[0]] || 0;
+            if (c) s = s.slice(1);
+
+            const x = s2n(s[1]);
+            const y = s2n(s[2]);
+
+            return stone(x, y, c);
         }
     }
 }

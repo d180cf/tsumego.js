@@ -2,15 +2,10 @@ module tests {
     import Board = tsumego.Board;
     import solve = tsumego.solve;
     import stone = tsumego.stone;
-    import s2n = tsumego.s2n;
-    import s2xy = tsumego.s2xy;
-    import xy2s = tsumego.xy2s;
     import hex = tsumego.hex;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
     import srand = tsumego.rand.LCG.NR01;
-
-    const f2xy = (s: string) => [s2n(s, 0), s2n(s, 1)];
 
     ut.group($ => {
         /// tsumego samples
@@ -26,7 +21,7 @@ module tests {
             const sgf = SGF.parse(data);
 
             const setup = sgf.steps[0];
-            const [aimx, aimy] = f2xy(setup['MA'][0]);
+            const aim = stone.fromString('[' + setup['MA'][0] + ']');
             const rzone = setup['SL'].map(f2xy).map(m => stone(m[0], m[1], 0));
             const board = new Board(sgf);
             const tt = new TT<stone>(); // shared by all variations

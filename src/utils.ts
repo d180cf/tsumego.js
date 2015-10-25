@@ -5,19 +5,7 @@
 
     /** Positive values = black.
         Negative values = white. */
-    export type color = number;
-
-    /** 0 -> `a`, 3 -> `d` */
-    export const n2s = (n: number) => String.fromCharCode(n + 0x61);
-
-    /** (2, 5) -> 'ce' */
-    export const xy2s = (xy: stone) => xy ? n2s(stone.x(xy)) + n2s(stone.y(xy)) : null;
-
-    /** `d` -> 43 `a` -> 0 */
-    export const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
-
-    /** 'ce' -> (2, 5) */
-    export const s2xy = (s: string, color = 0) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)), color);
+    export type color = number;    
 
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;

@@ -10,9 +10,6 @@ window['goban'] = null;
 window['board'] = null;
 
 module testbench {
-    import n2s = tsumego.n2s;
-    import s2n = tsumego.s2n;
-    import s2xy = tsumego.s2xy;
     import Result = tsumego.Result;
     import color = tsumego.color;
     import stone = tsumego.stone;
@@ -31,15 +28,6 @@ module testbench {
     const c2s = (c: color) => c > 0 ? 'B' : 'W';
     const cm2s = (c: color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
     const cw2s = (c: color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
-
-    /** { x: 2, y: 3 } -> `cd` */
-    const xy2f = (xy: stone) => n2s(stone.x(xy)) + n2s(stone.y(xy));
-
-    /** -1, { x: 2, y: 3 } -> `W[cd]` */
-    const xyc2f = (c: color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
-
-    /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1), 0);
 
     function s2s(c: color, s: Result<stone>) {
         let isDraw = s.color == 0;
@@ -231,13 +219,13 @@ module testbench {
         const setup = sgf.steps[0];
 
         board = new Board(sgfdata);
-        aim = f2xy(setup['MA'][0]);
-        rzone = setup['SL'].map(f2xy);
+        aim = stone.fromString('[' + setup['MA'][0] + ']');
+        rzone = setup['SL'].map(s => stone.fromString('[' + s + ']'));
 
         if (+nvar) {
-            for (const [tag, color] of [['AB', +1], ['AW', -1]])
+            for (const tag of ['AB', 'AW'])
                 for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
-                    board.play(s2xy(xy, +color));
+                    board.play(stone.fromString(tag[1] + '[' + xy + ']'));
 
             board = board.fork(); // drop the history of moves
         }
