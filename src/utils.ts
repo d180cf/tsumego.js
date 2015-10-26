@@ -102,26 +102,6 @@
 
     export const b_ = (b: number) => [b0(b), b1(b), b2(b), b3(b)];
 
-    export class Result<Move> {
-        constructor(
-            public color: number,            
-
-            /** The winning move.
-                If the only solution is a loss, no move is stored. */
-            public move: Move = null,
-
-            /** Tells where in the path the repetition occured. */
-            public repd = infty) {
-
-        }
-
-        toString() {
-            return (this.color > 0 ? 'B' : 'W')
-                + ' ' + (!this.move ? 'null' : stone.toString(<any>this.move))
-                + ' ' + (this.repd < infty ? this.repd : '');
-        }
-    }
-
     export function sequence<T>(n: number, f: () => T) {
         const x: T[] = [];
 

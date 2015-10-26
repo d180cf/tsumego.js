@@ -24,7 +24,7 @@ module tests {
             const aim = stone.fromString(setup['MA'][0]);
             const rzone = setup['SL'].map(stone.fromString);
             const board = new Board(sgf);
-            const tt = new TT<stone>(); // shared by all variations
+            const tt = new TT(); // shared by all variations
 
             for (const variation of [null, ...sgf.vars]) {
                 const solutions = variation ? variation.steps[0]['C'] : setup['C'];
@@ -75,10 +75,11 @@ module tests {
                         console.log(hex(b.hash) + ' => ' + result + ' (found solution)');
 
                         try {
-                            $(result.color > 0 ? 'B' : 'W').equal(winner);
-                            $(xy2s(result.move)).belong(moves ? moves.split(',') : [null]);
+                            $(stone.color(result) ? 'B' : 'W').equal(winner);
+                            const move = stone(stone.x(result), stone.y(result), 0);
+                            $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
                         } catch (err) {
-                            const tt2 = new TT<stone>();
+                            const tt2 = new TT;
 
                             const result2 = solve({
                                 root: b.fork(),
@@ -108,13 +109,13 @@ module tests {
                                     root: b.fork(),
                                     color: color,
                                     nkt: nkt,
-                                    tt: new TT<stone>(),
+                                    tt: new TT,
                                     expand: BasicMoveGen(rzone, tsumego.rand.LCG.NR01(seed)),
                                     status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                                     alive: (b: Board) => tsumego.benson.alive(b, aim)
                                 });
 
-                                if (!r1 != !r2 || r1.color != r2.color) {
+                                if (stone.color(r1) != stone.color(r2)) {
                                     console.log(hash, color, nkt);
                                     console.log('r1 = ' + JSON.stringify(r1));
                                     console.log('r2 = ' + JSON.stringify(r2));
