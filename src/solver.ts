@@ -116,7 +116,7 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert([null, infty], { d: infty, w: 0 });
+                sa.insert([0, infty], { d: infty, w: 0 });
 
                 for (const [move, d] of nodes) {
                     let s: stone;
@@ -181,7 +181,7 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = stone.changetag(move, d > depth && move ? stone.tag(s) : d);
+                        result = stone.changetag(move || stone.tagged(color, 0), d > depth && move ? stone.tag(s) : d);
                         break;
                     }
                 }

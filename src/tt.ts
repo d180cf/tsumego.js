@@ -44,17 +44,18 @@ module tsumego {
             if (!s)
                 return null;
 
-            // the move must be set to null if this is a loss
+            const [x, y] = stone.coords(s.move);
 
-            if (nkt >= s.bmax) {
-                const [x, y] = stone.coords(color > 0 ? s.move : 0);
-                return stone(x, y, +1);
-            }
+            const winner =
+                nkt >= s.bmax ? +1 :
+                    nkt <= s.wmin ? -1 :
+                        0;
 
-            if (nkt <= s.wmin) {
-                const [x, y] = stone.coords(color < 0 ? s.move : 0);
-                return stone(x, y, -1);
-            }
+            // the move must be dropped if the outcome is a loss
+
+            return winner * color < 0 ?
+                stone.tagged(winner, 0) :
+                stone(x, y, winner);
         }
 
         set(hash: number, move: stone, nkt: number, htag?) {
