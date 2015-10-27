@@ -41,8 +41,7 @@ module tsumego {
             const t = color > 0 ? this.b : this.w
             const s = t[hash];
 
-            if (!s)
-                return null;
+            if (!s) return 0;
 
             const [x, y] = stone.coords(s.move);
 

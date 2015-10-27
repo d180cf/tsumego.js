@@ -19,7 +19,7 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: stone) => stone.x(m) === null || stone.y(m) === null ? '--' :
+    const xy2s = (m: stone) => !stone.hascoords(m) ? null :
         String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
         (goban.board.size - stone.y(m));
 
