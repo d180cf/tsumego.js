@@ -1,7 +1,8 @@
 module tsumego {
-    const $cm = 0x20000000; // has coords
-    const $pm = 0x40000000; // has color
-    const $wm = 0x80000000; // is white
+    const kCoord = 0x20000000;
+    const kColor = 0x40000000;
+    const kWhite = 0x80000000;
+    const kTagdw = 0x00FFFF00;
 
     /**
      * 0               1               2               3
@@ -9,25 +10,34 @@ module tsumego {
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      * |   x   |   y   |             tag               |         |h|c|w|
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *
+     *      x   - the x coord (valid only if h = 1)
+     *      y   - the y coord (valid only if h = 1)
+     *      tag - some context dependent data (the repd valuye in the solver)
+     *      h   - whether the stone has coordinates
+     *      c   - whether the stone has a color
+     *      w   - whether the stone is white (valid if c = 1)
      */
     export type stone = number;
 
-    export function stone(x: number, y: number, color: number, tag = 0) {
-        return (x === null || y === null ? 0 : x | y << 4 | $cm) | (tag & 0xFFFF) << 8 | (color && $pm) | color & $wm;
+    export function stone(x: number, y: number, color: number) {
+        return x | y << 4 | kCoord | (color && kColor) | color & kWhite;
     }
 
     export module stone {
-        export const tag = (m: stone) => m >> 8 & 0xFFFF;
-        export const color = (m: stone) => !(m & $pm) ? 0 : (m & $wm) ? -1 : +1;
+        export const tag = (m: stone) => (m & kTagdw) >> 8;
+        export const tagged = (color: number, tag: number) => tag << 8 & kTagdw | kColor | color & kWhite;
+        export const color = (m: stone) => !(m & kColor) ? 0 : (m & kWhite) ? -1 : +1;
+        export const hascoords = (m: stone) => m & kCoord;
+        export const changetag = (m: stone, tag: number) => m & ~kTagdw | tag << 8 & kTagdw;
 
-        export const x = (m: stone) => m & $cm ? m & 15 : null;
-        export const y = (m: stone) => m & $cm ? m >> 4 & 15 : null;
+        export const x = (m: stone) => m & 15;
+        export const y = (m: stone) => m >> 4 & 15;
 
         export const coords = (m: stone) => [x(m), y(m)];
 
         export const neighbors = (m: stone) => {
-            const x = stone.x(m);
-            const y = stone.y(m);
+            const [x, y] = stone.coords(m);
             const c = stone.color(m);
 
             return [
@@ -39,13 +49,13 @@ module tsumego {
     }
 
     export module stone {
-        const n2s = (n: number) => n === null ? '-' : String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
-        const s2n = (s: string) => s == '-' ? null : s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
+        const n2s = (n: number) => String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
+        const s2n = (s: string) => s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
 
         export function toString(m: stone) {
             const c = stone.color(m);
             const [x, y] = stone.coords(m);
-            const s = n2s(x) + n2s(y);
+            const s = !stone.hascoords(m) ? null : n2s(x) + n2s(y);
             const t = c > 0 ? 'B' : 'W';
 
             return !c ? s : t + '[' + s + ']';

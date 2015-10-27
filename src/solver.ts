@@ -135,7 +135,7 @@ module tsumego {
                         if (i >= 0) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = stone(null, null, status(board), i + 1);
+                            s = stone.tagged(status(board), i + 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -145,10 +145,10 @@ module tsumego {
                     } else {
                         board.play(move);
 
-                        s = status(board) > 0 ? stone(null, null, +1, infty) :
+                        s = status(board) > 0 ? stone.tagged(+1, infty) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            alive && alive(board) ? stone(null, null, -1, infty) :
+                            alive && alive(board) ? stone.tagged(-1, infty) :
                                 // let the opponent play the best move
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
@@ -181,14 +181,14 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = stone(stone.x(move), stone.y(move), color, d > depth && move ? stone.tag(s) : d);
+                        result = stone.changetag(move, d > depth && move ? stone.tag(s) : d);
                         break;
                     }
                 }
 
                 // if there is no winning move, record a loss
                 if (!result) {
-                    result = stone(null, null, -color, mindepth);
+                    result = stone.tagged(-color, mindepth);
                     player && (player.loss(color), yield);
                 } else {
                     player && (player.done(color, result), yield);

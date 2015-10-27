@@ -77,8 +77,8 @@ module tests {
                         try {
                             $(stone.color(result)).equal(winner == 'B' ? +1 : -1);
                             const [x, y] = stone.coords(result);
-                            const move = stone(x, y, 0);
-                            $(stone.toString(move)).belong(moves ? moves.split(',') : ['--']);
+                            const move = !stone.hascoords(result) ? 0 : stone(x, y, 0);
+                            $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
                         } catch (err) {
                             const tt2 = new TT;
 
