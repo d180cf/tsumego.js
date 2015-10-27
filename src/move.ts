@@ -58,7 +58,7 @@ module tsumego {
             const s = !stone.hascoords(m) ? null : n2s(x) + n2s(y);
             const t = c > 0 ? 'B' : 'W';
 
-            return !c ? s : t + '[' + s + ']';
+            return !c ? s : !s ? t : t + '[' + s + ']';
         }
 
         export function fromString(s: string) {
