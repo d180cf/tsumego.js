@@ -72,12 +72,13 @@ module tests {
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });
 
-                        console.log(hex(b.hash) + ' => ' + result + ' (found solution)');
+                        console.log(hex(b.hash) + ' => ' + stone.toString(result) + ' (found solution)');
 
                         try {
-                            $(stone.color(result) ? 'B' : 'W').equal(winner);
-                            const move = stone(stone.x(result), stone.y(result), 0);
-                            $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
+                            $(stone.color(result)).equal(winner == 'B' ? +1 : -1);
+                            const [x, y] = stone.coords(result);
+                            const move = stone(x, y, 0);
+                            $(stone.toString(move)).belong(moves ? moves.split(',') : ['--']);
                         } catch (err) {
                             const tt2 = new TT;
 
@@ -92,7 +93,7 @@ module tests {
                                 alive: (b: Board) => tsumego.benson.alive(b, aim)
                             });
 
-                            console.log(hex(b.hash) + ' => ' + result2 + ' (expected solution)');
+                            console.log(hex(b.hash) + ' => ' + stone.toString(result2) + ' (expected solution)');
 
                             console.log('wrong tt entires:');
 
