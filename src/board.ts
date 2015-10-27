@@ -182,8 +182,8 @@ module tsumego {
             changed: number[];
         };
 
-        constructor(size: uint);
-        constructor(size: uint, rows: string[]);
+        constructor(size: number);
+        constructor(size: number, rows: string[]);
         constructor(sgf: string | SGF.Node);
 
         constructor(size, setup?) {
@@ -228,21 +228,20 @@ module tsumego {
 
             this.init(size);
 
-            const place = (tag: string, color: number) => {
+            const place = (tag: string) => {
                 const stones = setup[tag];
                 if (!stones) return;
 
                 for (const xy of stones) {
-                    const x = s2n(xy, 0);
-                    const y = s2n(xy, 1);
+                    const s = tag[1] + '[' + xy + ']';
 
-                    if (!this.play(stone(x, y, color)))
-                        throw new Error(tag + '[' + xy + '] cannot be added.');
+                    if (!this.play(stone.fromString(s)))
+                        throw new Error(s + ' cannot be added.');
                 }
             };
 
-            place('AW', -1);
-            place('AB', +1);
+            place('AW');
+            place('AB');
         }
 
         /**
@@ -615,7 +614,7 @@ module tsumego {
                 for (let y = 0; y < this.size; y++)
                     for (let x = 0; x < this.size; x++)
                         if (fn(this.get(x, y)))
-                            list += '[' + n2s(x) + n2s(y) + ']';
+                            list += stone.toString(stone(x, y, +1)).slice(1);
 
                 return list && pf + list;
             }
