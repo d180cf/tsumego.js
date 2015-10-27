@@ -182,8 +182,8 @@ module tsumego {
             changed: number[];
         };
 
-        constructor(size: uint);
-        constructor(size: uint, rows: string[]);
+        constructor(size: number);
+        constructor(size: number, rows: string[]);
         constructor(sgf: string | SGF.Node);
 
         constructor(size, setup?) {

@@ -1,12 +1,6 @@
 ﻿module tsumego {
     export const infty = 777;
 
-    export type uint = number;
-
-    /** Positive values = black.
-        Negative values = white. */
-    export type color = number;    
-
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;

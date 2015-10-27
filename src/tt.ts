@@ -47,18 +47,12 @@ module tsumego {
             // the move must be set to null if this is a loss
 
             if (nkt >= s.bmax) {
-                const [x, y] = color > 0 ?
-                    stone.coords(s.move) :
-                    [null, null];
-
+                const [x, y] = stone.coords(color > 0 ? s.move : 0);
                 return stone(x, y, +1);
             }
 
             if (nkt <= s.wmin) {
-                const [x, y] = color < 0 ?
-                    stone.coords(s.move) :
-                    [null, null];
-
+                const [x, y] = stone.coords(color < 0 ? s.move : 0);
                 return stone(x, y, -1);
             }
         }
@@ -66,7 +60,7 @@ module tsumego {
         set(hash: number, move: stone, nkt: number, htag?) {
             const c = stone.color(move);
             const t = c > 0 ? this.b : this.w
-            const s = t[hash] || (this.size++ , { wmin: -infty, bmax: infty, move: move, htag: htag });
+            const s = t[hash] || ++this.size && { wmin: -infty, bmax: infty, move: move, htag: htag };
 
             if (c > 0 && nkt < s.bmax)
                 s.bmax = nkt, s.move = move;

@@ -10,7 +10,6 @@ window['goban'] = null;
 window['board'] = null;
 
 module testbench {
-    import color = tsumego.color;
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
@@ -20,15 +19,15 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: stone) => !m ? 'null' :
+    const xy2s = (m: stone) => stone.x(m) === null || stone.y(m) === null ? '--' :
         String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
         (goban.board.size - stone.y(m));
 
-    const c2s = (c: color) => c > 0 ? 'B' : 'W';
-    const cm2s = (c: color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
+    const c2s = (c: number) => c > 0 ? 'B' : 'W';
+    const cm2s = (c: number, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: number, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
-    function s2s(c: color, s: stone) {
+    function s2s(c: number, s: stone) {
         let isDraw = stone.color(s) == 0;
         let isLoss = s * c < 0;
 
@@ -36,9 +35,9 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    export var tt = new tsumego.TT();
+    export var tt = new tsumego.TT;
 
-    function solve(board: Board, color: color, nkotreats: number = 0, log = false) {
+    function solve(board: Board, color: number, nkotreats: number = 0, log = false) {
         profile.reset();
 
         const rs = tsumego.solve({
@@ -66,19 +65,17 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(board: Board, color: color, nkotreats = 0) {
+    function dbgsolve(board: Board, color: number, nkotreats = 0) {
         let log = true;
 
         const player = {
             play(move: stone) {
                 if (!log) return;
 
-                const pass = !Number.isFinite(move);
-
                 const node = new WGo.KNode({
                     _edited: true,
                     move: {
-                        pass: pass,
+                        pass: !move,
                         x: stone.x(move),
                         y: stone.y(move),
                         c: stone.color(move) > 0 ? WGo.B : WGo.W
@@ -88,24 +85,33 @@ module testbench {
                 goban.kifuReader.node.appendChild(node);
                 goban.next(goban.kifuReader.node.children.length - 1);
             },
+
             undo() {
                 if (!log) return;
                 goban.previous();
             },
+
             done(color: number, move: stone, note?: string) {
                 if (!log) return;
+
                 const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
                 const node = goban.kifuReader.node;
+
                 node.comment = node.comment || '';
                 node.comment += comment;
+
                 goban.update();
             },
+
             loss(color: number) {
                 if (!log) return;
+
                 const comment = c2s(color) + ' loses\n';
                 const node = goban.kifuReader.node;
+
                 node.comment = node.comment || '';
                 node.comment += comment;
+
                 goban.update();
             }
         };

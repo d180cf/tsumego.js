@@ -30,10 +30,10 @@ module tsumego {
             color: number;
             nkt: number;
             tt: TT;
-            expand: (node: Node, color: number) => stone[];
-            status: (node: Node) => number;
-            alive?: (node: Node) => boolean;
-            htag?: (node: Node) => any;
+            expand(node: Node, color: number): stone[];
+            status(node: Node): number;
+            alive?(node: Node): boolean;
+            htag?(node: Node): any;
             stats?: {
                 nodes: number;
                 depth: number;
@@ -41,7 +41,7 @@ module tsumego {
             player?: {
                 play(move: stone): void;
                 undo(): void;
-                done(color: number, move: stone, comment?: string): void;
+                done(/** who played */color: number, /** outcome */move: stone, reason?: string): void;
                 loss(color: number): void;
             };
         }

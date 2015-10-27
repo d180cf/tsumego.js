@@ -24,7 +24,7 @@ module tests {
             const aim = stone.fromString(setup['MA'][0]);
             const rzone = setup['SL'].map(stone.fromString);
             const board = new Board(sgf);
-            const tt = new TT(); // shared by all variations
+            const tt = new TT; // shared by all variations
 
             for (const variation of [null, ...sgf.vars]) {
                 const solutions = variation ? variation.steps[0]['C'] : setup['C'];

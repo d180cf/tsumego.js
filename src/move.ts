@@ -39,16 +39,16 @@ module tsumego {
     }
 
     export module stone {
-        const n2s = (n: number) => String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
-        const s2n = (s: string) => s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
+        const n2s = (n: number) => n === null ? '-' : String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
+        const s2n = (s: string) => s == '-' ? null : s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
 
         export function toString(m: stone) {
             const c = stone.color(m);
             const [x, y] = stone.coords(m);
-            const s = m & $cm ? n2s(x) + n2s(y) : '--';
-            const t = c > 0 ? 'B' : c < 0 ? 'W' : '';
+            const s = n2s(x) + n2s(y);
+            const t = c > 0 ? 'B' : 'W';
 
-            return !t ? s : t + '[' + s + ']';
+            return !c ? s : t + '[' + s + ']';
         }
 
         export function fromString(s: string) {
