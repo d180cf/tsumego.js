@@ -50,6 +50,7 @@ namespace tests.ut {
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
+    let testid = 0;
     let indent = '';
     export let failed = false;
 
@@ -70,6 +71,8 @@ namespace tests.ut {
 
         init({
             test: (test, tname = fname(test)) => {
+                tname = (('   `' + ++testid).slice(-4) + '` ').white() + tname;
+
                 if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
                     return;
 

@@ -18,10 +18,10 @@ namespace tsumego {
 
     const sgf = SGF.parse(sgfdata);
     const setup = sgf.steps[0];
-    const target = stone.fromSGF(setup['MA'][0]);
-    const rzone = setup['SL'].map(stone.fromSGF);
+    const target = stone.fromString(setup['MA'][0]);
+    const rzone = setup['SL'].map(stone.fromString);
     const board = new Board(sgf);
-    const tt = new TT<stone>();
+    const tt = new TT;
 
     let paused = true;
 
@@ -31,9 +31,9 @@ namespace tsumego {
         process.stdout.write('\n' + (0x100000000 + board.hash).toString(16).slice(-8) + ': ');
     }
 
-    function xsolve<Move>(args: solve.Args<Move>) {
-        return new Promise<Result<Move>>((resolve, reject) => {
-            let callback: (r: Result<Move>) => void;
+    function xsolve<Move>(args: solve.Args) {
+        return new Promise<stone>((resolve, reject) => {
+            let callback: (r: stone) => void;
 
             paused = false;
             args = Object.create(args);
@@ -111,7 +111,7 @@ namespace tsumego {
         console.log('rand seed:', '0x' + seed.toString(16));
         console.log('solving... look at the window title');
 
-        const { color: winner, move } = await xsolve({
+        const move = await xsolve({
             root: board,
             color: color,
             nkt: +nkt | 0,
@@ -125,11 +125,11 @@ namespace tsumego {
 
         console.log('\nsolved in', dt / 1000 | 0, 's');
 
-        if (winner * color < 0) {
+        if (move * color < 0) {
             console.log(color > 0 ? 'B' : 'W', 'cannot win');
         } else {
             console.log(
-                winner > 0 ? 'B' : 'W',
+                move > 0 ? 'B' : 'W',
                 'wins with',
                 String.fromCharCode(0x41 + stone.x(move)) + (board.size - stone.y(move)));
 

@@ -10,11 +10,6 @@ window['goban'] = null;
 window['board'] = null;
 
 module testbench {
-    import n2s = tsumego.n2s;
-    import s2n = tsumego.s2n;
-    import s2xy = tsumego.s2xy;
-    import Result = tsumego.Result;
-    import color = tsumego.color;
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
@@ -24,34 +19,25 @@ module testbench {
         it corresponds to J7 - the I letter
         is skipped and the y coordinate is
         counted from the bottom starting from 1. */
-    const xy2s = (m: stone) => !Number.isFinite(m) ? 'null' :
+    const xy2s = (m: stone) => !stone.hascoords(m) ? null :
         String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
         (goban.board.size - stone.y(m));
 
-    const c2s = (c: color) => c > 0 ? 'B' : 'W';
-    const cm2s = (c: color, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
-    const cw2s = (c: color, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
+    const c2s = (c: number) => c > 0 ? 'B' : 'W';
+    const cm2s = (c: number, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
+    const cw2s = (c: number, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
-    /** { x: 2, y: 3 } -> `cd` */
-    const xy2f = (xy: stone) => n2s(stone.x(xy)) + n2s(stone.y(xy));
+    function s2s(c: number, s: stone) {
+        let isDraw = stone.color(s) == 0;
+        let isLoss = s * c < 0;
 
-    /** -1, { x: 2, y: 3 } -> `W[cd]` */
-    const xyc2f = (c: color, xy: stone) => (c > 0 ? 'B' : 'W') + '[' + xy2f(xy) + ']';
-
-    /** `cd` -> { x: 2, y: 3 } */
-    const f2xy = (s: string) => stone(s2n(s, 0), s2n(s, 1), 0);
-
-    function s2s(c: color, s: Result<stone>) {
-        let isDraw = s.color == 0;
-        let isLoss = s.color * c < 0;
-
-        return c2s(c) + ' ' + (isLoss ? 'loses' : (isDraw ? 'draws' : 'wins') + ' with ' + xy2s(s.move));
+        return c2s(c) + ' ' + (isLoss ? 'loses' : (isDraw ? 'draws' : 'wins') + ' with ' + xy2s(s));
     }
 
     /** shared transposition table for black and white */
-    export var tt = new tsumego.TT<stone>();
+    export var tt = new tsumego.TT;
 
-    function solve(board: Board, color: color, nkotreats: number = 0, log = false) {
+    function solve(board: Board, color: number, nkotreats: number = 0, log = false) {
         profile.reset();
 
         const rs = tsumego.solve({
@@ -79,46 +65,53 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(board: Board, color: color, nkotreats = 0) {
+    function dbgsolve(board: Board, color: number, nkotreats = 0) {
         let log = true;
 
         const player = {
-            play: (color: number, move: stone) => {
+            play(move: stone) {
                 if (!log) return;
-
-                const pass = !Number.isFinite(move);
 
                 const node = new WGo.KNode({
                     _edited: true,
                     move: {
-                        pass: pass,
+                        pass: !move,
                         x: stone.x(move),
                         y: stone.y(move),
-                        c: color > 0 ? WGo.B : WGo.W
+                        c: stone.color(move) > 0 ? WGo.B : WGo.W
                     }
                 });
 
                 goban.kifuReader.node.appendChild(node);
                 goban.next(goban.kifuReader.node.children.length - 1);
             },
-            undo: () => {
+
+            undo() {
                 if (!log) return;
                 goban.previous();
             },
-            done: (color: number, move: stone, note: string) => {
+
+            done(color: number, move: stone, note?: string) {
                 if (!log) return;
+
                 const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
                 const node = goban.kifuReader.node;
+
                 node.comment = node.comment || '';
                 node.comment += comment;
+
                 goban.update();
             },
-            loss: (color: number, move: stone, response: stone) => {
+
+            loss(color: number) {
                 if (!log) return;
-                const comment = `if ${cm2s(color, move) }, then ${cw2s(-color, response) }\n`;
+
+                const comment = c2s(color) + ' loses\n';
                 const node = goban.kifuReader.node;
+
                 node.comment = node.comment || '';
                 node.comment += comment;
+
                 goban.update();
             }
         };
@@ -137,7 +130,7 @@ module testbench {
         window['solver'] = solver;
 
         let tick = 0;
-        let result: Result<stone>;
+        let result: stone;
 
         const next = () => {
             const {done, value} = solver.next();
@@ -231,13 +224,13 @@ module testbench {
         const setup = sgf.steps[0];
 
         board = new Board(sgfdata);
-        aim = f2xy(setup['MA'][0]);
-        rzone = setup['SL'].map(f2xy);
+        aim = stone.fromString(setup['MA'][0]);
+        rzone = setup['SL'].map(stone.fromString);
 
         if (+nvar) {
-            for (const [tag, color] of [['AB', +1], ['AW', -1]])
+            for (const tag of ['AB', 'AW'])
                 for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
-                    board.play(s2xy(xy, +color));
+                    board.play(stone.fromString(tag[1] + '[' + xy + ']'));
 
             board = board.fork(); // drop the history of moves
         }
@@ -304,9 +297,9 @@ module testbench {
                         makeMove(stone.x(p), stone.y(p), c);
                     }
                 } else {
-                    const {move} = solve(board, c, !xy ? 0 : +xy, true);
+                    const move = solve(board, c, !xy ? 0 : +xy, true);
 
-                    if (!Number.isFinite(move)) {
+                    if (!stone.hascoords(move) || move * c < 0) {
                         console.log(col, 'passes');
                     } else {
                         board.play(move);

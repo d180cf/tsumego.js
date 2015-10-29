@@ -1,24 +1,6 @@
 ﻿module tsumego {
     export const infty = 777;
 
-    export type uint = number;
-
-    /** Positive values = black.
-        Negative values = white. */
-    export type color = number;
-
-    /** 0 -> `a`, 3 -> `d` */
-    export const n2s = (n: number) => String.fromCharCode(n + 0x61);
-
-    /** (2, 5) -> 'ce' */
-    export const xy2s = (xy: stone) => xy ? n2s(stone.x(xy)) + n2s(stone.y(xy)) : null;
-
-    /** `d` -> 43 `a` -> 0 */
-    export const s2n = (s: string, i: number = 0) => s.charCodeAt(i) - 0x61;
-
-    /** 'ce' -> (2, 5) */
-    export const s2xy = (s: string, color = 0) => stone(s2n(s.charAt(0)), s2n(s.charAt(1)), color);
-
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
@@ -113,26 +95,6 @@
     export const b3 = (b: number) => b >> 24 & 255;
 
     export const b_ = (b: number) => [b0(b), b1(b), b2(b), b3(b)];
-
-    export class Result<Move> {
-        constructor(
-            public color: number,            
-
-            /** The winning move.
-                If the only solution is a loss, no move is stored. */
-            public move: Move = null,
-
-            /** Tells where in the path the repetition occured. */
-            public repd = infty) {
-
-        }
-
-        toString() {
-            return (this.color > 0 ? 'B' : 'W')
-                + ' ' + (!this.move ? 'null' : stone.toString(<any>this.move))
-                + ' ' + (this.repd < infty ? this.repd : '');
-        }
-    }
 
     export function sequence<T>(n: number, f: () => T) {
         const x: T[] = [];

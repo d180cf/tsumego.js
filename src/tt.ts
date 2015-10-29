@@ -1,5 +1,5 @@
 module tsumego {
-    interface HashT<Move> {
+    interface HashT {
         [hash: number]: {
             /** 
              * The number of ko treats that will be enough to let white win.
@@ -21,47 +21,46 @@ module tsumego {
             bmax: number;
 
             /** The best move. Obviously, it's absent if there is no way to win. */
-            move: Move;
-
-            /** Useful when debugging. */
-            htag: any;
+            move: stone;
         }
     }
 
     /** Transposition table. */
-    export class TT<Move> {
+    export class TT {
         size = 0;
 
-        /** b[h] = solution for h when B plays first */
-        private b: HashT<Move> = {};
-        /** w[h] = solution for h when W plays first */
-        private w: HashT<Move> = {};
+        private b: HashT = {};
+        private w: HashT = {};
 
         get(hash: number, color: number, nkt: number) {
             const t = color > 0 ? this.b : this.w
             const s = t[hash];
 
-            if (!s)
-                return null;
+            if (!s) return 0;
+            const m = s.move;
 
-            // the move must be set to null if this is a loss
+            const winner =
+                nkt >= s.bmax ? +1 : // enough ko treats for black
+                    nkt <= s.wmin ? -1 : // enough ko treats for white
+                        0; // not solved for this number of ko treats
 
-            if (nkt >= s.bmax)
-                return new Result<Move>(+1, color > 0 ? s.move : null);
-
-            if (nkt <= s.wmin)
-                return new Result<Move>(-1, color < 0 ? s.move : null);
+            if (!winner) return 0;
+            
+            // the move must be dropped if the outcome is a loss
+            return winner * color > 0 && stone.hascoords(m) ?
+                stone(stone.x(m), stone.y(m), winner) :
+                stone.nocoords(winner, 0);
         }
 
-        set(hash: number, color: number, r: Result<Move>, nkt: number, htag?) {
+        set(hash: number, color: number, move: stone, nkt: number) {
             const t = color > 0 ? this.b : this.w
-            const s = t[hash] || (this.size++ , { wmin: -infty, bmax: infty, move: r.move, htag: htag });
+            const s = t[hash] || ++this.size && { wmin: -infty, bmax: infty, move: move };
 
-            if (r.color > 0 && nkt < s.bmax)
-                s.bmax = nkt, s.move = r.move;
+            if (move > 0 && nkt < s.bmax)
+                s.bmax = nkt, s.move = move;
 
-            if (r.color < 0 && nkt > s.wmin)
-                s.wmin = nkt, s.move = r.move;
+            if (move < 0 && nkt > s.wmin)
+                s.wmin = nkt, s.move = move;
 
             t[hash] = s;
         }
