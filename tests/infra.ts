@@ -45,7 +45,7 @@ namespace tests.ut {
     }
 
     export interface GroupContext {
-        test(test: ($: TestContext) => void, name?: string): void;
+        test(test: ($: TestContext) => string|void, name?: string): void;
     }
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
@@ -83,18 +83,19 @@ namespace tests.ut {
                     };
 
                     const started = new Date;
+                    let comment;
 
                     if (isNode)
                         process.title = tname + ' @ ' + started.toLocaleTimeString();
 
                     try {
-                        test(expect);
+                        comment = test(expect);
                     } finally {
                         console.log = _console_log;
                     }
 
                     const duration = +new Date - +started;
-                    console.log(indent + tname, (duration / 1000).toFixed(1).white() + 's');
+                    console.log(indent + tname, (duration / 1000).toFixed(1).white() + 's', comment || '');
                 } catch (err) {
                     failed = true;
                     console.log(indent + tname, 'failed'.red());
