@@ -64,13 +64,5 @@ module tsumego {
 
             t[hash] = s;
         }
-
-        *[Symbol.iterator]() {
-            for (const h in this.b)
-                yield { hash: +h, color: +1, status: this.b[h] };
-
-            for (const h in this.w)
-                yield { hash: +h, color: -1, status: this.w[h] };
-        }
     }
 }
