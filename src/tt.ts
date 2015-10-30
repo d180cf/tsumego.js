@@ -1,68 +1,102 @@
 module tsumego {
-    interface HashT {
-        [hash: number]: {
-            /** 
-             * The number of ko treats that will be enough to let white win.
-             * Negative values represent white's ko treats, while positive
-             * represent black's ko treats. From time to time this number
-             * can be increased, but never reduced because if white can win
-             * with n ko treats, then it can also win with n - 1 ko treat
-             * (remember that negative values represent white's ko treats).
-             */
-            wmin: number;
+    /**
+     * 0               1               2               3
+     *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     * |   x   |   y   |  b  |  w  |u|m|        same for white         |
+     * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *
+     * The first 2 bytes tell the outcome if black can play first:
+     *
+     *      b - if nkt >= b, then black wins; b = -3..+3
+     *      w - if nkt <= w, then white wins; w = -3..+3
+     *      m - if nkt >= b, m tells if black needs to play at (x, y) to win
+     *      u - this bit isn't used at the moment
+     *
+     * The next 2 bytes tell the outcome if white can play first.
+     *
+     * The number of external ko treats (nkt) can be positive or negative.
+     * For instance, nkt = -2 means that white has two external ko treats.
+     *
+     * Obviously, w < b, as otherwise the status would be ambiguous.
+     * This implies that the zero entry is not valid.
+     */
+    type entry = number;
 
-            /**
-             * The number of ko treats that will be enough to let black win.
-             * This number can be negative to tell that white has ko treats
-             * while black has none. From time to time this number can be reduced
-             * but never increased because if black can win with n ko treats,
-             * then it can also win with n + 1 ko treats.
-             */
-            bmax: number;
-
-            /** The best move. Obviously, it's absent if there is no way to win. */
-            move: stone;
-        }
+    function entry(x: number, y: number, b: number, w: number, m: boolean) {
+        return x | y << 4 | (b & 7) << 8 | (w & 7) << 11 | (m ? 0x8000 : 0);
     }
 
-    /** Transposition table. */
+    module entry {
+        export const get = (s: entry, color: number) => (color > 0 ? s : s >> 16) & 0xFFFF;
+        export const set = (s: entry, color: number, e: entry) => color > 0 ? s & ~0xFFFF | e : s & 0xFFFF | e << 16;
+
+        export const x = (e: entry) => e & 15;
+        export const y = (e: entry) => e >> 4 & 15;
+        export const b = (e: entry) => (e >> 8 & 7) << 29 >> 29;
+        export const w = (e: entry) => (e >> 11 & 7) << 29 >> 29;
+        export const m = (e: entry) => !!(e & 0x8000);
+    }
+
+    module entry {
+        const e = entry(0, 0, +3, -3, false);
+        export const base = e | e << 16;
+    }
+
+    /** Transposition Table */
     export class TT {
         size = 0;
 
-        private b: HashT = {};
-        private w: HashT = {};
+        private data: { [hash: number]: entry } = {};
 
         get(hash: number, color: number, nkt: number) {
-            const t = color > 0 ? this.b : this.w
-            const s = t[hash];
+            const s = this.data[hash];
 
             if (!s) return 0;
-            const m = s.move;
+
+            const e = entry.get(s, color);
 
             const winner =
-                nkt >= s.bmax ? +1 : // enough ko treats for black
-                    nkt <= s.wmin ? -1 : // enough ko treats for white
+                nkt >= entry.b(e) ? +1 : // enough ko treats for black
+                    nkt <= entry.w(s) ? -1 : // enough ko treats for white
                         0; // not solved for this number of ko treats
 
             if (!winner) return 0;
             
             // the move must be dropped if the outcome is a loss
-            return winner * color > 0 && stone.hascoords(m) ?
-                stone(stone.x(m), stone.y(m), winner) :
+            return winner * color > 0 && entry.m(e) ?
+                stone(entry.x(e), entry.y(e), winner) :
                 stone.nocoords(winner, 0);
         }
 
+        /** 
+         * @param color Who plays first.
+         * @param move The outcome. Must have a color and may have coordinates.
+         * @param nkt Must be within -2..+2 range. 
+         */
         set(hash: number, color: number, move: stone, nkt: number) {
-            const t = color > 0 ? this.b : this.w
-            const s = t[hash] || ++this.size && { wmin: -infty, bmax: infty, move: move };
+            if (nkt < -2 || nkt > +2 || !stone.color(move))
+                throw SyntaxError('Invalid TT entry.');
 
-            if (move > 0 && nkt < s.bmax)
-                s.bmax = nkt, s.move = move;
+            const s = this.data[hash] || ++this.size && entry.base;
+            let e = entry.get(s, color);
 
-            if (move < 0 && nkt > s.wmin)
-                s.wmin = nkt, s.move = move;
+            const hc = stone.hascoords(move);
 
-            t[hash] = s;
+            const x = stone.x(move);
+            const y = stone.y(move);
+
+            const b = entry.b(e);
+            const w = entry.w(e);
+
+            if (move > 0 && nkt < b)
+                e = entry(x, y, nkt, w, hc);
+            else if (move < 0 && nkt > w)
+                e = entry(x, y, b, nkt, hc);
+            else
+                return; // nothing to change in tt
+
+            this.data[hash] = entry.set(s, color, e);
         }
     }
 }
