@@ -6,6 +6,17 @@
 /// <reference path="ann.ts" />
 /// <reference path="gf2.ts" />
 
+/**
+ * This is a basic depth-first solver that is able to handle
+ * external ko treats and reuse previously found solutions,
+ * whether they are path dependent or independent.
+ *
+ * A. Kishimoto: "Correct and efficient search algorithms in the presence of repetitions"
+ * www.is.titech.ac.jp/~kishi//pdf_file/kishi_phd_thesis.pdf
+ *
+ * Y. Kawano. "Using Similar Positions to Search Game Trees"
+ * library.msri.org/books/Book29/files/kawano.pdf
+ */
 module tsumego {
     interface Node {
         hash: number;
