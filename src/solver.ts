@@ -80,8 +80,8 @@ module tsumego {
             // That's not just perf optimization: the search depends on this.
             const sa = new SortedArray<stone, { d: number, w: number, c: number }>((a, b) =>
                 b.d - a.d || // moves that require a ko treat are considered last
-                b.c - a.c ||
-                b.w - a.w);  // first consider moves that lead to a winning position
+                b.w - a.w || // first consider moves that lead to a winning position
+                b.c - a.c);
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
