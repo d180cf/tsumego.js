@@ -40,8 +40,9 @@ module tsumego {
         private pows = {};
 
         private hash(board: number, color: number, nkt: number): number {
-            this.pows[nkt] = this.pows[nkt] || gf32.pow(3, nkt);
-            return gf32.mul(board, gf32.mul(color > 0 ? 0x12345678 : 0x87654321, this.pows[nkt]));
+            return board
+                ^ (color > 0 ? 0x172bac34 : 0x81b2ac67)
+                ^ (this.pows[nkt] = this.pows[nkt] || gf32.pow(3, nkt));
         }
 
         get(board: number, color: number, nkt: number): stone {
