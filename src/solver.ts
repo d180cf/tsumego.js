@@ -76,8 +76,8 @@ module tsumego {
         }
 
         export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, player, alive, stats}: Args) {
-            /** Moves that require a ko treat are considered last.
-                That's not just perf optimization: the search depends on this. */
+            // Moves that require a ko treat are considered last.
+            // That's not just perf optimization: the search depends on this.
             const sa = new SortedArray<stone, { d: number, w: number }>((a, b) =>
                 b.d - a.d || // moves that require a ko treat are considered last
                 b.w - a.w);  // first consider moves that lead to a winning position
@@ -86,6 +86,11 @@ module tsumego {
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
             const cache = new Cache;
+
+            // When the solver is simulating/testing a solution, it generates all
+            // possible moves for one side and picks only the cached moves for the
+            // other side: if there is no cached move or it doesn't work in the current
+            // situation, the simulation reports a loss.
             let simcol = 0;
 
             function* solve(color: number, nkt: number) {
@@ -110,7 +115,7 @@ module tsumego {
                 }
 
                 let result: stone;
-                let mindepth = simcol == color ? 0 : infty;
+                let mindepth = infty;
 
                 const nodes = sa.reset();
                 const sim = simcol != color ? 0 : cache.get(hashb, color, nkt);
@@ -236,7 +241,9 @@ module tsumego {
 
                 // if there is no winning move, record a loss
                 if (!result) {
-                    result = stone.nocoords(-color, mindepth);
+                    // simulation considers only one move and if it appears to be
+                    // a loss, nothing can be said about other moves that weren't tried
+                    result = stone.nocoords(-color, simcol == color ? 0 : mindepth);
                     player && (player.loss(color), yield);
                 } else {
                     player && (player.done(color, result), yield);
