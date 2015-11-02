@@ -28,8 +28,8 @@ module tsumego {
         export interface Args {
             root: Node;
             color: number;
-            nkt: number;
-            tt: TT;
+            nkt?: number;
+            tt?: TT;
             expand(node: Node, color: number): stone[];
             status(node: Node): number;
             alive?(node: Node): boolean;
@@ -45,7 +45,7 @@ module tsumego {
             };
         }
 
-        export function* start({root: board, color, nkt, tt, expand, status, player, alive, stats}: Args) {
+        export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, player, alive, stats}: Args) {
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
             const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
