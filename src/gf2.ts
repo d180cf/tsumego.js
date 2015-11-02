@@ -34,6 +34,6 @@ namespace tsumego.gf32 {
     const shl = x => x = x << 1 ^ (x < 0 ? 0x8d : 0); // x * 2 + 2**32 + 0x8d
     export const mul = (a: number, b: number): number => b && ((b & 1 ? a : 0) ^ shl(mul(a, b >>> 1)));
     export const sqr = x => mul(x, x);
-    export const pow = (a, b) => !b ? 1 : b == -1 ? inv(a) : mul(b & 1 ? a : 1, sqr(pow(a, b >>> 1))); // simpler than EGCD
+    export const pow = (a, b) => !b ? 1 : mul(b & 1 ? a : 1, sqr(pow(a, b >>> 1))); // simpler than EGCD
     export const inv = (x: number): number => pow(x, -2); // x**q = x (the little Fermat's theorem)
 }
