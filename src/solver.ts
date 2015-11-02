@@ -99,13 +99,7 @@ module tsumego {
                 let mindepth = infty;
 
                 const nodes = sa.reset();
-                let sim: stone = 0;
-
-                if (simcol == color) {
-                    sim = cache.get(hashb, color, nkt);
-                    if (sim * color <= 0)
-                        return stone.nocoords(-color, 0);
-                }
+                const sim = simcol != color ? 0 : cache.get(hashb, color, nkt);
 
                 for (const move of stone.hascoords(sim) ? [sim] : expand(board, color)) {
                     if (!board.play(move))
