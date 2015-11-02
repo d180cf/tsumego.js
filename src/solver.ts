@@ -26,9 +26,11 @@ module tsumego {
 
     class Cache {
         private data: { [hash: number]: stone } = {};
+        private pows = {};
 
         private hash(board: number, color: number, nkt: number): number {
-            return gf32.mul(board, color > 0 ? 0x12345678 : 0x87654321);
+            this.pows[nkt] = this.pows[nkt] || gf32.pow(3, nkt);
+            return gf32.mul(board, gf32.mul(color > 0 ? 0x12345678 : 0x87654321, this.pows[nkt]));
         }
 
         get(board: number, color: number, nkt: number): stone {
