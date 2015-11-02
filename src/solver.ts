@@ -24,6 +24,22 @@ module tsumego {
         return s.value;
     }
 
+    class Cache {
+        private data: { [hash: number]: stone } = {};
+
+        private hash(board: number, color: number, nkt: number): number {
+            return gf32.mul(board, color > 0 ? 0x12345678 : 0x87654321);
+        }
+
+        get(board: number, color: number, nkt: number): stone {
+            return this.data[this.hash(board, color, nkt)] || 0;
+        }
+
+        set(board: number, color: number, nkt: number, move: stone) {
+            this.data[this.hash(board, color, nkt)] = move;
+        }
+    }
+
     export namespace solve {
         export interface Args {
             root: Node;
@@ -48,12 +64,15 @@ module tsumego {
         export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, player, alive, stats}: Args) {
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
+            const sa = new SortedArray<stone, { d: number, w: number }>((a, b) =>
                 b.d - a.d || // moves that require a ko treat are considered last
                 b.w - a.w);  // first consider moves that lead to a winning position
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
+
+            const cache = new Cache;
+            let simcol = 0;
 
             function* solve(color: number, nkt: number) {
                 const depth = path.length;
@@ -68,13 +87,30 @@ module tsumego {
                     return stone.changetag(ttres, infty);
                 }
 
+                if (!simcol && cache.get(hashb, color, nkt)) {
+                    simcol = color;
+                    const r = yield* solve(color, nkt);
+                    simcol = 0;
+                    if (r * color > 0)
+                        return r;
+                }
+
                 let result: stone;
                 let mindepth = infty;
 
                 const nodes = sa.reset();
+                let sim: stone = 0;
 
-                for (const move of expand(board, color)) {
-                    board.play(move);
+                if (simcol == color) {
+                    sim = cache.get(hashb, color, nkt);
+                    if (sim * color <= 0)
+                        return stone.nocoords(-color, 0);
+                }
+
+                for (const move of stone.hascoords(sim) ? [sim] : expand(board, color)) {
+                    if (!board.play(move))
+                        continue;
+
                     const hash = board.hash;
                     board.undo();
 
@@ -115,7 +151,8 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert(0, { d: infty, w: 0 });
+                if (simcol != color || !stone.hascoords(sim))
+                    sa.insert(0, { d: infty, w: 0 });
 
                 for (const move of nodes) {
                     const d = !move ? infty : stone.tag(move);
@@ -205,6 +242,9 @@ module tsumego {
                 // proof tree to the root node
                 if (stone.tag(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
+
+                if (color * result > 0)
+                    cache.set(hashb, color, nkt, result);
 
                 return result;
             }
