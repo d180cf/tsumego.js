@@ -122,6 +122,9 @@ module tsumego {
                 
                 if (simcol == color) {
                     sim = cache.get(hashb, color, nkt);
+
+                    // the simulated side can pick moves only from the cache;
+                    // thus report a loss if there is no winning move in the cache
                     if (sim * color <= 0)
                         return stone.nocoords(-color, 0);
                 }
@@ -248,7 +251,7 @@ module tsumego {
                 // if there is no winning move, record a loss
                 if (!result) {
                     // simulation considers only one move and if it appears to be
-                    // a loss, nothing can be said about other moves that weren't tried
+                    // a loss, nothing can be said if other moves were repetitions
                     result = stone.nocoords(-color, simcol == color ? 0 : mindepth);
                     player && (player.loss(color), yield);
                 } else {
