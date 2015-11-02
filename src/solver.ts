@@ -246,7 +246,7 @@ module tsumego {
                     tt.set(hashb, color, result, nkt);
 
                 if (color * result > 0)
-                    cache.set(hashb, color, nkt, result);
+                    cache.set(hashb, color, nkt, stone.changetag(result, 0));
 
                 return result;
             }
