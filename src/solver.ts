@@ -264,7 +264,7 @@ module tsumego {
                 if (stone.tag(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
 
-                if (color * result > 0)
+                if (!simcol && color * result > 0)
                     cache.set(hashb, color, nkt, result);
 
                 return result;
