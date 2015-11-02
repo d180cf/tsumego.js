@@ -108,9 +108,7 @@ module tsumego {
                 const cmove = cache.get(hashb, color, nkt);
 
                 for (const move of expand(board, color)) {
-                    if (!board.play(move))
-                        continue;
-
+                    if (!board.play(move)) continue;
                     const hash = board.hash;
                     board.undo();
 
