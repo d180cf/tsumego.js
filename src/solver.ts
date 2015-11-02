@@ -78,20 +78,15 @@ module tsumego {
         export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, player, alive, stats}: Args) {
             // Moves that require a ko treat are considered last.
             // That's not just perf optimization: the search depends on this.
-            const sa = new SortedArray<stone, { d: number, w: number }>((a, b) =>
+            const sa = new SortedArray<stone, { d: number, w: number, c: number }>((a, b) =>
                 b.d - a.d || // moves that require a ko treat are considered last
+                b.c - a.c ||
                 b.w - a.w);  // first consider moves that lead to a winning position
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
             const cache = new Cache;
-
-            // When the solver is simulating/testing a solution, it generates all
-            // possible moves for one side and picks only the cached moves for the
-            // other side: if there is no cached move or it doesn't work in the current
-            // situation, the simulation reports a loss.
-            let simcol = 0;
 
             function* solve(color: number, nkt: number) {
                 const depth = path.length;
@@ -106,30 +101,13 @@ module tsumego {
                     return stone.changetag(ttres, infty);
                 }
 
-                if (!simcol && cache.get(hashb, color, nkt)) {
-                    simcol = color;
-                    const r = yield* solve(color, nkt);
-                    simcol = 0;
-                    if (r * color > 0)
-                        return r;
-                }
-
                 let result: stone;
                 let mindepth = infty;
 
                 const nodes = sa.reset();
-                let sim: stone = 0;
-                
-                if (simcol == color) {
-                    sim = cache.get(hashb, color, nkt);
+                const cmove = cache.get(hashb, color, nkt);
 
-                    // the simulated side can pick moves only from the cache;
-                    // thus report a loss if there is no winning move in the cache
-                    if (sim * color <= 0)
-                        return stone.nocoords(-color, 0);
-                }
-
-                for (const move of stone.hascoords(sim) ? [sim] : expand(board, color)) {
+                for (const move of expand(board, color)) {
                     if (!board.play(move))
                         continue;
 
@@ -157,11 +135,12 @@ module tsumego {
                     if (d <= depth && nkt * color <= 0)
                         continue;
 
-                    // check if this node has already been solved
+                    // check if this move is an unconditional loss for the opponent
                     const r = tt.get(hash, -color, d <= depth ? nkt - color : nkt);
 
                     sa.insert(stone.changetag(move, d), {
                         d: d,
+                        c: +(cmove == move),
                         w: stone.color(r) * color
                     });
                 }
@@ -173,8 +152,7 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                if (simcol != color || !stone.hascoords(sim))
-                    sa.insert(0, { d: infty, w: 0 });
+                sa.insert(0, { d: infty, w: 0, c: 0 });
 
                 for (const move of nodes) {
                     const d = !move ? infty : stone.tag(move);
@@ -252,7 +230,7 @@ module tsumego {
                 if (!result) {
                     // simulation considers only one move and if it appears to be
                     // a loss, nothing can be said if other moves were repetitions
-                    result = stone.nocoords(-color, simcol == color ? 0 : mindepth);
+                    result = stone.nocoords(-color, mindepth);
                     player && (player.loss(color), yield);
                 } else {
                     player && (player.done(color, result), yield);
@@ -267,7 +245,7 @@ module tsumego {
                 if (stone.tag(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
 
-                if (!simcol && color * result > 0)
+                if (color * result > 0)
                     cache.set(hashb, color, nkt, result);
 
                 return result;
