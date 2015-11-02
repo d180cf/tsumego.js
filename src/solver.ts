@@ -96,7 +96,7 @@ module tsumego {
                 }
 
                 let result: stone;
-                let mindepth = infty;
+                let mindepth = simcol == color ? 0 : infty;
 
                 const nodes = sa.reset();
                 const sim = simcol != color ? 0 : cache.get(hashb, color, nkt);
