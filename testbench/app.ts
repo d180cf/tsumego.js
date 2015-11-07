@@ -279,10 +279,13 @@ module testbench {
     });
 
     function renderBoard() {
+        // a C{...] tag is needed to
+        // enable the comment box in wgo
+        const sgf = board.toStringSGF('WGo').replace(/\)$/,
+            'SL' + rzone.map(s => '[' + stone.toString(s) + ']').join('') + ')');
+
         goban = new WGo.BasicPlayer(document.body, {
-            // a C{...] tag is needed to
-            // enable the comment box in wgo
-            sgf: board.toStringSGF('WGo')
+            sgf: sgf
         });
 
         goban.setCoordinates(true);
