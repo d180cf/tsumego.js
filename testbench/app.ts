@@ -1,5 +1,6 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
+/// <reference path="preview.ts" />
 /// <reference path="../src/solver.ts" />
 /// <reference path="wgo/wgo.d.ts" />
 
@@ -212,37 +213,63 @@ module testbench {
     var rzone: stone[], aim;
 
     Promise.resolve().then(() => {
-        const [, source, bw, nkt, nvar] = /^\?(.+)(?::(B|W)([+-]\d+)(?::(\d+))?)?/.exec(location.search);
+        if (!location.search) {
+            return send('GET', '/problems/manifest.json').then(data => {
+                const manifest = JSON.parse(data);
 
-        document.title = source;
+                for (const dir of manifest.dirs) {
+                    const header = document.createElement('h3');
+                    header.textContent = dir.description || 'Unnamed';
+                    document.body.appendChild(header);
 
-        return Promise.resolve().then(() => {
-            return source.slice(0, 1) == '(' ?
-                source :
-                send('GET', '/problems/' + source + '.sgf');
-        }).then(sgfdata => {
-            const sgf = SGF.parse(sgfdata);
-            const setup = sgf.steps[0];
+                    for (const path of dir.problems) {
+                        const preview = document.createElement('a');
+                        preview.className = 'tsumego-preview';
+                        preview.href = '?' + path.replace('.sgf', '');
+                        document.body.appendChild(preview);
 
-            board = new Board(sgfdata);
-            aim = stone.fromString(setup['MA'][0]);
-            rzone = setup['SL'].map(stone.fromString);
+                        send('GET', '/problems/' + path).then(sgf => {
+                            const board = new Board(sgf);
+                            return renderPreview(board);
+                        }).catch(err => err + '').then(html => {
+                            preview.innerHTML = html;
+                        });
+                    }
+                }
+            });
+        } else {
+            const [, source, bw, nkt, nvar] = /^\?([^:]+)(?::(B|W)([+-]\d+))?(?::(\d+))?/.exec(location.search);
 
-            if (+nvar) {
-                for (const tag of ['AB', 'AW'])
-                    for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
-                        board.play(stone.fromString(tag[1] + '[' + xy + ']'));
+            document.title = source;
 
-                board = board.fork(); // drop the history of moves
-            }
+            return Promise.resolve().then(() => {
+                return source.slice(0, 1) == '(' ?
+                    source :
+                    send('GET', '/problems/' + source + '.sgf');
+            }).then(sgfdata => {
+                const sgf = SGF.parse(sgfdata);
+                const setup = sgf.steps[0];
 
-            console.log(sgfdata);
-            console.log(board + '');
-            console.log(board.toStringSGF());
+                board = new Board(sgfdata);
+                aim = stone.fromString(setup['MA'][0]);
+                rzone = setup['SL'].map(stone.fromString);
 
-            setTimeout(() => renderBoard());
-            dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
-        });
+                if (+nvar) {
+                    for (const tag of ['AB', 'AW'])
+                        for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
+                            board.play(stone.fromString(tag[1] + '[' + xy + ']'));
+
+                    board = board.fork(); // drop the history of moves
+                }
+
+                console.log(sgfdata);
+                console.log(board + '');
+                console.log(board.toStringSGF());
+
+                setTimeout(() => renderBoard());
+                dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
+            });
+        }
     }).catch(err => {
         console.error(err.stack);
         alert(err);
