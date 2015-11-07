@@ -184,11 +184,11 @@ module tsumego {
 
         constructor(size: number);
         constructor(size: number, rows: string[]);
-        constructor(sgf: string | SGF.Node);
+        constructor(sgf: string | SGF.Node, /** zero based */variation?: number);
 
         constructor(size, setup?) {
             if (typeof size === 'string' || typeof size === 'object')
-                this.initFromSGF(size);
+                this.initFromSGF(size, setup);
             else if (typeof size === 'number') {
                 this.init(size);
                 if (setup instanceof Array)
@@ -220,7 +220,7 @@ module tsumego {
             });
         }
 
-        private initFromSGF(source: string | SGF.Node) {
+        private initFromSGF(source: string | SGF.Node, nvar?: number) {
             const sgf = typeof source === 'string' ? SGF.parse(source) : source;
             if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
             const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
@@ -228,20 +228,26 @@ module tsumego {
 
             this.init(size);
 
-            const place = (tag: string) => {
-                const stones = setup[tag];
+            const place = (stones: string[], tag: string) => {
                 if (!stones) return;
 
                 for (const xy of stones) {
-                    const s = tag[1] + '[' + xy + ']';
+                    const s = tag + '[' + xy + ']';
 
                     if (!this.play(stone.fromString(s)))
                         throw new Error(s + ' cannot be added.');
                 }
             };
 
-            place('AW');
-            place('AB');
+            function placevar(node: SGF.Node) {
+                place(node.steps[0]['AW'], 'W');
+                place(node.steps[0]['AB'], 'B');
+            }
+
+            placevar(sgf);
+
+            if (typeof nvar === 'number')
+                placevar(sgf.vars[nvar]);
         }
 
         /**

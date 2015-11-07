@@ -665,6 +665,16 @@
         });
 
         $.test($ => { 
+            /// variation from sgf
+            const board = new Board(`(;FF[4]SZ[3]AB[aa][bb]AW[ba](;AB[cc]AW[ab]))`, 0);
+            $(board + '').equal(
+                '   A B C' + '\n' +
+                ' 3 - O -' + '\n' +
+                ' 2 O X -' + '\n' +
+                ' 1 - - X');
+        });
+
+        $.test($ => { 
             /// serialization
             const board = new Board(`
            (;FF[4]SZ[9]
