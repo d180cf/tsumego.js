@@ -219,20 +219,29 @@ module testbench {
 
                 for (const dir of manifest.dirs) {
                     const header = document.createElement('h3');
+                    const section = document.createElement('div');
+
                     header.textContent = dir.description || 'Unnamed';
+
                     document.body.appendChild(header);
+                    document.body.appendChild(section);
 
                     for (const path of dir.problems) {
-                        const preview = document.createElement('a');
-                        preview.className = 'tsumego-preview';
-                        preview.href = '?' + path.replace('.sgf', '');
-                        document.body.appendChild(preview);
-
                         send('GET', '/problems/' + path).then(sgf => {
-                            const board = new Board(sgf);
-                            return renderPreview(board);
-                        }).catch(err => err + '').then(html => {
-                            preview.innerHTML = html;
+                            const root = SGF.parse(sgf);
+
+                            for (let nvar = 0; nvar <= root.vars.length; nvar++) {
+                                const board = new Board(root, nvar);
+                                const html = renderPreview(board);
+                                const preview = document.createElement('a');
+
+                                preview.className = 'tsumego-preview';
+                                preview.href = '?' + path.replace('.sgf', '') + ':' + nvar;
+                                section.appendChild(preview);
+                                preview.innerHTML = html;
+                            }
+                        }).catch(err => {
+                            console.log(err.stack);
                         });
                     }
                 }
@@ -250,17 +259,11 @@ module testbench {
                 const sgf = SGF.parse(sgfdata);
                 const setup = sgf.steps[0];
 
-                board = new Board(sgfdata);
+                board = new Board(sgfdata, nvar && +nvar);
                 aim = stone.fromString(setup['MA'][0]);
                 rzone = setup['SL'].map(stone.fromString);
 
-                if (+nvar) {
-                    for (const tag of ['AB', 'AW'])
-                        for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
-                            board.play(stone.fromString(tag[1] + '[' + xy + ']'));
-
-                    board = board.fork(); // drop the history of moves
-                }
+                board = board.fork(); // drop the history of moves
 
                 console.log(sgfdata);
                 console.log(board + '');

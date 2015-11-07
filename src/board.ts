@@ -184,7 +184,7 @@ module tsumego {
 
         constructor(size: number);
         constructor(size: number, rows: string[]);
-        constructor(sgf: string | SGF.Node, /** zero based */variation?: number);
+        constructor(sgf: string | SGF.Node, /** 1 based */variation?: number);
 
         constructor(size, setup?) {
             if (typeof size === 'string' || typeof size === 'object')
@@ -246,8 +246,8 @@ module tsumego {
 
             placevar(sgf);
 
-            if (typeof nvar === 'number')
-                placevar(sgf.vars[nvar]);
+            if (nvar)
+                placevar(sgf.vars[nvar - 1]);
         }
 
         /**

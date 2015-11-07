@@ -666,7 +666,7 @@
 
         $.test($ => { 
             /// variation from sgf
-            const board = new Board(`(;FF[4]SZ[3]AB[aa][bb]AW[ba](;AB[cc]AW[ab]))`, 0);
+            const board = new Board(`(;FF[4]SZ[3]AB[aa][bb]AW[ba](;AB[cc]AW[ab]))`, 1);
             $(board + '').equal(
                 '   A B C' + '\n' +
                 ' 3 - O -' + '\n' +
