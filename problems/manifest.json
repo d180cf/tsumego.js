@@ -1,0 +1,36 @@
+{
+    "time": "2015-11-07T08:43:18.636Z",
+    "dirs": [
+        {
+            "description": "goproblems.com",
+            "problems": [
+                "goproblems.com/18629.sgf",
+                "goproblems.com/20124.sgf",
+                "goproblems.com/20133.sgf",
+                "goproblems.com/4753.sgf",
+                "goproblems.com/9210.sgf"
+            ]
+        },
+        {
+            "description": "Simple Problems",
+            "problems": [
+                "simple/1-step-ko.sgf",
+                "simple/1.sgf",
+                "simple/16/weak.sgf",
+                "simple/2.sgf",
+                "simple/3.sgf",
+                "simple/4/basic.sgf",
+                "simple/4/bent.sgf",
+                "simple/5.sgf",
+                "simple/6/basic.sgf",
+                "simple/6/rabbity.sgf",
+                "simple/7.sgf",
+                "simple/8/basic.sgf",
+                "simple/8/gun-ko.sgf",
+                "simple/8/gun.sgf",
+                "simple/9/basic.sgf",
+                "simple/9/weak.sgf"
+            ]
+        }
+    ]
+}
