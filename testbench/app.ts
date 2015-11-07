@@ -211,38 +211,41 @@ module testbench {
 
     var rzone: stone[], aim;
 
-    (async() => {
-        const [, source, bw, nkt, nvar] = /^\?(.+):(B|W)([+-]\d+)(?::(\d+))?/.exec(location.search);
+    Promise.resolve().then(() => {
+        const [, source, bw, nkt, nvar] = /^\?(.+)(?::(B|W)([+-]\d+)(?::(\d+))?)?/.exec(location.search);
 
         document.title = source;
 
-        const sgfdata = source.slice(0, 1) == '(' ?
-            source :
-            await send('GET', '/problems/' + source + '.sgf');
+        return Promise.resolve().then(() => {
+            return source.slice(0, 1) == '(' ?
+                source :
+                send('GET', '/problems/' + source + '.sgf');
+        }).then(sgfdata => {
+            const sgf = SGF.parse(sgfdata);
+            const setup = sgf.steps[0];
 
-        const sgf = SGF.parse(sgfdata);
-        const setup = sgf.steps[0];
+            board = new Board(sgfdata);
+            aim = stone.fromString(setup['MA'][0]);
+            rzone = setup['SL'].map(stone.fromString);
 
-        board = new Board(sgfdata);
-        aim = stone.fromString(setup['MA'][0]);
-        rzone = setup['SL'].map(stone.fromString);
+            if (+nvar) {
+                for (const tag of ['AB', 'AW'])
+                    for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
+                        board.play(stone.fromString(tag[1] + '[' + xy + ']'));
 
-        if (+nvar) {
-            for (const tag of ['AB', 'AW'])
-                for (const xy of sgf.vars[+nvar - 1].steps[0][tag])
-                    board.play(stone.fromString(tag[1] + '[' + xy + ']'));
+                board = board.fork(); // drop the history of moves
+            }
 
-            board = board.fork(); // drop the history of moves
-        }
+            console.log(sgfdata);
+            console.log(board + '');
+            console.log(board.toStringSGF());
 
-        console.log(sgfdata);
-        console.log(board + '');
-        console.log(board.toStringSGF());
-
-        setTimeout(() => renderBoard());
-        dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
-    })().catch(err => {
+            setTimeout(() => renderBoard());
+            dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
+        });
+    }).catch(err => {
         console.error(err.stack);
+        alert(err);
     });
 
     function renderBoard() {
