@@ -1,6 +1,7 @@
 .tsumego-preview {
     display: inline-block;
     margin: 10pt;
+    vertical-align: top;
 }
 
 h3 {
