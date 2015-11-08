@@ -1,7 +1,9 @@
 .tsumego-preview {
     display: inline-block;
-    margin: 10pt;
+    margin: 4pt;
+    padding: 6pt;
     vertical-align: top;
+    background: rgb(217, 178, 117);
 }
 
 h3 {
