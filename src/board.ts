@@ -613,7 +613,7 @@ module tsumego {
             return n + 'x' + n + '(' + h.slice(0, len) + ')';
         }
 
-        toStringSGF(comment = '') {
+        toStringSGF(indent = '') {
             const take = (pf: string, fn: (g: number) => boolean) => {
                 let list = '';
 
@@ -622,11 +622,10 @@ module tsumego {
                         if (fn(this.get(x, y)))
                             list += stone.toString(stone(x, y, +1)).slice(1);
 
-                return list && pf + list;
+                return list && indent + pf + list;
             }
 
             return '(;FF[4]SZ[' + this.size + ']'
-                + (comment ? 'C[' + comment + ']' : '')
                 + take('AB', c => c > 0)
                 + take('AW', c => c < 0) + ')';
         }
@@ -678,6 +677,15 @@ module tsumego {
             return mode == 'SGF' ?
                 this.toStringSGF() :
                 this.toStringTXT(mode);
+        }
+
+        *stones() {
+            for (let x = 0; x < this.size; x++) {
+                for (let y = 0; y < this.size; y++) {
+                    const s = this.get(x, y);
+                    if (s) yield stone(x, y, s);
+                }
+            }
         }
 
         private path() {

@@ -1,13 +1,11 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
-/// <reference path="preview.ts" />
+/// <reference path="ls.ts" />
 /// <reference path="../src/solver.ts" />
-/// <reference path="wgo/wgo.d.ts" />
+/// <reference path="goban.ts" />
 
-declare var goban: WGo.BasicPlayer;
 declare var board: tsumego.Board;
 
-window['goban'] = null;
 window['board'] = null;
 
 module testbench {
@@ -22,7 +20,7 @@ module testbench {
         counted from the bottom starting from 1. */
     const xy2s = (m: stone) => !stone.hascoords(m) ? null :
         String.fromCharCode(0x41 + (stone.x(m) > 7 ? stone.x(m) - 1 : stone.x(m))) +
-        (goban.board.size - stone.y(m));
+        (board.size - stone.y(m));
 
     const c2s = (c: number) => c > 0 ? 'B' : 'W';
     const cm2s = (c: number, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
@@ -67,86 +65,38 @@ module testbench {
     }
 
     function dbgsolve(board: Board, color: number, nkotreats = 0) {
-        let log = true;
-
-        const player = {
-            play(move: stone) {
-                if (!log) return;
-
-                const node = new WGo.KNode({
-                    _edited: true,
-                    move: {
-                        pass: !move,
-                        x: stone.x(move),
-                        y: stone.y(move),
-                        c: stone.color(move) > 0 ? WGo.B : WGo.W
-                    }
-                });
-
-                goban.kifuReader.node.appendChild(node);
-                goban.next(goban.kifuReader.node.children.length - 1);
-            },
-
-            undo() {
-                if (!log) return;
-                goban.previous();
-            },
-
-            done(color: number, move: stone, note?: string) {
-                if (!log) return;
-
-                const comment = `${cw2s(color, move) } ${note ? '(' + note + ')' : ''}\n`;
-                const node = goban.kifuReader.node;
-
-                node.comment = node.comment || '';
-                node.comment += comment;
-
-                goban.update();
-            },
-
-            loss(color: number) {
-                if (!log) return;
-
-                const comment = c2s(color) + ' loses\n';
-                const node = goban.kifuReader.node;
-
-                node.comment = node.comment || '';
-                node.comment += comment;
-
-                goban.update();
-            }
-        };
-
         const solver = tsumego.solve.start({
+            debug: true,
             root: board,
             color: color,
             nkt: nkotreats,
             tt: tt,
             expand: tsumego.generators.Basic(rzone),
             status: status,
-            player: player,
             alive: (b: Board) => tsumego.benson.alive(b, aim)
         });
 
         window['solver'] = solver;
 
         let tick = 0;
-        let result: stone;
 
-        const next = () => {
+        const next = (render = true) => {
             const {done, value} = solver.next();
+            const comment: string = value;
             !done && tick++;
-            result = value;
 
-            if (log)
+            if (render) {
                 location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
+                lspath = null;
+                renderBoard(comment);
+            }
         };
 
         const stepOver = (ct: CancellationToken) => {
             const hash = board.hash;
 
             do {
-                next();
+                next(false);
             } while (board.hash != hash && !ct.cancelled);
 
             next();
@@ -210,100 +160,172 @@ module testbench {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var rzone: stone[], aim;
+    var rzone: stone[] = [], aim = 0, lspath = '';
 
-    Promise.resolve().then(() => {
-        if (!location.search) {
-            return send('GET', '/problems/manifest.json').then(data => {
-                const manifest = JSON.parse(data);
+    window.addEventListener('load', () => {
+        Promise.resolve().then(() => {
+            if (!location.search) {
+                document.querySelector('.solver').remove();
 
-                for (const dir of manifest.dirs) {
+                function addSection(name = 'Unnamed') {
                     const header = document.createElement('h3');
                     const section = document.createElement('div');
 
-                    header.textContent = dir.description || 'Unnamed';
+                    header.textContent = name;
 
                     document.body.appendChild(header);
                     document.body.appendChild(section);
 
-                    for (const path of dir.problems) {
-                        send('GET', '/problems/' + path).then(sgf => {
-                            const root = SGF.parse(sgf);
-
-                            for (let nvar = 0; nvar <= root.vars.length; nvar++) {
-                                const board = new Board(root, nvar);
-                                const html = renderPreview(board);
-                                const preview = document.createElement('a');
-
-                                preview.className = 'tsumego-preview';
-                                preview.href = '?' + path.replace('.sgf', '') + ':' + nvar;
-                                section.appendChild(preview);
-                                preview.innerHTML = html;
-                            }
-                        }).catch(err => {
-                            console.log(err.stack);
-                        });
-                    }
+                    return section;
                 }
-            });
-        } else {
-            const [, source, bw, nkt, nvar] = /^\?([^:]+)(?::(B|W)([+-]\d+))?(?::(\d+))?/.exec(location.search);
 
-            document.title = source;
+                function addPreview(section: HTMLElement, board: Board, href: string) {
+                    const preview = document.createElement('a');
 
-            return Promise.resolve().then(() => {
-                return source.slice(0, 1) == '(' ?
-                    source :
-                    send('GET', '/problems/' + source + '.sgf');
-            }).then(sgfdata => {
-                const sgf = SGF.parse(sgfdata);
-                const setup = sgf.steps[0];
+                    preview.className = 'tsumego-preview';
+                    preview.href = href;
+                    preview.appendChild(gobanui.render(board));
+                    section.appendChild(preview);
 
-                board = new Board(sgfdata, nvar && +nvar);
-                aim = stone.fromString(setup['MA'][0]);
-                rzone = setup['SL'].map(stone.fromString);
+                    return preview;
+                }
 
-                board = board.fork(); // drop the history of moves
+                const locals = addSection('Problems from localStorage');
+                const newProblem = addPreview(locals, new Board(9), '?:' + Math.random().toString(16).slice(2) + ':9');
+                newProblem.title = 'Create a new problem.';
 
-                console.log(sgfdata);
-                console.log(board + '');
-                console.log(board.toStringSGF());
+                const lsdata = ls.data;
 
-                setTimeout(() => renderBoard());
-                dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
-            });
-        }
-    }).catch(err => {
-        console.error(err.stack);
-        alert(err);
+                for (let path in lsdata)
+                    addPreview(locals, new Board(lsdata[path]), '?' + path);
+
+                return send('GET', '/problems/manifest.json').then(data => {
+                    const manifest = JSON.parse(data);
+
+                    for (const dir of manifest.dirs) {
+                        const section = addSection(dir.description);
+
+                        for (const path of dir.problems) {
+                            send('GET', '/problems/' + path).then(sgf => {
+                                const root = SGF.parse(sgf);
+
+                                for (let nvar = 0; nvar <= root.vars.length; nvar++)
+                                    addPreview(section, new Board(root, nvar), '?' + path.replace('.sgf', '') + ':' + nvar);
+                            }).catch(err => {
+                                console.log(err.stack);
+                            });
+                        }
+                    }
+                });
+            } else {
+                const [, source, bw, nkt, nvar] = /^\?([:]?[^:]+)(?::(B|W)([+-]\d+))?(?::(\d+))?/.exec(location.search);
+
+                document.title = source;
+
+                if (source[0] == ':')
+                    lspath = source;
+
+                if (source[0] == ':' && !ls.data[source]) {
+                    board = new Board(+nvar);
+                    renderBoard('Add stones, mark possible moves and select target.');
+                } else {
+                    return Promise.resolve().then(() => {
+                        return source[0] == '(' ? source :
+                            source[0] == ':' ? ls.data[source] :
+                                send('GET', '/problems/' + source + '.sgf');
+                    }).then(sgfdata => {
+                        const sgf = SGF.parse(sgfdata);
+                        const setup = sgf.steps[0];
+
+                        board = new Board(sgfdata, source[0] != ':' && nvar && +nvar);
+                        aim = stone.fromString((setup['MA'] || ['aa'])[0]);
+                        rzone = (setup['SL'] || []).map(stone.fromString);
+
+                        board = board.fork(); // drop the history of moves
+
+                        console.log(sgfdata);
+                        console.log(board + '');
+                        console.log(board.toStringSGF());
+
+                        renderBoard();
+                        dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
+                    });
+                }
+            }
+        }).catch(err => {
+            console.error(err.stack);
+            alert(err);
+        });
     });
 
-    function renderBoard() {
-        // a C{...] tag is needed to
-        // enable the comment box in wgo
-        const sgf = board.toStringSGF('WGo').replace(/\)$/,
-            'SL' + rzone.map(s => '[' + stone.toString(s) + ']').join('') + ')');
+    function renderBoard(comment = '') {
+        const move = board.undo();
+        board.play(move);
 
-        goban = new WGo.BasicPlayer(document.body, {
-            sgf: sgf
+        const ui = gobanui.render(board, {
+            TR: stone.hascoords(move) && [move],
+            MA: stone.hascoords(aim) && [aim],
+            SL: !stone.hascoords(move) && rzone
         });
 
-        goban.setCoordinates(true);
-        goban.kifuReader.allowIllegalMoves(true);
-    }
+        ui.addEventListener('click', event => {
+            if (!lspath) return;
 
-    function makeMove(x: number, y: number, c: number) {
-        const node = new WGo.KNode({
-            _edited: true,
-            move: {
-                x: x,
-                y: y,
-                c: c > 0 ? WGo.B : WGo.W
+            event.preventDefault();
+            event.stopPropagation();
+
+            const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
+            const c = board.get(x, y);
+
+            if (event.ctrlKey && c) {
+                aim = stone(x, y, 0);
+            } else if (event.ctrlKey && !c) {
+                const s = stone(x, y, 0);
+                const i = rzone.indexOf(s);
+
+                if (i < 0)
+                    rzone.push(s);
+                else
+                    rzone.splice(i, 1);
+            } else if (!c) {
+                board.play(stone(x, y, event.shiftKey ? -1 : +1));
+                board = board.fork(); // drop history
+            } else {
+                const b = new Board(board.size);
+
+                for (const s of board.stones()) {
+                    const [sx, sy] = stone.coords(s);
+                    const c = stone.color(s);
+
+                    if (sx != x || sy != y)
+                        b.play(stone(sx, sy, c));
+                    else if (!event.shiftKey)
+                        b.play(stone(x, y, -c));
+                }
+
+                board = b.fork();
             }
+
+            renderBoard();
         });
 
-        goban.kifuReader.node.appendChild(node);
-        goban.next(goban.kifuReader.node.children.length - 1);
+        const wrapper = document.querySelector('.tsumego') as HTMLElement;
+        wrapper.innerHTML = '';
+        wrapper.appendChild(ui);
+
+        const editor = document.querySelector('.tsumego-sgf') as HTMLElement;
+
+        const sgf = board.toStringSGF('\n  ').replace(/\)$/,
+            (rzone.length > 0 ? '\n  SL[' + rzone.map(stone.toString).join('][') + ']' : '') +
+            (stone.hascoords(aim) ? '\n  MA[' + stone.toString(aim) + ']' : '') +
+            ')');
+
+        editor.textContent = sgf;
+
+        document.querySelector('.tsumego-comment').textContent = comment;
+
+        if (lspath)
+            ls.set(lspath, sgf);
     }
 
     function parse(si: string, size: number): stone {
@@ -330,7 +352,7 @@ module testbench {
                         console.log(col, 'cannot play at', xy);
                     } else {
                         console.log(board + '');
-                        makeMove(stone.x(p), stone.y(p), c);
+                        renderBoard();
                     }
                 } else {
                     const move = solve(board, c, !xy ? 0 : +xy, true);
@@ -340,7 +362,7 @@ module testbench {
                     } else {
                         board.play(move);
                         console.log(board + '');
-                        makeMove(stone.x(move), stone.y(move), c);
+                        renderBoard();
                     }
                 }
                 break;

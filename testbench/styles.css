@@ -1,11 +1,39 @@
-.tsumego-preview {
+.tsumego {
+    cursor: pointer;
+}
+
+.tsumego, .tsumego-preview {
+    background: rgb(217, 178, 117);
     display: inline-block;
+}
+
+.tsumego-preview {
+    width: 100pt;
     margin: 4pt;
     padding: 6pt;
     vertical-align: top;
-    background: rgb(217, 178, 117);
 }
+
+    .tsumego-preview:hover {
+        outline: 1px solid black;
+    }
 
 h3 {
     font-family: "Segoe UI";
+}
+
+.tsumego-sgf {   
+    width: 300pt;
+    height: 80pt;
+    display: inline-block; 
+    border: 1px solid black;
+    padding: 5pt;
+    margin-left: 5pt;
+    vertical-align: top;
+}
+
+.tsumego-comment {
+    display: inline-block;
+    margin: 5pt;
+    padding: 5pt;
 }

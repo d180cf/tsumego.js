@@ -33,19 +33,14 @@ module tsumego {
             expand(node: Node, color: number): stone[];
             status(node: Node): number;
             alive?(node: Node): boolean;
+            debug?: boolean;
             stats?: {
                 nodes: number;
                 depth: number;
             };
-            player?: {
-                play(move: stone): void;
-                undo(): void;
-                done(/** who played */color: number, /** outcome */move: stone, reason?: string): void;
-                loss(color: number): void;
-            };
         }
 
-        export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, player, alive, stats}: Args) {
+        export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug}: Args) {
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
             const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
@@ -64,7 +59,7 @@ module tsumego {
                 stats && (stats.depth = depth, yield);
 
                 if (ttres) {
-                    player && (player.done(color, ttres, 'TT'), yield);
+                    debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
                     return stone.changetag(ttres, infty);
                 }
 
@@ -130,9 +125,9 @@ module tsumego {
                     tags.push(h & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
                     stats && stats.nodes++;
-                    player && (player.play(move), yield);
 
                     if (!move) {
+                        debug && (yield 'yielding the turn to the opponent');
                         const i = tags.lastIndexOf(tags[depth], -2);
 
                         if (i >= 0) {
@@ -147,6 +142,7 @@ module tsumego {
                         }
                     } else {
                         board.play(move);
+                        debug && (yield);
 
                         s = status(board) > 0 ? stone.nocoords(+1, infty) :
                             // white has secured the group: black cannot
@@ -156,14 +152,14 @@ module tsumego {
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    yield* solve(-color, nkt - color);
+                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color));
 
                         board.undo();
                     }
 
+                    debug && (yield 'the outcome of this move: ' + stone.toString(s));
                     path.pop();
                     tags.pop();
-                    player && (player.undo(), yield);
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
@@ -190,12 +186,8 @@ module tsumego {
                 }
 
                 // if there is no winning move, record a loss
-                if (!result) {
+                if (!result)
                     result = stone.nocoords(-color, mindepth);
-                    player && (player.loss(color), yield);
-                } else {
-                    player && (player.done(color, result), yield);
-                }
 
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
