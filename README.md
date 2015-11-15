@@ -4,35 +4,15 @@ https://d180cf.github.io
 
 It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to about 10) and the target to capture are set manually. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
-```
-   A B C D E F G H
- 9 - O - - - - X -
- 8 X X O - - O O X
- 7 - - X O O - O X
- 6 - - X - O O X X
- 5 - - - X X X - - 
-```
+Here is an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in a minute. It can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at the marked intersection:
 
-It's an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in a minute: it can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at `E9`.
-
-The current implementation manages to investigate 4-6k moves per second and is able to tell after half an hour that if in the following tsumego black plays first, white can still save the corner:
-
-```
-  A B C D E F G
-7 - - - - O X -
-6 - - - - O X -
-5 - - - - O X -
-4 - - - - O X -
-3 O O O O X X -
-2 X X X X X - -
-1 - - - - - - -
-```
+<img src="https://rawgit.com/d180cf/tsumego.js/svg/docs/pics/9210.sgf.svg#3434563" height="200pt" />
 
 As far as I know, there are very few tsumego solving software:
 
-- Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about)
-- Martin Muller's Tsumego Explorer and [Fuego](https://github.com/svn2github/fuego) (the latter is actually a bot, not just a solver)
-- Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html)
-- Thomas Thompsen's [MadLab](http://www.t-t.dk/madlab/)
+- Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
+- Martin Muller's [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos.
+- Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x5.
+- Thomas Thompsen's [MadLab](http://www.t-t.dk/madlab/) can solve open tsumegos.
 
 None of these are in JS, but some can be embedded in a website in a Java applet. Also, in theory, a C++ solver could be ported to JS with [Emcripten](https://en.wikipedia.org/wiki/Emscripten).
