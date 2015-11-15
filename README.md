@@ -6,7 +6,7 @@ It's a simple tsumego solver in JS that I write in my spare time. At the moment 
 
 Here is an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in half a minute. It can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at the marked intersection:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/9210.sgf.svg" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/9210.sgf.svg#234252343242" height="200pt" />
 
 As far as I know, there are very few tsumego solving software:
 
