@@ -93,9 +93,6 @@ namespace tsumego {
 
                 const r = s.value;
 
-                if (r.repd == infty || !r.repd)
-                    delete r.repd;
-
                 resolve(r);
             })();
         });
