@@ -2,8 +2,7 @@
     cursor: pointer;
 }
 
-.tsumego, .tsumego-preview {
-    background: rgb(217, 178, 117);
+.tsumego, .tsumego-preview {    
     display: inline-block;
 }
 
