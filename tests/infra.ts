@@ -254,7 +254,7 @@ declare const require: Function;
 declare const global;
 
 try {
-    //require('source-map-support').install();
+    require('source-map-support').install();
 
     if (!global.Symbol) {
         console.warn('loading Symbol polyfill');
