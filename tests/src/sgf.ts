@@ -177,5 +177,90 @@
                 ]
             });
         });
+
+        $.test($ => {
+            /// MadLab #1
+
+            const root = SGF.parse(`
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[br]AB[cr]AW[dr]AW[er]AB[cq]AB[dq]AW[eq]AW[fq]AB[bp]AB[cp]AW[dp]AB[ao]AB[bo]AW[co]AW[eo]AB[fo]AW[an]AW[bn]AW[dn]AB[en]AB[bm]AB[em]AB[cl]AB[dl]AW[bk]AW[ck]AB[dk]AW[dj]AW[ej]AW[ei]LB[bn:a]PL[B]C[Black to capture B6 ('a')
+
+Source: MadLab problem #a001 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[cn]
+)
+            `);
+
+            console.log(JSON.stringify(root, null, 4));
+
+            $(root).equal({
+                "steps": [
+                    {
+                        "FF": [
+                            "4"
+                        ],
+                        "GM": [
+                            "1"
+                        ],
+                        "AP": [
+                            "MadLab Tesuji Solver"
+                        ],
+                        "SZ": [
+                            "19"
+                        ],
+                        "AW": [
+                            "br",
+                            "dr",
+                            "er",
+                            "eq",
+                            "fq",
+                            "dp",
+                            "co",
+                            "eo",
+                            "an",
+                            "bn",
+                            "dn",
+                            "bk",
+                            "ck",
+                            "dj",
+                            "ej",
+                            "ei"
+                        ],
+                        "AB": [
+                            "cr",
+                            "cq",
+                            "dq",
+                            "bp",
+                            "cp",
+                            "ao",
+                            "bo",
+                            "fo",
+                            "en",
+                            "bm",
+                            "em",
+                            "cl",
+                            "dl",
+                            "dk"
+                        ],
+                        "LB": [
+                            "bn:a"
+                        ],
+                        "PL": [
+                            "B"
+                        ],
+                        "C": [
+                            "Black to capture B6 ('a')\n\nSource: MadLab problem #a001 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution."
+                        ]
+                    },
+                    {
+                        "B": [
+                            "cn"
+                        ]
+                    }
+                ],
+                "vars": []
+            });
+        });
     });
 }

@@ -42,7 +42,7 @@ module SGF {
     export function parse(source: string): Node {
         const wsp = $(/\s*/);
 
-        const val = $(wsp, /\[.*?\]/)
+        const val = $(wsp, /\[[^\]]*?\]/)
             .take(1)
             .slice(+1, -1);
 
