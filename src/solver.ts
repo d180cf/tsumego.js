@@ -48,6 +48,9 @@ module tsumego {
         }
 
         export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug}: Args) {
+            // cache results from static analysis as it's quite slow
+            alive = memoized(alive, board => board.hash);
+
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
             const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
@@ -154,7 +157,7 @@ module tsumego {
                         s = status(board) > 0 ? repd.set(stone.nocoords(+1), infty) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            alive && alive(board) ? repd.set(stone.nocoords(-1), infty) :
+                            color < 0 && alive && alive(board) ? repd.set(stone.nocoords(-1), infty) :
                                 // let the opponent play the best move
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:

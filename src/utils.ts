@@ -105,4 +105,13 @@
 
     export const hex = (x: number) => (0x100000000 + x).toString(16).slice(-8);
     export const rcl = (x: number, n: number) => x << n | x >>> (32 - n);
+
+    export function memoized<T, R>(fn: (x: T) => R, hashArgs: (x: T) => number): typeof fn {
+        const cache = {};
+
+        return fn && function (x: T) {
+            const h = hashArgs(x);
+            return h in cache ? cache[h] : cache[h] = fn(x);
+        };
+    }
 }
