@@ -7,6 +7,13 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
+    const infty = 255;
+
+    module repd {
+        export const get = move => move >> 8 & 255;
+        export const set = (move, repd) => move & ~0xFF00 | repd << 8;
+    }
+
     interface Node {
         hash: number;
         play(move: stone): number;
@@ -60,7 +67,7 @@ module tsumego {
 
                 if (ttres) {
                     debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
-                    return stone.changetag(ttres, infty);
+                    return repd.set(ttres, infty);
                 }
 
                 let result: stone;
@@ -97,7 +104,7 @@ module tsumego {
                     // check if this node has already been solved
                     const r = tt.get(hash, -color, d <= depth ? nkt - color : nkt);
 
-                    sa.insert(stone.changetag(move, d), {
+                    sa.insert(repd.set(move, d), {
                         d: d,
                         w: stone.color(r) * color
                     });
@@ -113,7 +120,7 @@ module tsumego {
                 sa.insert(0, { d: infty, w: 0 });
 
                 for (const move of nodes) {
-                    const d = !move ? infty : stone.tag(move);
+                    const d = !move ? infty : repd.get(move);
                     let s: stone;
 
                     // this is a hash of the path: reordering moves must change the hash;
@@ -133,7 +140,7 @@ module tsumego {
                         if (i >= 0) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = stone.nocoords(status(board), i + 1);
+                            s = repd.set(stone.nocoords(status(board)), i + 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -144,10 +151,10 @@ module tsumego {
                         board.play(move);
                         debug && (yield);
 
-                        s = status(board) > 0 ? stone.nocoords(+1, infty) :
+                        s = status(board) > 0 ? repd.set(stone.nocoords(+1), infty) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            alive && alive(board) ? stone.nocoords(-1, infty) :
+                            alive && alive(board) ? repd.set(stone.nocoords(-1), infty) :
                                 // let the opponent play the best move
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
@@ -167,7 +174,7 @@ module tsumego {
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
                     if (s * color < 0 && move)
-                        mindepth = min(mindepth, d > depth ? stone.tag(s) : d);
+                        mindepth = min(mindepth, d > depth ? repd.get(s) : d);
 
                     // the winning move may depend on a repetition, while
                     // there can be another move that gives the same result
@@ -180,14 +187,18 @@ module tsumego {
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = stone.changetag(move || stone.nocoords(color, 0), d > depth && move ? stone.tag(s) : d);
+                        result = repd.set(
+                            move || stone.nocoords(color),
+                            d > depth && move ?
+                                repd.get(s) :
+                                d);
                         break;
                     }
                 }
 
                 // if there is no winning move, record a loss
                 if (!result)
-                    result = stone.nocoords(-color, mindepth);
+                    result = repd.set(stone.nocoords(-color), mindepth);
 
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
@@ -195,7 +206,7 @@ module tsumego {
                 // such solutions are stored and never removed from the table; this
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
-                if (stone.tag(result) > depth + 1)
+                if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
 
                 return result;

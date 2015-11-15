@@ -1,6 +1,4 @@
 ﻿module tsumego {
-    export const infty = 777;
-
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;

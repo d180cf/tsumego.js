@@ -2,21 +2,23 @@ module tsumego {
     const kCoord = 0x20000000;
     const kColor = 0x40000000;
     const kWhite = 0x80000000;
-    const kTagdw = 0x00FFFF00;
 
     /**
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |   x   |   y   |             tag               |         |h|c|w|
+     * |   x   |   y   |              data             |         |h|c|w|
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      *
-     *      x   - the x coord (valid only if h = 1)
-     *      y   - the y coord (valid only if h = 1)
-     *      tag - some context dependent data (the repd valuye in the solver)
-     *      h   - whether the stone has coordinates
-     *      c   - whether the stone has a color
-     *      w   - whether the stone is white (valid if c = 1)
+     *  x - the x coord (valid only if h = 1)
+     *  y - the y coord (valid only if h = 1)
+     *  h - whether the stone has coordinates
+     *  c - whether the stone has a color
+     *  w - whether the stone is white (valid if c = 1)
+     *
+     * The 2-nd and the 3-rd bytes can be used to store arbitrary data.
+     * The remaining 5 bits of the 4-th byte are reserved for future use.
+     *
      */
     export type stone = number;
 
@@ -25,11 +27,9 @@ module tsumego {
     }
 
     export module stone {
-        export const tag = (m: stone) => (m & kTagdw) >> 8;
-        export const nocoords = (color: number, tag: number) => tag << 8 & kTagdw | kColor | color & kWhite;
+        export const nocoords = (color: number) => kColor | color & kWhite;
         export const color = (m: stone) => (m & kColor) && (m & kWhite ? -1 : +1);
         export const hascoords = (m: stone) => !!(m & kCoord);
-        export const changetag = (m: stone, tag: number) => m & ~kTagdw | tag << 8 & kTagdw;
 
         export const x = (m: stone) => m & 15;
         export const y = (m: stone) => m >> 4 & 15;
