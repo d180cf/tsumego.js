@@ -40,12 +40,12 @@ module SDP {
         }
 
         /** [["A", 1], ["B", 2]] -> { A: 1, B: 2 } */
-        fold<U>(k: number, v: number) {
+        fold<U>(k: number, v: number, merge = (a: U, b: U) => b) {
             return this.map((r: any) => {
                 const m: { [key: string]: U } = {};
 
                 for (const p of r)
-                    m[p[k]] = p[v];
+                    m[p[k]] = merge(m[p[k]], p[v]);
 
                 return m;
             });

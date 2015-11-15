@@ -49,6 +49,15 @@
         });
 
         $.test($ => { 
+            /// dup tags
+            const root = SGF.parse('(;X[1]Y[2]X[3]Y[4])');
+            $(root).equal({
+                steps: [{ X: ['1', '3'], Y: ['2', '4'] }],
+                vars: []
+            });
+        });
+
+        $.test($ => { 
             /// real-world example
             const root = SGF.parse(`
            (;FF[4]GM[1]SZ[19]

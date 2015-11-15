@@ -51,7 +51,7 @@ module SGF {
 
         const stp = $(wsp, ';', tag.rep())
             .take(2)
-            .fold(0, 1);
+            .fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
 
         const sgf = $(wsp, '(', stp.rep(), $('sgf', (s, i) => sgf.exec(s, i)).rep(), wsp, ')', wsp)
             .map(r => <Node>{ steps: r[2], vars: r[3] });
