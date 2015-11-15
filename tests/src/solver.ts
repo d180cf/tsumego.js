@@ -20,7 +20,16 @@ module tests {
             const data = cat(path, 'utf8');
             const sgf = SGF.parse(data);
 
+            if (!sgf) {
+                console.log('Invalid SGF: ' + path);
+                continue;
+            }
+
             const setup = sgf.steps[0];
+
+            if (!setup['MA'] || !setup['SL'])
+                continue;
+
             const aim = stone.fromString(setup['MA'][0]);
             const rzone = setup['SL'].map(stone.fromString);
             const board = new Board(sgf);
