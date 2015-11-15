@@ -4,9 +4,9 @@ https://d180cf.github.io
 
 It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which all possible moves (up to about 10) and the target to capture are set manually. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
-Here is an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in a minute. It can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at the marked intersection:
+Here is an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in half a minute. It can discover that if white has 2 ko treats elsewhere on the board, black can still capture the group by playing at the marked intersection:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/svg/docs/pics/9210.sgf.svg#3434563" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/9210.sgf.svg" height="200pt" />
 
 As far as I know, there are very few tsumego solving software:
 
