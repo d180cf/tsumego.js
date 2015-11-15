@@ -209,6 +209,9 @@ module testbench {
                             send('GET', '/problems/' + path).then(sgf => {
                                 const root = SGF.parse(sgf);
 
+                                if (!root)
+                                    throw SyntaxError('Invalid SGF from ' + path);
+
                                 for (let nvar = 0; nvar <= root.vars.length; nvar++)
                                     addPreview(section, new Board(root, nvar), '?' + path.replace('.sgf', '') + ':' + nvar);
                             }).catch(err => {
