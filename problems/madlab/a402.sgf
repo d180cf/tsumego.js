@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[nr]AW[rr]AW[nq]AW[pq]AW[qq]AB[rq]AB[np]AB[op]AB[pp]AB[qp]AB[rp]AW[qn]AW[rn]AW[pm]AB[rm]AW[ol]AB[pl]AB[ql]AW[ok]AB[pk]AW[qk]AB[rk]AW[oj]AB[pj]AW[qj]AW[oi]AW[pi]AW[qi]AB[ri]AB[nh]AW[oh]AB[ph]AB[qh]AB[rh]AB[og]AW[pg]AW[qg]AB[rg]AB[of]AB[qf]AW[rf]AB[qe]AW[re]AB[pd]AW[qd]AW[nc]AB[oc]AB[pc]AW[qc]AB[ob]AW[pb]AW[qb]LB[pl:a]PL[W]C[White to capture Q8 ('a')
+
+Source: MadLab problem #a402 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[rl]
+)

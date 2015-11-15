@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[er]AB[fq]AW[cp]AW[dp]AB[co]AB[cn]AW[dn]AW[en]AB[dm]AB[em]AW[fm]AB[fl]AW[dk]AB[pd]LB[dn:a]LB[fm:b]PL[B]C[Black to capture D6 ('a') or F7 ('b')
+
+Source: MadLab problem #a941 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[fn]
+)

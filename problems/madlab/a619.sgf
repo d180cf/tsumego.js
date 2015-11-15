@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[pf]AW[qf]AB[qe]AB[pd]AB[mc]AB[nc]AB[pc]AW[qc]AW[nb]AW[ob]AW[pb]LB[qc:a]LB[qf:b]PL[B]C[Black to capture R17 ('a') or R14 ('b')
+
+Source: MadLab problem #a619 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[rc]
+)

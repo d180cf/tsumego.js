@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[pn]AB[pm]AW[qm]AB[pl]AW[qk]AB[rk]AB[pj]AW[rj]LB[qm:a]LB[qk:b]PL[B]C[Black to capture R7 ('a') or R9 ('b')
+
+Source: MadLab problem #a488 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[ql]
+)

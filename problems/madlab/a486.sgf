@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[es]AW[fs]AB[gs]AB[br]AB[cr]AB[dr]AW[er]AB[fr]AB[cq]AW[dq]AW[eq]AB[fq]AB[bp]AW[cp]AW[dp]AB[fp]AW[bo]AW[cn]AB[bm]AW[cm]AW[dm]AB[em]AB[fm]AB[al]AW[bl]AB[cl]AW[dl]AW[el]AB[fl]AB[gl]AB[ck]AB[dk]AW[ek]AB[gk]AB[di]AW[ei]AB[ch]AW[dh]AB[ag]AB[bg]AB[cg]AB[af]AW[bf]AW[cf]AW[df]AW[ae]AW[be]AB[bd]AB[bc]AB[cc]LB[di:a]LB[bm:b]PL[W]C[White to capture D11 ('a') or B7 ('b')
+
+Source: MadLab problem #a486 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[bk]
+)

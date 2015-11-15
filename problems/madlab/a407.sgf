@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[ci]AB[ei]AW[ch]AB[dh]AB[fh]AW[bg]AB[cg]AW[dg]AB[eg]AW[af]AB[bf]AB[cf]AW[df]AW[be]AB[ce]AW[ee]AW[ge]AW[bd]AB[dd]AW[cc]AB[dc]AB[fc]AW[bb]AB[cb]AB[eb]AB[da]LB[bg:a]LB[dg:b]PL[B]C[Black to capture B13 ('a') or D13 ('b')
+
+Source: MadLab problem #a407 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[bh]
+)

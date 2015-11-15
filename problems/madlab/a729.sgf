@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[il]AW[jl]AW[kl]AW[ik]AB[jk]AB[kk]AB[lk]AB[mk]AW[hj]AB[ij]AB[mj]AB[oj]AB[pj]AB[ji]AW[li]AW[mi]AW[ni]AW[oi]AB[kh]AB[lh]AB[nh]AW[oh]AW[ph]AW[qh]AW[rh]AB[jg]AW[kg]AW[lg]AB[ng]AB[og]AW[pg]AB[qg]AB[rg]AB[kf]AW[lf]AB[pf]AB[ne]AW[md]AB[od]AB[pd]AB[qd]AW[pc]AW[qc]AW[nb]LB[kg:a]LB[md:b]PL[B]C[Black to capture L13 ('a') or N16 ('b')
+
+Source: MadLab problem #a729 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[le]
+)

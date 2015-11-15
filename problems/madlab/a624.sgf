@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[ce]AW[cd]AB[dd]AW[dc]LB[cd:a]LB[dc:b]PL[B]C[Black to capture C16 ('a') or D17 ('b')
+
+Source: MadLab problem #a624 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[cc]
+)

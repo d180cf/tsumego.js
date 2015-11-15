@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[gr]AW[ir]AW[fq]AW[gq]AW[hq]AB[iq]AW[fp]AB[gp]AB[hp]AB[ip]AW[go]AW[ho]AB[io]AB[jo]AB[ko]AB[lo]AB[oo]AW[qo]AW[fn]AW[gn]AW[in]AW[jn]AW[kn]AW[qn]AB[om]AB[qm]AW[rm]AW[ml]AB[nl]AB[pl]AW[rl]AW[hk]AW[ik]AB[lk]AW[mk]AW[nk]AB[ok]AW[pk]AW[qk]AB[rk]AB[ij]AW[jj]AW[kj]AB[lj]AW[mj]AB[oj]AB[pj]AB[qj]AB[ji]AB[mi]AB[oi]AB[pi]AB[ih]AB[kh]AB[lh]AW[nh]AB[oh]AB[qh]AW[hg]AW[ig]AB[jg]AW[lg]AB[mg]AW[og]AB[pg]AW[qg]AW[hf]AB[if]AB[jf]AW[lf]AW[mf]AW[nf]AB[pf]AW[qf]AW[ie]AB[je]AB[ke]AW[me]AB[ne]AB[oe]AB[pe]AW[qe]AW[re]AW[hd]AW[id]AW[jd]AB[kd]AW[md]AW[nd]AB[od]AW[pd]AB[qd]AW[rd]AW[kc]AB[lc]AW[mc]AW[oc]AW[pc]AB[qc]AB[rc]AB[sc]AW[jb]AW[kb]AW[mb]AW[ob]AB[pb]AB[qb]AW[na]AB[pa]LB[kj:a]LB[ml:b]PL[B]C[Black to capture L10 ('a') or N8 ('b')
+
+Source: MadLab problem #a781 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[jk]
+)

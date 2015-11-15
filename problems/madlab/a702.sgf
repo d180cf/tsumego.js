@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[dq]AW[cp]AB[dp]AB[ep]AB[fp]AW[co]AB[do]AB[fo]AB[cn]AW[dn]AB[en]AB[cm]AW[dm]AW[em]AW[fm]AB[dl]AB[ck]LB[cp:a]LB[dq:b]PL[B]C[Black to capture C4 ('a') or D3 ('b')
+
+Source: MadLab problem #a702 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[cq]
+)

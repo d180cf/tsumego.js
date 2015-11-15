@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[pq]AB[qq]AB[np]AB[op]AB[pp]AW[qp]AW[qo]AB[on]AB[pn]AW[qn]AW[om]AW[pm]AW[qm]AW[rm]AB[pl]AB[ql]AW[rl]AW[nk]AB[rk]AB[oh]AB[qh]AB[rh]AB[qg]AW[rg]AW[qf]AW[qe]AW[re]LB[pl:a]LB[rk:b]PL[W]C[White to capture Q8 ('a') or S9 ('b')
+
+Source: MadLab problem #a206 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[qk]
+)

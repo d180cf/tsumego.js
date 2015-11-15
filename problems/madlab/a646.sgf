@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[dp]AB[ph]AB[rh]AW[og]AW[pg]AB[qg]AB[rg]AW[nf]AW[of]AB[pf]AW[ne]AB[oe]AB[pe]AB[md]AB[nd]AW[od]AB[pd]AB[qd]AW[oc]AW[pc]AW[qc]AW[rc]AB[nb]AW[ob]LB[nb:a]LB[md:b]PL[W]C[White to capture O18 ('a') or N16 ('b')
+
+Source: MadLab problem #a646 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[nc]
+)

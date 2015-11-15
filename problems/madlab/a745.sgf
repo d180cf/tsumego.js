@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[er]AB[fr]AB[dq]AW[eq]AW[fq]AB[gq]AB[hq]AB[jq]AW[kq]AB[oq]AB[dp]AB[ep]AW[fp]AW[gp]AW[hp]AB[ip]AW[kp]AW[mp]AB[op]AB[do]AW[ho]AB[io]AW[oo]AB[po]AB[qo]AB[gn]AW[hn]AW[ln]AW[mn]AW[on]AB[dm]AW[hm]AB[im]AB[mm]AB[nm]AB[om]AB[pm]AB[qm]AB[rm]AB[il]AW[kl]AB[ml]AW[nl]AW[pl]AB[ql]AW[rl]AB[ck]AB[dk]AW[ek]AB[gk]AW[lk]AB[mk]AW[pk]AW[qk]AW[cj]AW[dj]AB[ej]AB[fj]AB[jj]AW[kj]AW[mj]AB[nj]AW[ei]AW[fi]AW[gi]AW[ii]AB[ji]AB[ki]AW[li]AW[ni]AW[ch]AW[jh]AW[kh]AW[lh]AW[mh]AW[nh]AB[bg]AB[dg]AB[cf]AB[gf]AB[hf]AB[if]AB[jf]AB[kf]AB[lf]AB[mf]AW[ce]AB[de]AB[fe]AB[he]AW[ie]AW[je]AB[ke]AW[le]AW[cd]AB[dd]AW[fd]AB[gd]AW[hd]AW[id]AW[jd]AB[kd]AW[cc]AW[dc]AW[ec]AW[fc]AB[gc]AW[hc]AW[ic]AW[kc]AW[lc]AW[gb]AW[ib]LB[im:a]LB[ki:b]PL[W]C[White to capture J7 ('a') or L11 ('b')
+
+Source: MadLab problem #a745 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[jk]
+)

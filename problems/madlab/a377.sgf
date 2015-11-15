@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[qm]AB[ql]AB[qk]AB[kj]AW[pj]AB[qj]AW[pi]AW[qi]AB[ri]AW[lh]AW[mh]AW[nh]AW[ph]AB[qh]AW[rh]AB[mg]AB[ng]AB[qg]AB[rg]AB[pf]AW[qf]AW[me]AB[qe]AW[ld]AB[pd]AB[kc]AW[lc]AB[mc]AB[nc]AB[pc]AW[qc]AW[rc]AB[kb]AW[mb]AW[nb]AW[ob]AW[pb]LB[mc:a]LB[ng:b]PL[W]C[White to capture N17 ('a') or O13 ('b')
+
+Source: MadLab problem #a377 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[oc]
+)

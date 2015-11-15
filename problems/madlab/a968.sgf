@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[er]AB[bq]AB[cq]AW[dq]AB[dp]AB[jp]AW[lp]AW[mp]AB[np]AB[pp]AB[co]AB[do]AB[mo]AW[no]AW[po]AB[qo]AB[ro]AB[mn]AW[nn]AW[pn]AW[qn]AB[mm]AB[om]LB[np:a]LB[pp:b]PL[W]C[White to capture O4 ('a') or Q4 ('b')
+
+Source: MadLab problem #a968 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[op]
+)

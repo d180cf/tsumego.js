@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[fr]AW[hr]AB[ir]AB[jr]AB[nr]AW[or]AW[pr]AW[fq]AW[gq]AB[hq]AW[iq]AW[jq]AW[kq]AW[lq]AB[oq]AW[pq]AW[fp]AB[hp]AB[ip]AB[jp]AB[kp]AB[op]AB[pp]AW[qp]AW[fo]AW[qo]AB[on]AB[pn]AW[qn]AW[pm]AB[qm]AW[kl]AW[ll]AW[ml]AW[nl]AW[ol]AW[pl]AB[ql]AB[kk]AB[lk]AB[mk]AB[nk]AB[ok]LB[nr:a]LB[oq:b]PL[W]C[White to capture O2 ('a') or P3 ('b')
+
+Source: MadLab problem #a834 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[nq]
+)

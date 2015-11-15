@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[cr]AW[dr]AB[cq]AW[dq]AW[bp]AW[cp]AB[dp]AW[kp]AW[lp]AW[bo]AB[co]AB[do]AW[ko]AB[lo]AW[cn]AB[dn]AB[jn]AB[kn]AB[ln]AB[cl]AW[hl]AW[il]AB[jl]AB[hk]AB[ik]AW[jk]AB[kk]AW[ij]AW[jj]AB[di]AB[ki]LB[cn:a]LB[ij:b]PL[B]C[Black to capture C6 ('a') or J10 ('b')
+
+Source: MadLab problem #a584 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[bn]
+)

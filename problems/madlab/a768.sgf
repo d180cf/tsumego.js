@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[fq]AB[mq]AB[nq]AB[oq]AB[pq]AW[cp]AW[dp]AW[ep]AB[fp]AW[hp]AW[ip]AW[jp]AW[kp]AW[lp]AW[mp]AB[np]AW[op]AW[pp]AB[qp]AB[co]AW[do]AB[eo]AB[fo]AB[mo]AW[no]AW[oo]AW[po]AB[qo]AB[cn]AW[dn]AW[en]AB[fn]AW[gn]AB[hn]AW[ln]AB[mn]AB[nn]AW[pn]AW[qn]AB[rn]AB[dm]AW[em]AW[fm]AW[gm]AB[mm]AB[pm]AB[qm]AB[dl]AW[ll]AB[nl]AB[pl]AB[fk]AW[lk]AB[mk]AB[cj]AW[ej]AW[fj]AB[gj]AW[lj]AB[mj]AB[nj]AB[ci]AW[di]AW[ei]AB[fi]AW[gi]AW[ii]AW[ji]AW[ki]AB[li]AB[mi]AW[ni]AW[bh]AB[ch]AW[dh]AB[eh]AB[hh]AW[ih]AB[jh]AB[kh]AB[lh]AW[nh]AW[cg]AB[dg]AB[eg]AB[ig]AW[jg]AW[kg]AB[lg]AW[mg]AW[df]AB[ef]AB[if]AW[mf]AW[ce]AW[de]AW[dd]LB[ej:a]LB[ii:b]PL[B]C[Black to capture E10 ('a') or J11 ('b')
+
+Source: MadLab problem #a768 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[ek]
+)

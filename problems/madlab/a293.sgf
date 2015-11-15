@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[qi]AW[ph]AB[qh]AW[pg]AB[nf]AB[me]AW[ne]AW[oe]AW[qe]AW[ld]AW[md]AB[nd]AB[od]LB[nf:a]LB[me:b]PL[W]C[White to capture O14 ('a') or N15 ('b')
+
+Source: MadLab problem #a293 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[mf]
+)

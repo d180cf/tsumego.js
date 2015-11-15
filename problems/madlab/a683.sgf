@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[fq]AW[hq]AB[nq]AB[oq]AW[fp]AB[hp]AB[ip]AB[mp]AW[np]AW[fo]AB[mo]AW[no]AW[qo]AW[fn]AB[gn]AW[hn]AB[in]AW[nn]AW[pn]AB[qn]AB[pm]AB[qm]AB[hl]AW[nl]AB[ol]AB[rl]AW[ok]AB[qk]AW[rk]AB[qj]AW[rj]AW[mi]AW[ni]AB[oi]AB[pi]AB[qi]AW[ri]AB[lh]AB[mh]AB[nh]AW[oh]AW[ph]AW[qh]AW[rh]AW[mg]AB[ng]AB[og]AB[pg]AB[qg]AW[rg]AB[mf]AW[nf]AW[of]AW[pf]AW[qf]AW[rf]AB[me]LB[ok:a]LB[ni:b]PL[B]C[Black to capture P9 ('a') or O11 ('b')
+
+Source: MadLab problem #a683 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[nj]
+)

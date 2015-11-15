@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[kk]AB[lk]AB[mk]AB[nk]AB[ok]AB[kj]AW[lj]AW[mj]AB[nj]AB[ki]AB[li]AW[mi]AW[ni]AW[oi]AW[qi]AB[lg]AB[lf]AW[mf]AW[pf]AW[qf]AB[le]AW[me]AW[oe]AB[pe]AW[ld]AW[md]AB[nd]AB[qd]AW[lc]AB[mc]AB[oc]AW[mb]LB[pe:a]LB[nd:b]PL[W]C[White to capture Q15 ('a') or O16 ('b')
+
+Source: MadLab problem #a916 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[od]
+)

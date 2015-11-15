@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[lq]AB[mq]AW[kp]AB[lp]AB[mp]AB[np]AB[pp]AW[po]AB[qo]AB[ro]AB[so]AB[jn]AB[kn]AB[ln]AB[mn]AW[nn]AW[on]AW[qn]AW[rn]AB[sn]AW[jm]AB[km]AW[lm]AW[mm]AB[nm]AB[om]AW[sm]AW[jl]AW[kl]AW[ll]AW[ql]AW[rl]LB[pp:a]LB[ro:b]PL[W]C[White to capture Q4 ('a') or S5 ('b')
+
+Source: MadLab problem #a730 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[qp]
+)

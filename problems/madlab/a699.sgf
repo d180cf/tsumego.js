@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[pr]AW[oq]AW[pq]AW[qq]AB[rq]AW[op]AB[pp]AB[qp]AB[rp]AW[lo]AW[no]AW[oo]AW[po]AW[qo]AB[ro]AW[jn]AW[ln]AW[mn]AW[nn]AW[on]AB[pn]AB[qn]AB[rn]AB[sn]AW[im]AW[jm]AW[lm]AB[nm]AW[om]AB[pm]AB[qm]AB[rm]AW[jl]AW[kl]AW[ll]AB[ml]AB[nl]AB[ol]AW[pl]AB[ql]AW[lk]AB[mk]AB[nk]AW[ok]AW[pk]AB[qk]AB[lj]AB[mj]AW[nj]AB[oj]AW[pj]AW[qj]AB[ki]AW[mi]AW[ni]AW[ri]AB[jh]AB[kh]AW[nh]AW[ph]AB[qh]AW[rh]AB[jg]AW[kg]AB[og]AW[pg]AB[rg]AB[jf]AW[kf]AW[of]AB[qf]AB[rf]AB[sf]AB[je]AW[ke]AW[me]AW[pe]AB[qe]AW[re]AW[se]AW[id]AB[jd]AW[kd]AB[ld]AW[md]AB[od]AB[pd]AW[qd]AW[rd]AW[hc]AB[ic]AB[jc]AB[kc]AB[mc]AB[oc]AW[pc]AW[qc]AB[lb]AB[nb]AW[ob]AW[pb]AW[qb]AB[na]AB[oa]AW[pa]LB[ke:a]LB[pe:b]PL[B]C[Black to capture L15 ('a') or Q15 ('b')
+
+Source: MadLab problem #a699 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[pf]
+)

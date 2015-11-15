@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[mr]AB[or]AW[pr]AW[kq]AW[lq]AB[nq]AW[oq]AB[mp]AW[op]AW[lo]AB[mo]AW[no]AW[ln]AB[mn]AW[nn]AB[on]AW[mm]AB[nm]AW[pm]AW[qm]AW[rm]AW[ml]AB[ol]AW[pl]AB[ok]AB[pk]AW[qk]AW[rk]AW[mj]AW[nj]AB[oj]AW[pj]AW[qj]LB[pr:a]LB[no:b]PL[B]C[Black to capture Q2 ('a') or O5 ('b')
+
+Source: MadLab problem #a656 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[pq]
+)

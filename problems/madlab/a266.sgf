@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[cp]AW[em]AB[cl]AB[dl]AW[ck]AB[dk]AW[ek]AW[fk]AB[gk]AW[cj]AW[dj]AB[ej]AB[hj]AW[ci]AB[di]AB[ei]AB[fi]AB[gi]AW[hi]AW[ii]AW[fh]AW[gh]AW[fg]LB[em:a]LB[ek:b]PL[B]C[Black to capture E7 ('a') or E9 ('b')
+
+Source: MadLab problem #a266 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[el]
+)

@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[jq]AW[hp]AW[ip]AB[jp]AB[lp]AB[jo]AW[lo]AB[cn]AB[dn]AB[en]AB[fn]AB[gn]AW[hn]AW[in]AB[jn]AW[dm]AW[em]AW[fm]AW[gm]AB[hm]AB[im]AW[jm]AW[km]LB[lp:a]LB[jp:b]PL[W]C[White to capture M4 ('a') or K4 ('b')
+
+Source: MadLab problem #a590 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[kp]
+)

@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[dp]AW[pj]AB[pg]AW[of]AW[pf]AB[qf]AW[qe]AW[pd]AB[qc]LB[pg:a]LB[qf:b]PL[W]C[White to capture Q13 ('a') or R14 ('b')
+
+Source: MadLab problem #a836 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[qg]
+)

@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[cf]AW[if]AW[fe]AW[fd]AB[gd]AW[id]AB[kd]AW[dc]AB[fc]LB[gd:a]LB[fc:b]PL[W]C[White to capture G16 ('a') or F17 ('b')
+
+Source: MadLab problem #a502 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[gc]
+)

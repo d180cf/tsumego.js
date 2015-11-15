@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[nq]AW[oq]AB[pq]AW[mp]AB[np]AB[pp]AW[mo]AB[no]AW[ln]AB[mn]AW[qn]AW[dd]LB[mn:a]LB[no:b]PL[W]C[White to capture N6 ('a') or O5 ('b')
+
+Source: MadLab problem #a935 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[nn]
+)

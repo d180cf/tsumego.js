@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[hr]AW[dq]AW[gq]AB[hq]AB[lq]AW[dp]AW[gp]AB[hp]AW[ip]AW[jp]AB[lp]AW[mp]AW[ho]AB[io]AB[lo]AW[bm]AW[cm]AW[dm]AB[em]AB[fm]AB[im]AB[lm]AW[bl]AB[cl]AB[dl]AW[kl]AB[ll]AB[bk]AB[ck]AB[fk]AW[ik]AB[kk]AW[lk]AW[kj]LB[gq:a]LB[ho:b]PL[B]C[Black to capture G3 ('a') or H5 ('b')
+
+Source: MadLab problem #a824 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[go]
+)

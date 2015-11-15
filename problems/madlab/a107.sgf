@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AW[dl]AW[bk]AW[ck]AW[dk]AW[cj]AW[dj]AW[di]AW[dh]AW[eh]AB[dg]AW[eg]AB[fg]AB[df]AB[ef]AW[ff]AB[ce]AW[ee]AW[fe]AW[he]AB[bd]AW[cd]AW[dd]AW[ed]AB[fd]AB[gd]AB[ac]AW[bc]AW[cc]AB[dc]AB[ec]AW[fc]AB[gc]AB[jc]AW[fb]AW[gb]AB[hb]LB[fd:a]LB[hb:b]PL[W]C[White to capture F16 ('a') or H18 ('b')
+
+Source: MadLab problem #a107 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[hc]
+)

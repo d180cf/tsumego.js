@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[pq]AB[qq]AW[qp]AB[oo]AB[po]AW[qo]AB[nn]AW[on]AW[pn]AB[ol]AB[qk]LB[on:a]LB[qo:b]PL[B]C[Black to capture P6 ('a') or R5 ('b')
+
+Source: MadLab problem #a303 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[qn]
+)

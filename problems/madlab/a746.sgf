@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[ks]AB[jr]AB[kr]AB[lr]AW[fq]AW[jq]AB[kq]AW[lq]AB[nq]AB[qq]AW[kp]AB[pp]AW[rp]AB[qo]AB[ro]AB[so]AW[gn]AW[on]AW[qn]AW[rn]AB[sn]AW[sm]LB[jq:a]LB[kp:b]PL[B]C[Black to capture K3 ('a') or L4 ('b')
+
+Source: MadLab problem #a746 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;B[jp]
+)

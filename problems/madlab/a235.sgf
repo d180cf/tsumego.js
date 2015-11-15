@@ -1,0 +1,8 @@
+(;
+FF[4]GM[1]AP[MadLab Tesuji Solver]
+
+SZ[19]AB[mk]AB[nk]AW[nj]AB[oj]AB[pj]AW[ni]AW[oi]AB[pi]AB[oh]AW[ph]AB[qh]AB[rh]AB[sh]AB[mg]AB[ng]AB[og]AW[pg]AW[qg]AW[rg]AB[sg]AB[of]AB[pf]AW[qf]AB[rf]AB[sf]AB[pe]AW[qe]AB[re]AB[se]AB[pd]AW[qd]AW[rd]AW[sd]AB[pc]AW[qc]AB[ob]AW[pb]AW[qb]LB[oj:a]LB[qh:b]PL[W]C[White to capture P10 ('a') or R12 ('b')
+
+Source: MadLab problem #a235 (www.t-t.dk/madlab). These problems may be freely distributed for non-commercial purposes, provided that this notice is preserved in the distribution.]
+;W[qi]
+)
