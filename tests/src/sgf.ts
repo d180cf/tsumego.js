@@ -1,4 +1,6 @@
 ﻿namespace tests {
+    import SGF = tsumego.SGF;
+
     ut.group($ => { 
         /// sgf
         $.test($ => { 

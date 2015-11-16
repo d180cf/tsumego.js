@@ -1,5 +1,5 @@
 ﻿/** Generic LL(*) recursive descent parser. */
-module SDP {
+module tsumego.parser {
     interface ParsingFunction<T> {
         (str: string, pos: number): [T, number];
     }

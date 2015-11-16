@@ -207,7 +207,7 @@ module testbench {
 
                         for (const path of dir.problems) {
                             send('GET', '/problems/' + path).then(sgf => {
-                                const root = SGF.parse(sgf);
+                                const root = tsumego.SGF.parse(sgf);
 
                                 if (!root)
                                     throw SyntaxError('Invalid SGF from ' + path);
@@ -237,7 +237,7 @@ module testbench {
                             source[0] == ':' ? ls.data[source] :
                                 send('GET', '/problems/' + source + '.sgf');
                     }).then(sgfdata => {
-                        const sgf = SGF.parse(sgfdata);
+                        const sgf = tsumego.SGF.parse(sgfdata);
                         const setup = sgf.steps[0];
 
                         board = new Board(sgfdata, source[0] != ':' && nvar && +nvar);

@@ -3,10 +3,10 @@
 /**
  * SGF parser.
  *
- * http://www.red-bean.com/sgf/
+ * www.red-bean.com/sgf
  */
-module SGF {
-    const $ = SDP.$;
+module tsumego.SGF {
+    const $ = tsumego.parser.$;
 
     /**
      * Step ;FF[4]SZ[19] gets decomposed into

@@ -18,7 +18,7 @@ module tests {
 
         for (const path of ls('../problems/**/*.sgf')) {
             const data = cat(path, 'utf8');
-            const sgf = SGF.parse(data);
+            const sgf = tsumego.SGF.parse(data);
 
             if (!sgf) {
                 console.log('Invalid SGF: ' + path);
