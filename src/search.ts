@@ -71,6 +71,10 @@ module tsumego {
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: boolean;
+            unodes?: {
+                [hash: number]: boolean;
+                size: number;
+            };
             stats?: {
                 nodes: number;
                 depth: number;
@@ -149,6 +153,15 @@ module tsumego {
                 const ttres = tt.get(hashb, color, nkt);
 
                 stats && (stats.depth = depth, yield);
+
+                if (unodes) {
+                    const h = gf32.mul(board.hash ^ (color > 0 ? 0 : -1), gf32.pow(3, nkt));
+
+                    if (!unodes[h]) {
+                        unodes[h] = true;
+                        unodes.size++;
+                    }
+                }
 
                 if (ttres) {
                     debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
