@@ -2,7 +2,7 @@
     cursor: pointer;
 }
 
-.tsumego, .tsumego-preview {    
+.tsumego, .tsumego-preview {
     display: inline-block;
 }
 
@@ -21,10 +21,10 @@ h3 {
     font-family: "Segoe UI";
 }
 
-.tsumego-sgf {   
+.tsumego-sgf {
     width: 300pt;
     height: 80pt;
-    display: inline-block; 
+    display: inline-block;
     border: 1px solid black;
     padding: 5pt;
     margin-left: 5pt;
@@ -36,3 +36,14 @@ h3 {
     margin: 5pt;
     padding: 5pt;
 }
+
+.editor-toolbox {
+    display: inline-block;
+    border: 1px solid black;
+    margin: 5pt;
+    padding: 3pt;
+}
+
+    .editor-toolbox span {
+        display: block;
+    }

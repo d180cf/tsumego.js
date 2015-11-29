@@ -23,6 +23,7 @@ module testbench {
         (board.size - stone.y(m));
 
     const c2s = (c: number) => c > 0 ? 'B' : 'W';
+    const s2c = (s: string) => s == 'B' ? +1 : s == 'W' ? -1 : 0;
     const cm2s = (c: number, m: stone) => c2s(c) + (Number.isFinite(m) ? ' plays at ' + xy2s(m) : ' passes');
     const cw2s = (c: number, m: stone) => c2s(c) + ' wins by ' + (Number.isFinite(m) ? xy2s(m) : 'passing');
 
@@ -228,6 +229,48 @@ module testbench {
                 if (source[0] == ':')
                     lspath = source;
 
+                let lastsi = 'B+0';
+
+                document.querySelector('#solve').addEventListener('click', e => {
+                    const input = prompt('Color and the number of ext ko treats (-2..+2), e.g. W-2, B+1, W, B:', lastsi);
+                    if (!input) return;
+
+                    lastsi = input;
+                    const parsed = /^(B|W)([+-][012])?$/.exec(input);
+
+                    if (!parsed) {
+                        setComment('Invalid input: ' + input);
+                        return;
+                    }
+
+                    const [, color, nkt] = parsed;
+                    solveAndRender(s2c(color), nkt ? +nkt : 0);
+                });
+
+                document.querySelector('#reset').addEventListener('click', e => {
+                    aim = 0;
+                    rzone = [];
+                    board = new Board(board.size);
+                    renderBoard();
+                });
+
+                const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
+
+                sgfinput.addEventListener('input', e => {
+                    try {
+                        updateSGF(sgfinput.value);
+                    } catch (err) {
+                        // partial input is not valid SGF
+                        if (err instanceof SyntaxError)
+                            return;
+                        throw err;
+                    }
+                });
+
+                document.querySelector('#debug').addEventListener('click', e=> {
+                    dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
+                });
+
                 if (source[0] == ':' && !ls.data[source]) {
                     board = new Board(+nvar);
                     renderBoard('Add stones, mark possible moves and select target.');
@@ -237,21 +280,11 @@ module testbench {
                             source[0] == ':' ? ls.data[source] :
                                 send('GET', '/problems/' + source + '.sgf');
                     }).then(sgfdata => {
-                        const sgf = tsumego.SGF.parse(sgfdata);
-                        const setup = sgf.steps[0];
-
-                        board = new Board(sgfdata, source[0] != ':' && nvar && +nvar);
-                        aim = stone.fromString((setup['MA'] || ['aa'])[0]);
-                        rzone = (setup['SL'] || []).map(stone.fromString);
-
-                        board = board.fork(); // drop the history of moves
+                        updateSGF(sgfdata, source[0] != ':' && nvar && +nvar);
 
                         console.log(sgfdata);
                         console.log(board + '');
                         console.log(board.toStringSGF());
-
-                        renderBoard();
-                        dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
                     });
                 }
             }
@@ -260,6 +293,18 @@ module testbench {
             alert(err);
         });
     });
+
+    function updateSGF(sgfdata: string, nvar = 0) {
+        const sgf = tsumego.SGF.parse(sgfdata);
+        const setup = sgf.steps[0];
+
+        board = new Board(sgfdata, nvar);
+        aim = stone.fromString((setup['MA'] || ['aa'])[0]);
+        rzone = (setup['SL'] || []).map(stone.fromString);
+
+        board = board.fork(); // drop the history of moves
+        renderBoard();
+    }
 
     function renderBoard(comment = '') {
         const move = board.undo();
@@ -272,7 +317,9 @@ module testbench {
         });
 
         ui.addEventListener('click', event => {
-            if (!lspath) return;
+            const rb = <HTMLInputElement>document.querySelector('input[name="tool"]:checked');
+
+            if (!lspath || !rb) return;
 
             event.preventDefault();
             event.stopPropagation();
@@ -280,33 +327,52 @@ module testbench {
             const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
             const c = board.get(x, y);
 
-            if (event.ctrlKey && c) {
-                aim = stone(x, y, 0);
-            } else if (event.ctrlKey && !c) {
-                const s = stone(x, y, 0);
-                const i = rzone.indexOf(s);
+            switch (rb.value) {
+                case 'MA':
+                    // mark the target                    
+                    aim = c < 0 ? stone(x, y, 0) : 0;
+                    break;
 
-                if (i < 0)
-                    rzone.push(s);
-                else
-                    rzone.splice(i, 1);
-            } else if (!c) {
-                board.play(stone(x, y, event.shiftKey ? -1 : +1));
-                board = board.fork(); // drop history
-            } else {
-                const b = new Board(board.size);
+                case 'SQ':
+                    // extend the r-zone
+                    const s = stone(x, y, 0);
+                    const i = rzone.indexOf(s);
 
-                for (const s of board.stones()) {
-                    const [sx, sy] = stone.coords(s);
-                    const c = stone.color(s);
+                    if (i < 0)
+                        rzone.push(s);
+                    else
+                        rzone.splice(i, 1);
 
-                    if (sx != x || sy != y)
-                        b.play(stone(sx, sy, c));
-                    else if (!event.shiftKey)
-                        b.play(stone(x, y, -c));
-                }
+                    break;
 
-                board = b.fork();
+                case 'AB':
+                    // add a black stone
+                    if (c) return;
+                    board.play(stone(x, y, +1));
+                    board = board.fork(); // drop history
+                    break;
+
+                case 'AW':
+                    // add a white stone
+                    if (c) return;
+                    board.play(stone(x, y, -1));
+                    board = board.fork(); // drop history
+                    break;
+
+                case '--':
+                    // remove a stone
+                    const b = new Board(board.size);
+
+                    for (const s of board.stones()) {
+                        const [sx, sy] = stone.coords(s);
+                        const c = stone.color(s);
+
+                        if (sx != x || sy != y)
+                            b.play(stone(sx, sy, c));
+                    }
+
+                    board = b.fork(); // drop history
+                    break;
             }
 
             renderBoard();
@@ -325,10 +391,14 @@ module testbench {
 
         editor.textContent = sgf;
 
-        document.querySelector('.tsumego-comment').textContent = comment;
+        setComment(comment);
 
         if (lspath)
             ls.set(lspath, sgf);
+    }
+
+    function setComment(comment: string) {
+        document.querySelector('#comment').textContent = comment;
     }
 
     function parse(si: string, size: number): stone {
@@ -336,6 +406,22 @@ module testbench {
         const y = size - +/\d+/.exec(si)[0];
 
         return stone(x, y, 0);
+    }
+
+    function solveAndRender(color: number, nkt = 0) {
+        setComment('Solving... Unfortunately, there is no way to terminate the solver.');
+
+        setTimeout(() => {
+            const move = solve(board, color, nkt, true);
+
+            if (!stone.hascoords(move) || move * color < 0) {
+                setComment(c2s(color) + ' passes');
+            } else {
+                board.play(move);
+                console.log(board + '');
+                renderBoard();
+            }
+        });
     }
 
     window['$'] = data => {
@@ -358,15 +444,7 @@ module testbench {
                         renderBoard();
                     }
                 } else {
-                    const move = solve(board, c, !xy ? 0 : +xy, true);
-
-                    if (!stone.hascoords(move) || move * c < 0) {
-                        console.log(col, 'passes');
-                    } else {
-                        board.play(move);
-                        console.log(board + '');
-                        renderBoard();
-                    }
+                    solveAndRender(c, !xy ? 0 : +xy);
                 }
                 break;
 
