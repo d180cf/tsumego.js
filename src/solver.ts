@@ -107,7 +107,7 @@ module tsumego {
                 'MA[xy] must specify the target white stone.');
 
             const komaster = exec(
-                () => sgf.get('KM') + '' == 'W' ? -1 : +1,
+                () => sgf.get('KM') + '' == 'W' ? -2 : +2,
                 'KM[W] or KM[B] must tell who is the ko master. This tag is optional.');
 
             if (errors.length)
