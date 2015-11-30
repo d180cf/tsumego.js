@@ -28,7 +28,6 @@ var move = tsumego.solve(sgf4); // "B[ea]"
 
 The current implementation has a few limitations:
 
- - The target must be a white stone. This is easy to fix, though.
  - The max board size is 16x16. This is because internally coordinates are stored as pairs of 4 bit integers: this allows to pack enough data in 32 bit integers and speed up things quite a bit. Allocating 5 bits per coordinate, and thus extending the max board size up to 32x32, is not feasible because then some stuff won't fit into 32 bits and JS doesn't support 64 bit numbers.
  - The R-zone must be specified manually and the solver won't attempt to play outside of it. This means, that the target group can be secured by not only making two eyes or setting up a seki, but also by reaching an edge of the R-zone: since capturing the group will require playing outside of the R-zone, the target group will be safe. To avoid that, make sure the attacker cannot reach an edge of the R-zone if the attacker plays properly. In general, the R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
 

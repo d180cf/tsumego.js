@@ -55,6 +55,39 @@ module tests {
         });
 
         $.test($ => {
+            /// black is captured
+
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+                AB[ab][bb][cb][db][da]\
+                AW[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('W[ba]');
+        });
+
+        $.test($ => {
+            /// black lives
+
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+                AB[ab][bb][cb][db][da]\
+                AW[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('B[ba]');
+        });
+
+        $.test($ => {
+            /// black cannot be captured
+
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+                AB[ab][bb][cb][db][da][ba]\
+                AW[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('B');
+        });
+
+        $.test($ => {
             /// invalid format
 
             const sgf = '(;FF[4]';

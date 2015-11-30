@@ -36,7 +36,7 @@ module tsumego {
      *      SZ  The board size, up to 16 x 16.
      *      AB  The set of black stones.
      *      AW  The set of white stones.
-     *      MA  The target that must be a white stone.
+     *      MA  The target that needs to be captured or secured.
      *      SQ  The set of intersections where the solver will play (aka the relevancy zone or the R-zone).
      *      PL  Who plays first.
      *      KM  Who is the ko master (optional).
@@ -129,6 +129,9 @@ module tsumego {
 
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
+
+            // tells who is being captured
+            const target = status(board);
 
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
@@ -233,10 +236,10 @@ module tsumego {
                         board.play(move);
                         debug && (yield);
 
-                        s = status(board) > 0 ? repd.set(stone.nocoords(+1), infty) :
+                        s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infty) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            color < 0 && alive && alive(board) ? repd.set(stone.nocoords(-1), infty) :
+                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infty) :
                                 // let the opponent play the best move
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
