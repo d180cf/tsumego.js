@@ -15,7 +15,7 @@ namespace tests {
     export const isNode = typeof process === 'object';
 }
 
-// https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+// en.wikipedia.org/wiki/ANSI_escape_code#Colors
 namespace tests {
     Object.assign(String.prototype, {
         red() {
@@ -42,10 +42,13 @@ namespace tests.ut {
     export interface TestContext {
         /** Example: $(1 + 2).equal(3); */
         <T>(value: T): ValueContext<T>;
+
+        /** Returns the thrown error or throws an exception. */
+        error(fn: () => any): any;
     }
 
     export interface GroupContext {
-        test(test: ($: TestContext) => string|void, name?: string): void;
+        test(test: ($: TestContext) => string | void, name?: string): void;
     }
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
@@ -129,6 +132,18 @@ namespace tests.ut {
 
     function expect<T>(x: T) {
         return new ValueContext(x);
+    }
+
+    module expect {
+        export function error(fn) {
+            try {
+                fn();
+            } catch (e) {
+                return e;
+            }
+
+            throw Error('No error was thrown.');
+        }
     }
 
     export class ValueContext<T> {

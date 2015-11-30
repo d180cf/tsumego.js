@@ -6,25 +6,25 @@
         $.test($ => { 
             /// empty
             const root = SGF.parse('()');
-            $(root).equal({ steps: [], vars: [] });
+            $<any>(root).equal({ steps: [], vars: [] });
         });
 
         $.test($ => { 
             /// two empty steps
             const root = SGF.parse('(;)');
-            $(root).equal({ steps: [{}], vars: [] });
+            $<any>(root).equal({ steps: [{}], vars: [] });
         });
 
         $.test($ => { 
             /// three empty steps
             const root = SGF.parse('(;;)');
-            $(root).equal({ steps: [{}, {}], vars: [] });
+            $<any>(root).equal({ steps: [{}, {}], vars: [] });
         });
 
         $.test($ => { 
             /// nested empty var
             const root = SGF.parse('(())');
-            $(root).equal({
+            $<any>(root).equal({
                 steps: [],
                 vars: [{ steps: [], vars: [] }]
             });
@@ -33,7 +33,7 @@
         $.test($ => { 
             /// two nested empty vars
             const root = SGF.parse('(()())');
-            $(root).equal({
+            $<any>(root).equal({
                 steps: [],
                 vars: [
                     { steps: [], vars: [] },
@@ -44,7 +44,7 @@
         $.test($ => { 
             /// empty with FF
             const root = SGF.parse('(;FF\n[4]\n)');
-            $(root).equal({
+            $<any>(root).equal({
                 steps: [{ FF: ['4'] }],
                 vars: []
             });
@@ -53,7 +53,7 @@
         $.test($ => { 
             /// dup tags
             const root = SGF.parse('(;X[1]Y[2]X[3]Y[4])');
-            $(root).equal({
+            $<any>(root).equal({
                 steps: [{ X: ['1', '3'], Y: ['2', '4'] }],
                 vars: []
             });
@@ -88,7 +88,7 @@
              (;B[ae];W[ag]))
         `);
 
-            $(root).equal({
+            $<any>(root).equal({
                 "steps": [
                     {
                         "FF": ["4"],
@@ -196,7 +196,7 @@ Source: MadLab problem #a001 (www.t-t.dk/madlab). These problems may be freely d
 
             console.log(JSON.stringify(root, null, 4));
 
-            $(root).equal({
+            $<any>(root).equal({
                 "steps": [
                     {
                         "FF": [

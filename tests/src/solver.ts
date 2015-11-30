@@ -8,6 +8,89 @@ module tests {
     import srand = tsumego.rand.LCG.NR01;
 
     ut.group($ => {
+        /// the external interface
+
+        $.test($ => {
+            /// best move exists, black wins
+
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+                AW[ab][bb][cb][db][da]\
+                AB[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('B[ba]');
+        });
+
+        $.test($ => {
+            /// best move exists, white wins
+
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+                AW[ab][bb][cb][db][da]\
+                AB[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('W[ba]');
+        });
+
+        $.test($ => {
+            /// no best move exists, black wins
+
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+                AW[ab][bb][cb][db][da]\
+                AB[ac][bc][cc][dc][ec][eb][ea][ba]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('B');
+        });
+
+        $.test($ => {
+            /// no best move exists, white wins
+
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+                AW[ab][bb][cb][db][da][ba]\
+                AB[ac][bc][cc][dc][ec][eb][ea]\
+                SQ[aa][ba][ca])');
+
+            $(move).equal('W');
+        });
+
+        $.test($ => {
+            /// invalid format
+
+            const sgf = '(;FF[4]';
+            const error = $.error(() => solve(sgf));
+
+            $(error + '').equal('SyntaxError: Invalid SGF.');
+        });
+
+        $.test($ => {
+            /// missing tags
+
+            const sgf = '(;FF[4])';
+            const error = $.error(() => solve(sgf));
+
+            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
+                + '\n\tSZ[n] tag must specify the size of the board.'
+                + '\n\tPL[W] or PL[B] must tell who plays first.'
+                + '\n\tSQ[xy][..] must tell the set of possible moves.'
+                + '\n\tMA[xy] must specify the target white stone.');
+        });
+
+        $.test($ => {
+            /// too big board size
+
+            const sgf = '(;FF[4]SZ[19])';
+            const error = $.error(() => solve(sgf));
+
+            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
+                + '\n\tBoard 19x19 is too big. Up to 16x16 boards are supported.'
+                + '\n\tPL[W] or PL[B] must tell who plays first.'
+                + '\n\tSQ[xy][..] must tell the set of possible moves.'
+                + '\n\tMA[xy] must specify the target white stone.');
+        });
+    });
+
+    ut.group($ => {
         /// tsumego samples
 
         if (typeof require === 'undefined')

@@ -24,10 +24,18 @@ module tsumego.SGF {
      *      vars[0]: B[aa];W[bb]
      *      vars[1]: B[ab];W[cb]
      */
-    export interface Node {
-        steps: Step[];
-        vars: Node[];
-    }    
+    export class Node {
+        constructor(public steps: Step[], public vars: Node[]) { }
+
+        get(tag: string) {
+            return this.steps[0][tag];
+        }
+    }
+
+    // decorators break the source-map-support tool
+    Object.defineProperty(Node.prototype, 'get', {
+        enumerable: false
+    });
 
     /** 
      * Parses an SGF input according to these rules:
@@ -54,7 +62,7 @@ module tsumego.SGF {
             .fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
 
         const sgf = $(wsp, '(', stp.rep(), $('sgf', (s, i) => sgf.exec(s, i)).rep(), wsp, ')', wsp)
-            .map(r => <Node>{ steps: r[2], vars: r[3] });
+            .map(r => new Node(r[2], r[3]));
 
         return sgf.exec(source);
     }

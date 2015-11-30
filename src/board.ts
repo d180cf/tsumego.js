@@ -225,6 +225,7 @@ module tsumego {
             if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
             const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
             const size = +setup['SZ'];
+            if (!size) throw SyntaxError('SZ[n] tag must specify the size of the board.');
 
             this.init(size);
 

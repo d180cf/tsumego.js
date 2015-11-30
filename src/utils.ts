@@ -114,4 +114,9 @@
             return h in cache ? cache[h] : cache[h] = fn(x);
         };
     }
+
+    /** e.g. @enumerable(false) */
+    export function enumerable(isEnumerable: boolean) {
+        return (p, m, d) => void (d.enumerable = isEnumerable);
+    }
 }

@@ -20,7 +20,37 @@ module tsumego {
         undo(): stone;
     }
 
-    export function solve(args: solve.Args): stone {
+    /**
+     * The problem's description is given as an SGF string:
+     *
+     *      (;FF[4]SZ[9]
+     *        AB[aa][bb][cd][ef]
+     *        AW[ab][df]
+     *        SQ[aa][bb][ab][ba]
+     *        MA[ab]
+     *        KM[B]
+     *        PL[W])
+     * 
+     * There are a few tags in the SGF that must be present:
+     *
+     *      SZ  The board size, up to 16 x 16.
+     *      AB  The set of black stones.
+     *      AW  The set of white stones.
+     *      MA  The target that must be a white stone.
+     *      SQ  The set of intersections where the solver will play (aka the relevancy zone or the R-zone).
+     *      PL  Who plays first.
+     *      KM  Who is the ko master (optional).
+     *
+     * Returns the best move if there is such a move:
+     *
+     *      W[cb]   White wins by playing at C8.
+     *      W       White passes and still wins (i.e. when there is a seki).
+     *      B       White doesn't have a winning move in the R-zone.
+     */
+    export function solve(sgf: string): string;
+    export function solve(args: solve.Args): stone;
+
+    export function solve(args) {
         const g = solve.start(args);
 
         let s = g.next();
@@ -47,7 +77,56 @@ module tsumego {
             };
         }
 
-        export function* start({root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug}: Args) {
+        function parse(data: string): Args {
+            const sgf = SGF.parse(data);
+            if (!sgf) throw SyntaxError('Invalid SGF.');
+
+            const errors = [];
+
+            const exec = <T>(fn: () => T, em?: string) => {
+                try {
+                    return fn();
+                } catch (e) {
+                    errors.push(em || e && e.message);
+                }
+            };
+
+            const board = exec(
+                () => new Board(sgf));
+
+            const color = exec(
+                () => sgf.get('PL')[0] == 'W' ? -1 : +1,
+                'PL[W] or PL[B] must tell who plays first.');
+
+            const rzone = exec(
+                () => sgf.get('SQ').map(stone.fromString),
+                'SQ[xy][..] must tell the set of possible moves.');
+
+            const target = exec(
+                () => stone.fromString(sgf.get('MA')[0]),
+                'MA[xy] must specify the target white stone.');
+
+            const komaster = exec(
+                () => sgf.get('KM') + '' == 'W' ? -1 : +1,
+                'KM[W] or KM[B] must tell who is the ko master. This tag is optional.');
+
+            if (errors.length)
+                throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
+
+            return {
+                root: board,
+                color: color,
+                nkt: komaster,
+                expand: generators.Basic(rzone),
+                status: (b: Board) => b.get(target) < 0 ? -1 : +1,
+                alive: (b: Board) => tsumego.benson.alive(b, target)
+            };
+        }
+
+        export function* start(args: Args | string) {
+            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug} =
+                typeof args === 'string' ? parse(args) : args;
+
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
@@ -226,7 +305,11 @@ module tsumego {
                 board.play(move);
             }
 
-            return yield* solve(color, nkt);
+            move = yield* solve(color, nkt);
+
+            return typeof args === 'string' ?
+                stone.toString(move) :
+                move;
         }
     }
 }
