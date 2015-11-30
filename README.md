@@ -6,6 +6,8 @@ Here is an example of a [problem](http://www.goproblems.com/9210) that this solv
 
 <img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/9210.sgf.svg#234252343242" height="200pt" />
 
+To get this solution first take a [release](https://github.com/d180cf/tsumego.js/releases) of the solver and then invoke `tsumego.solve`:
+
 ```ts
 var sgf4 = '(;FF[4]'
     // up to 16x16 boards are supported
@@ -29,22 +31,9 @@ var move = tsumego.solve(sgf4); // "B[ea]"
 The current implementation has a few limitations:
 
  - The max board size is 16x16. This is because internally coordinates are stored as pairs of 4 bit integers: this allows to pack enough data in 32 bit integers and speed up things quite a bit. Allocating 5 bits per coordinate, and thus extending the max board size up to 32x32, is not feasible because then some stuff won't fit into 32 bits and JS doesn't support 64 bit numbers.
- - The R-zone must be specified manually and the solver won't attempt to play outside of it. This means, that the target group can be secured by not only making two eyes or setting up a seki, but also by reaching an edge of the R-zone: since capturing the group will require playing outside of the R-zone, the target group will be safe. To avoid that, make sure the attacker cannot reach an edge of the R-zone if the attacker plays properly. In general, the R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
+ - The R-zone must be specified manually and the solver won't attempt to play outside of it. This means, that the target group can be secured by not only making two eyes or setting up a seki, but also by reaching an edge of the R-zone: since capturing the group will require playing outside of the R-zone, the target group will be safe. To avoid that, make sure the target cannot reach an edge of the R-zone if the attacker plays properly. The R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
 
-On the other hand, the solver uses internally es6 [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) which allows to suspend and resume the solver at any moment. This is very useful when debugging the solver, as the process of solving can be rendered in the UI step by step, but this can also be useful to let the user stop the solver if it runs for too long. In the es5 build generators are transpiled into state machines. The `tsumego.solve.start` function returns an iterator:
-
-```ts
-function solve(args) {
-    const g = solve.start(args);
-
-    let s = g.next();
-
-    while (!s.done)
-        s = g.next();
-
-    return s.value;
-}
-```
+The solver uses internally es6 [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) which allows to suspend and resume the search at any moment. This is very useful when debugging the solver, as the process of solving can be rendered in the UI step by step, but this can also be useful to let the user stop the search if it runs for too long. In the es5 build generators are transpiled into state machines with [Babel](https://github.com/babel/babel).
 
 As far as I know, there are very few tsumego solving software:
 
