@@ -1,7 +1,7 @@
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
 /// <reference path="ls.ts" />
-/// <reference path="../src/solver.ts" />
+/// <reference path="../src/search.ts" />
 /// <reference path="goban.ts" />
 
 declare var board: tsumego.Board;

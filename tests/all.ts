@@ -1,4 +1,4 @@
-/// <reference path="../src/solver.ts" />
+/// <reference path="../src/search.ts" />
 
 /// <reference path="infra.ts" />
 /// <reference path="es6aiter.ts" />
@@ -9,7 +9,7 @@
 /// <reference path="src/ann.ts" />
 /// <reference path="src/board.ts" />
 /// <reference path="src/uceyes.ts" />
-/// <reference path="src/solver.ts" />
+/// <reference path="src/search.ts" />
 /// <reference path="src/benson.ts" />
 
 namespace tests {

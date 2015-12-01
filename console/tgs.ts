@@ -1,4 +1,4 @@
-/// <reference path="../src/solver.ts" />
+/// <reference path="../src/search.ts" />
 
 declare const require;
 declare const process;
