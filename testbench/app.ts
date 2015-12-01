@@ -316,6 +316,11 @@ module testbench {
             SL: !stone.hascoords(move) && rzone
         });
 
+        ui.addEventListener('mousemove', event => {
+            const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
+            document.querySelector('#coords').textContent = stone.toString(stone(x, y, board.get(x, y)));
+        });
+
         ui.addEventListener('click', event => {
             const rb = <HTMLInputElement>document.querySelector('input[name="tool"]:checked');
 
