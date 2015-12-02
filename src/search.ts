@@ -7,7 +7,7 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    const infty = 255;
+    const infdepth = 255;
 
     module repd {
         export const get = move => move >> 8 & 255;
@@ -152,11 +152,11 @@ module tsumego {
 
                 if (ttres) {
                     debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
-                    return repd.set(ttres, infty);
+                    return repd.set(ttres, infdepth);
                 }
 
                 let result: stone;
-                let mindepth = infty;
+                let mindepth = infdepth;
 
                 const nodes = sa.reset();
 
@@ -172,7 +172,7 @@ module tsumego {
 
                     d++;
 
-                    if (!d) d = infty;
+                    if (!d) d = infdepth;
 
                     if (d < mindepth)
                         mindepth = d;
@@ -202,10 +202,10 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert(0, { d: infty, w: 0 });
+                sa.insert(0, { d: infdepth, w: 0 });
 
                 for (const move of nodes) {
-                    const d = !move ? infty : repd.get(move);
+                    const d = !move ? infdepth : repd.get(move);
                     let s: stone;
 
                     // this is a hash of the path: reordering moves must change the hash;
@@ -236,10 +236,10 @@ module tsumego {
                         board.play(move);
                         debug && (yield);
 
-                        s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infty) :
+                        s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infty) :
+                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
                                 d > depth ? yield* solve(-color, nkt) :
                                     // this move repeat a previously played position:
