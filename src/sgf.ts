@@ -1,4 +1,4 @@
-﻿/// <reference path="rdp.ts" />
+﻿/// <reference path="llrdp.ts" />
 
 /**
  * SGF parser.
