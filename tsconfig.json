@@ -1,5 +1,5 @@
 ﻿{
-  "files": [ "src/search.ts" ],
+  "files": [ "src/main.ts" ],
   "compilerOptions": {
     "out": "tsumego.js",
     "target": "es6",
