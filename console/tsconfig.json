@@ -4,7 +4,6 @@
     "out": "tgs.js",
     "target": "es6",
     "experimentalDecorators": true,
-    "experimentalAsyncFunctions":  true,
     "sourceMap": true
   }
 }

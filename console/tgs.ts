@@ -113,7 +113,7 @@ namespace tsumego {
             color: color,
             nkt: +nkt | 0,
             tt: tt,
-            expand: generators.Basic(rzone, rand.LCG.NR01(seed)),
+            expand: generators.Basic(rzone),
             status: (b: Board) => b.get(target) < 0 ? -1 : +1,
             alive: (b: Board) => benson.alive(b, target)
         });
