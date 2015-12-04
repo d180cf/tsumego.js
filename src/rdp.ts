@@ -1,5 +1,5 @@
 ﻿/** Generic LL(*) recursive descent parser. */
-module tsumego.parser {
+module tsumego.LL {
     interface ParsingFunction<T> {
         (str: string, pos: number): [T, number];
     }
@@ -25,7 +25,7 @@ module tsumego.parser {
         }
 
         map<U>(fn: (value: T) => U): Pattern<U> {
-            return $(':' + this, (str, pos) => {
+            return new Pattern(':' + this, (str, pos) => {
                 const r = this.exec(str, pos);
                 return r ? [fn(r[0]), r[1]] : null;
             });
@@ -40,19 +40,19 @@ module tsumego.parser {
         }
 
         /** [["A", 1], ["B", 2]] -> { A: 1, B: 2 } */
-        fold<U>(k: number, v: number, merge = (a: U, b: U) => b) {
+        fold<U>(keyName: number, valName: number, merge = (a: U, b: U) => b) {
             return this.map((r: any) => {
                 const m: { [key: string]: U } = {};
 
                 for (const p of r)
-                    m[p[k]] = merge(m[p[k]], p[v]);
+                    m[p[keyName]] = merge(m[p[keyName]], p[valName]);
 
                 return m;
             });
         }
 
         rep(min = 0) {
-            return $(min + '*' + this, (str, pos) => {
+            return new Pattern(min + '*' + this, (str, pos) => {
                 const res: T[] = [];
                 let r: [T, number];
 
@@ -66,48 +66,25 @@ module tsumego.parser {
         }
     }
 
-    export function $<T>(pattern: Pattern<T>): Pattern<T>;
-    export function $<T>(text: string, exec: ParsingFunction<T>): Pattern<T>;
-    export function $(regexp: RegExp): Pattern<string>;
-    export function $(string: string): Pattern<string>;
-    export function $(...items): Pattern<any[]>;
-
-    export function $(x, s?): Pattern<any> {
-        if (typeof s === 'function')
-            return new Pattern(x, s);
-
-        if (arguments.length > 1)
-            return seq.apply(null, arguments);
-
-        if (x instanceof Pattern)
-            return x;
-
-        if (x instanceof RegExp)
-            return rgx(x);
-
-        if (typeof x === 'string')
-            return txt(x);
-    }
-
-    function rgx(r: RegExp) {
-        return $(r + '', (str, pos) => {
+    export function rgx(r: RegExp) {
+        return new Pattern(r + '', (str, pos) => {
             const m = r.exec(str.slice(pos));
             return m && m.index == 0 ? [m[0], pos + m[0].length] : null;
         });
     }
 
-    function txt(s: string) {
-        return $('"' + s + '"', (str, pos) => {
+    export function txt(s: string) {
+        return new Pattern('"' + s + '"', (str, pos) => {
             return str.slice(pos, pos + s.length) == s ? [s, pos + s.length] : null;
         });
     }
 
-    function seq(...ps: any[]) {
-        return $('(' + ps.join(' ') + ')', (str, pos) => {
+    export function seq(...ps: Pattern<any>[]) {
+        return new Pattern('(' + ps.join(' ') + ')', (str, pos) => {
             const res = [];
 
             for (const p of ps) {
-                const r = $(p).exec(str, pos);
+                const r = p.exec(str, pos);
                 if (!r) return null;
                 res.push(r[0]);
                 pos = r[1];

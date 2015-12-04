@@ -6,7 +6,7 @@
  * www.red-bean.com/sgf
  */
 module tsumego.SGF {
-    const $ = tsumego.parser.$;
+    const {txt, rgx, seq, Pattern} = LL;
 
     /**
      * Step ;FF[4]SZ[19] gets decomposed into
@@ -48,20 +48,20 @@ module tsumego.SGF {
      * Returns AST of the input.
      */
     export function parse(source: string): Node {
-        const wsp = $(/\s*/);
+        const wsp = rgx(/\s*/);
 
-        const val = $(wsp, /\[[^\]]*?\]/)
+        const val = seq(wsp, rgx(/\[[^\]]*?\]/))
             .take(1)
             .slice(+1, -1);
 
-        const tag = $(wsp, /\w+/, val.rep())
+        const tag = seq(wsp, rgx(/\w+/), val.rep())
             .slice(1);
 
-        const stp = $(wsp, ';', tag.rep())
+        const stp = seq(wsp, txt(';'), tag.rep())
             .take(2)
             .fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
 
-        const sgf = $(wsp, '(', stp.rep(), $('sgf', (s, i) => sgf.exec(s, i)).rep(), wsp, ')', wsp)
+        const sgf = seq(wsp, txt('('), stp.rep(), new Pattern('sgf', (s, i) => sgf.exec(s, i)).rep(), wsp, txt(')'), wsp)
             .map(r => new Node(r[2], r[3]));
 
         return sgf.exec(source);
