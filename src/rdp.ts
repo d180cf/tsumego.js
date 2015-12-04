@@ -1,16 +1,8 @@
 ﻿/** Generic LL(*) recursive descent parser. */
 module tsumego.LL {
-    interface ParsingFunction<T> {
-        (str: string, pos: number): [T, number];
-    }
-
     export class Pattern<T> {
-        constructor(private _text: string, private _exec: ParsingFunction<T>) {
+        constructor(private _exec: (str: string, pos: number) => [T, number]) {
 
-        }
-
-        toString() {
-            return this._text;
         }
 
         exec(str: string, pos: number): [T, number];
@@ -25,7 +17,7 @@ module tsumego.LL {
         }
 
         map<U>(fn: (value: T) => U): Pattern<U> {
-            return new Pattern(':' + this, (str, pos) => {
+            return new Pattern((str, pos) => {
                 const r = this.exec(str, pos);
                 return r ? [fn(r[0]), r[1]] : null;
             });
@@ -52,7 +44,7 @@ module tsumego.LL {
         }
 
         rep(min = 0) {
-            return new Pattern(min + '*' + this, (str, pos) => {
+            return new Pattern((str, pos) => {
                 const res: T[] = [];
                 let r: [T, number];
 
@@ -67,20 +59,20 @@ module tsumego.LL {
     }
 
     export function rgx(r: RegExp) {
-        return new Pattern(r + '', (str, pos) => {
+        return new Pattern((str, pos) => {
             const m = r.exec(str.slice(pos));
             return m && m.index == 0 ? [m[0], pos + m[0].length] : null;
         });
     }
 
     export function txt(s: string) {
-        return new Pattern('"' + s + '"', (str, pos) => {
+        return new Pattern((str, pos) => {
             return str.slice(pos, pos + s.length) == s ? [s, pos + s.length] : null;
         });
     }
 
     export function seq(...ps: Pattern<any>[]) {
-        return new Pattern('(' + ps.join(' ') + ')', (str, pos) => {
+        return new Pattern((str, pos) => {
             const res = [];
 
             for (const p of ps) {

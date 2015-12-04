@@ -61,7 +61,7 @@ module tsumego.SGF {
             .take(2)
             .fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
 
-        const sgf = seq(wsp, txt('('), stp.rep(), new Pattern('sgf', (s, i) => sgf.exec(s, i)).rep(), wsp, txt(')'), wsp)
+        const sgf = seq(wsp, txt('('), stp.rep(), new Pattern((s, i) => sgf.exec(s, i)).rep(), wsp, txt(')'), wsp)
             .map(r => new Node(r[2], r[3]));
 
         return sgf.exec(source);
