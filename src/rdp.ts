@@ -23,12 +23,12 @@ module tsumego.LL {
             });
         }
 
-        take(i: number) {
+        take<U>(i: number): Pattern<U> {
             return this.map(r => r[i]);
         }
 
-        slice(from: number, to?: number) {
-            return this.map(r => (<any>r).slice(from, to));
+        slice<U>(from: number, to?: number): Pattern<U> {
+            return this.map((r: any) => r.slice(from, to));
         }
 
         /** [["A", 1], ["B", 2]] -> { A: 1, B: 2 } */
@@ -71,7 +71,11 @@ module tsumego.LL {
         });
     }
 
-    export function seq(...ps: Pattern<any>[]) {
+    export function seq<A, B>(a: Pattern<A>, b: Pattern<B>): Pattern<[A, B]>;
+    export function seq<A, B, C>(a: Pattern<A>, b: Pattern<B>, c: Pattern<C>): Pattern<[A, B, C]>;
+    export function seq<A, B, C, D>(a: Pattern<A>, b: Pattern<B>, c: Pattern<C>, d: Pattern<D>): Pattern<[A, B, C, D]>;
+
+    export function seq(...ps): any {
         return new Pattern((str, pos) => {
             const res = [];
 

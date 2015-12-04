@@ -6,7 +6,8 @@
  * www.red-bean.com/sgf
  */
 module tsumego.SGF {
-    const {txt, rgx, seq, Pattern} = LL;
+    const {txt, rgx, seq} = LL;
+    import Pattern = LL.Pattern;
 
     /**
      * Step ;FF[4]SZ[19] gets decomposed into
@@ -48,21 +49,11 @@ module tsumego.SGF {
      * Returns AST of the input.
      */
     export function parse(source: string): Node {
-        const wsp = rgx(/\s*/);
-
-        const val = seq(wsp, rgx(/\[[^\]]*?\]/))
-            .take(1)
-            .slice(+1, -1);
-
-        const tag = seq(wsp, rgx(/\w+/), val.rep())
-            .slice(1);
-
-        const stp = seq(wsp, txt(';'), tag.rep())
-            .take(2)
-            .fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
-
-        const sgf = seq(wsp, txt('('), stp.rep(), new Pattern((s, i) => sgf.exec(s, i)).rep(), wsp, txt(')'), wsp)
-            .map(r => new Node(r[2], r[3]));
+        var val = rgx(/\s*\[[^\]]*?\]/).map(s => s.trim().slice(+1, -1));
+        var tag = seq(rgx(/\s*\w+/).map(s => s.trim()), val.rep());
+        var step = seq(rgx(/\s*;/), tag.rep()).take(1).fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
+        var sgf_fwd: Pattern<Node> = new Pattern((s, i) => sgf.exec(s, i));
+        var sgf = seq(rgx(/\s*\(\s*/), step.rep(), sgf_fwd.rep(), rgx(/\s*\)\s*/)).map(r => new Node(r[1], r[2]));
 
         return sgf.exec(source);
     }
