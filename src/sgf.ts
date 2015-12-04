@@ -9,6 +9,14 @@ module tsumego.SGF {
     const {txt, rgx, seq} = LL;
     import Pattern = LL.Pattern;
 
+    /**
+     * EBNF rules:
+     *
+     *      val     = "[" ... "]"
+     *      tag     = 1*("A".."Z") 0*val
+     *      step    = ";" 0*tag
+     *      sgf     = "(" 0*stp 0*sgf ")"
+     */
     const pattern = (() => {
         var val = rgx(/\s*\[[^\]]*?\]/).map(s => s.trim().slice(+1, -1));
         var tag = seq(rgx(/\s*\w+/).map(s => s.trim()), val.rep());
@@ -19,22 +27,10 @@ module tsumego.SGF {
         return sgf;
     })();
 
-    /**
-     * Step ;FF[4]SZ[19] gets decomposed into
-     *
-     *      { FF: [4], SZ: [19] }
-     */
     export interface Step {
         [tag: string]: string[];
     }
 
-    /** 
-     * Node FF[4]SZ[19](;B[aa];W[bb])(;B[ab];W[cb]) gets decomposed into:
-     *
-     *      steps[0]: { FF: [4], SZ:[19] }
-     *      vars[0]: B[aa];W[bb]
-     *      vars[1]: B[ab];W[cb]
-     */
     export class Node {
         constructor(public steps: Step[], public vars: Node[]) { }
 
@@ -48,15 +44,5 @@ module tsumego.SGF {
         enumerable: false
     });
 
-    /** 
-     * Parses an SGF input according to these rules:
-     *
-     *      val = `[` ... `]`
-     *      tag = 1*(`A`..`Z`) *val
-     *      stp = `;` *tag
-     *      sgf = `(` *stp *sgf `)`
-     *
-     * Returns AST of the input.
-     */
     export const parse = (source: string) => pattern.exec(source);
 }
