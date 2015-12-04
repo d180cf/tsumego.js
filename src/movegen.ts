@@ -1,7 +1,7 @@
 module tsumego {
     export module generators {
         /** Basic moves generator. Tries to maximize libs. */
-        export function Basic(rzone: stone[], random = rand.LCG.NR01(Date.now())) {
+        export function Basic(rzone: stone[]) {
             /** Defines the order in which the solver considers moves. */
             const sa = new SortedArray<stone, { r: number; p: number; q: number, u: number, v: number }>((a, b) =>
                 b.r - a.r || // maximize the number of captured stones first

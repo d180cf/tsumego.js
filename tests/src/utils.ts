@@ -1,6 +1,6 @@
 namespace tests {
+    import rand = tsumego.rand;
     import SortedArray = tsumego.SortedArray;
-    import LCG = tsumego.rand.LCG.NR32;
 
     ut.group($ => {
         /// sorted array
@@ -9,8 +9,6 @@ namespace tests {
             /// numbers
 
             const n = 100;
-
-            const rand = LCG(298894);
 
             const compare = (a, b) =>
                 a[0] - b[0] ||

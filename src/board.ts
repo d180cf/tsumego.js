@@ -70,18 +70,6 @@ module tsumego {
             'libs=' + block.libs(b) + ' ' + 'size=' + block.size(b);
     }
 
-    /** 
-     * A random 32 bit number for each intersection in the 16x16 board. 
-     * The hash of the board is then computed as H(B) = XOR Q(i, j) where
-     *
-     *      Q(i, j) = hashtb[i, j] if B(i, j) is a B stone
-     *      Q(i, j) = hashtw[i, j] if B(i, j) is a W stone
-     *
-     * This is also known as Zobrist hashing.
-     */
-    const hashtb = sequence(256, rand.LCG.NR32(221627394));
-    const hashtw = sequence(256, rand.LCG.NR32(473923848));
-
     /**
      * A square board with size up to 16x16.
      *
@@ -181,6 +169,18 @@ module tsumego {
              */
             changed: number[];
         };
+
+        /** 
+         * A random 32 bit number for each intersection in the 16x16 board. 
+         * The hash of the board is then computed as H(B) = XOR Q(i, j) where
+         *
+         *      Q(i, j) = hashtb[i, j] if B(i, j) is a B stone
+         *      Q(i, j) = hashtw[i, j] if B(i, j) is a W stone
+         *
+         * This is also known as Zobrist hashing.
+         */
+        private hashtb = sequence(256, rand);
+        private hashtw = sequence(256, rand);
 
         constructor(size: number);
         constructor(size: number, rows: string[]);
@@ -347,7 +347,7 @@ module tsumego {
          */
         private remove(id: block.id) {
             const bd = this.blocks[id];
-            const hasht = bd > 0 ? hashtb : hashtw;
+            const hasht = bd > 0 ? this.hashtb : this.hashtw;
             const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
             for (let y = ymin; y <= ymax; y++)
@@ -474,7 +474,7 @@ module tsumego {
             const id_old = this.table[y * size + x];
 
             this.table[y * size + x] = id_new;
-            this.hash ^= (color > 0 ? hashtb : hashtw)[y * size + x];
+            this.hash ^= (color > 0 ? this.hashtb : this.hashtw)[y * size + x];
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors

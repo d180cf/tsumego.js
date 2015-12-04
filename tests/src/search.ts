@@ -5,7 +5,7 @@ module tests {
     import hex = tsumego.hex;
     import TT = tsumego.TT;
     import BasicMoveGen = tsumego.generators.Basic;
-    import srand = tsumego.rand.LCG.NR01;
+    import rand = tsumego.rand;
 
     ut.group($ => {
         /// the external interface
@@ -191,7 +191,7 @@ module tests {
                             color: c2p == 'B' ? +1 : -1,
                             nkt: +nkt | 0,
                             tt: tt,
-                            expand: BasicMoveGen(rzone, srand(seed)),
+                            expand: BasicMoveGen(rzone),
                             status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });

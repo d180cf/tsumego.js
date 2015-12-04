@@ -1,7 +1,7 @@
 namespace tests {
     'use strict';
 
-    import rand = tsumego.rand.LCG.NR01;
+    import random = tsumego.random;
     import Net = tsumego.ann.SimpleLayeredNetwork;
 
     ut.group($ => {
@@ -96,11 +96,11 @@ namespace tests {
 
             const net = new Net(letters.A.length);
 
-            net.add(letters.A.length, rand(0));
-            net.add(letters.A.length, rand(0));
-            net.add(4, rand(0));
+            net.add(letters.A.length, random);
+            net.add(letters.A.length, random);
+            net.add(4, random);
 
-            for (let i = 0; i < 500; i++) {
+            for (let i = 0; i < 1e3; i++) {
                 net.apply(letters.A);
                 net.adjust([1, 0, 0, 0]);
 
@@ -114,10 +114,20 @@ namespace tests {
                 net.adjust([0, 0, 0, 1]);
             }
 
-            $(net.apply(letters.A).map(x => x * 100 | 0)).equal([94, 5, 0, 0]);
-            $(net.apply(letters.B).map(x => x * 100 | 0)).equal([6, 90, 0, 10]);
-            $(net.apply(letters.C).map(x => x * 100 | 0)).equal([0, 0, 90, 16]);
-            $(net.apply(letters.D).map(x => x * 100 | 0)).equal([0, 8, 8, 84]);
+            const a = net.apply(letters.A).map(x => x * 100 | 0);
+            const b = net.apply(letters.B).map(x => x * 100 | 0);
+            const c = net.apply(letters.C).map(x => x * 100 | 0);
+            const d = net.apply(letters.D).map(x => x * 100 | 0);
+
+            console.log(a);
+            console.log(b);
+            console.log(c);
+            console.log(d);
+
+            $(a).matches([$.ge(90), $.le(10), $.le(10), $.le(10)]);
+            $(b).matches([$.le(10), $.ge(90), $.le(10), $.le(10)]);
+            $(c).matches([$.le(10), $.le(10), $.ge(90), $.le(10)]);
+            $(d).matches([$.le(10), $.le(10), $.le(10), $.ge(90)]);
         });
     });
 }

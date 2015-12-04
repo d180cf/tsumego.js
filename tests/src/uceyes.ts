@@ -4,7 +4,7 @@ module tests {
     import Board = tsumego.Board;
     import Pattern = tsumego.Pattern;
     import stone = tsumego.stone;
-    import LCG = tsumego.rand.LCG.NR01;
+    import rand = tsumego.rand;
 
     function apply(board: Board, fn: (b: Board, x: number, y: number, c: number) => boolean) {
         const eyes = {};
@@ -65,27 +65,6 @@ module tests {
                 Q16: -1,
                 A1: -1
             });
-        });
-
-        $.test($ => { 
-            /// random
-            const rand = LCG(1728382);
-            const board = new Board(16);
-
-            for (let i = 0; i < 1000; i++) {
-                const x = rand() * board.size | 0;
-                const y = rand() * board.size | 0;
-                const c = rand() > 0.5 ? +1 : -1;
-
-                const r = board.play(stone(x, y, c));
-            }
-
-            const eyes = apply(board, Pattern.isEye);
-
-            console.log(board + '');
-            console.log(JSON.stringify(eyes));
-
-            $(eyes).equal({ "A8": -1, "E7": 1, "H6": 1, "M8": -1 });
         });
     });
 }

@@ -39,16 +39,8 @@ namespace tests {
 }
 
 namespace tests.ut {
-    export interface TestContext {
-        /** Example: $(1 + 2).equal(3); */
-        <T>(value: T): ValueContext<T>;
-
-        /** Returns the thrown error or throws an exception. */
-        error(fn: () => any): any;
-    }
-
     export interface GroupContext {
-        test(test: ($: TestContext) => string | void, name?: string): void;
+        test(test: ($: typeof expect) => string | void, name?: string): void;
     }
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
@@ -130,8 +122,13 @@ namespace tests.ut {
         throw e;
     }
 
-    function expect<T>(x: T) {
-        return new ValueContext(x);
+    function expect<T>(x: T): ValueContext<T>;
+    function expect<T>(test: (x: T) => boolean, message?: (x: T) => string): (value: T) => void;
+
+    function expect(x, message?): any {
+        return x instanceof Function ?
+            value => assert(x(value), message && message(value)) :
+            new ValueContext(x);
     }
 
     module expect {
@@ -144,6 +141,9 @@ namespace tests.ut {
 
             throw Error('No error was thrown.');
         }
+
+        export const ge = (min: number) => expect(x => x >= min, x => `${x} < ${min}`);
+        export const le = (max: number) => expect(x => x <= max, x => `${x} > ${max}`);
     }
 
     export class ValueContext<T> {
@@ -151,14 +151,17 @@ namespace tests.ut {
 
         }
 
-        /** Checks strict === equality. */
         equal(y: T) {
             match(y)(this.value);
         }
 
+        matches(pattern) {
+            match(pattern)(this.value);
+        }
+
         belong(y: T[]) {
             if (y.indexOf(this.value) < 0)
-                throw Error(`${JSON.stringify(this.value) } cannot be found in ${JSON.stringify(y) }`);
+                throw Error(`${JSON.stringify(this.value)} cannot be found in ${JSON.stringify(y)}`);
         }
     }
 
@@ -174,6 +177,9 @@ namespace tests.ut {
 
         if (pattern instanceof Array)
             return match.array(pattern);
+
+        if (pattern instanceof Function)
+            return pattern;
 
         throw new Error(`Unrecognized pattern: ${pattern}.`);
     }
@@ -287,3 +293,7 @@ try {
 }
 
 const _dt0 = Date.now();
+
+tsumego.rand.seed(_dt0 | 0);
+console.log('rand seed:', _dt0 | 0);
+

@@ -1,17 +1,22 @@
-module tsumego.rand {
-    export module LCG {
-        /**     
-         * The LCG has the max period iff:
-         *  
-         *  1. c and m are relatively prime
-         *  2. (a - 1) is divisible by all prime factors of m
-         *  3. (a - 1) is divisible by 4 if m is divisible by 4 
-         *
-         * https://en.wikipedia.org/wiki/Linear_congruential_generator
-         */
-        const LCG32 = (a: number, c: number) => (x: number) => () => x = (a * x + c) | 0;
+module tsumego {
+    // en.wikipedia.org/wiki/Linear_congruential_generator
+    // en.wikipedia.org/wiki/Numerical_Recipes
+    var x = Date.now() | 0, a = 1664525, c = 1013904223;
 
-        export const NR32 = LCG32(1664525, 1013904223);
-        export const NR01 = (x: number, g = NR32(x)) => () => Math.abs(g()/0x80000000);
+    /** Returns a random 32 bit number. */
+    export function rand() {
+        return x = (a * x + c) | 0;
     }
+
+    export namespace rand {
+        /**
+         * By default it's initialized to Date.now(), but
+         * can be changed to something else before using
+         * the solver.
+         */
+        export const seed = (value: number) => x = value;
+    }
+
+    /** Returns a random number in the 0..1 range. */
+    export const random = () => Math.abs(rand() / 0x80000000);
 }
