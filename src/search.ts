@@ -3,7 +3,7 @@
 /// <reference path="tt.ts" />
 /// <reference path="benson.ts" />
 /// <reference path="benson.ts" />
-/// <reference path="ann.ts" />
+/// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
 
 module tsumego {
