@@ -9,6 +9,16 @@ module tsumego.SGF {
     const {txt, rgx, seq} = LL;
     import Pattern = LL.Pattern;
 
+    const pattern = (() => {
+        var val = rgx(/\s*\[[^\]]*?\]/).map(s => s.trim().slice(+1, -1));
+        var tag = seq(rgx(/\s*\w+/).map(s => s.trim()), val.rep());
+        var step = seq(rgx(/\s*;/), tag.rep()).take(1).fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
+        var sgf_fwd: Pattern<Node> = new Pattern((s, i) => sgf.exec(s, i));
+        var sgf = seq(rgx(/\s*\(\s*/), step.rep(), sgf_fwd.rep(), rgx(/\s*\)\s*/)).map(r => new Node(r[1], r[2]));
+
+        return sgf;
+    })();
+
     /**
      * Step ;FF[4]SZ[19] gets decomposed into
      *
@@ -48,13 +58,5 @@ module tsumego.SGF {
      *
      * Returns AST of the input.
      */
-    export function parse(source: string): Node {
-        var val = rgx(/\s*\[[^\]]*?\]/).map(s => s.trim().slice(+1, -1));
-        var tag = seq(rgx(/\s*\w+/).map(s => s.trim()), val.rep());
-        var step = seq(rgx(/\s*;/), tag.rep()).take(1).fold<string[]>(0, 1, (a, b) => (a || []).concat(b));
-        var sgf_fwd: Pattern<Node> = new Pattern((s, i) => sgf.exec(s, i));
-        var sgf = seq(rgx(/\s*\(\s*/), step.rep(), sgf_fwd.rep(), rgx(/\s*\)\s*/)).map(r => new Node(r[1], r[2]));
-
-        return sgf.exec(source);
-    }
+    export const parse = (source: string) => pattern.exec(source);
 }

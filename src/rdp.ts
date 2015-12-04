@@ -1,4 +1,8 @@
-﻿/** Generic LL(*) recursive descent parser. */
+﻿/** 
+ * LL(*) recursive descent parser.
+ *
+ * en.wikipedia.org/wiki/Recursive_descent_parser
+ */
 module tsumego.LL {
     export class Pattern<T> {
         constructor(private _exec: (str: string, pos: number) => [T, number]) {
@@ -8,9 +12,8 @@ module tsumego.LL {
         exec(str: string, pos: number): [T, number];
         exec(str: string): T;
 
-        exec(str, pos?) {
-            const r = this._exec.call(null, str, pos || 0);
-            //console.log(this + '', str.slice(pos, pos + 10), r);
+        exec(str, pos?): any {
+            const r = this._exec(str, pos || 0);
             if (typeof pos === 'number') return r;
             if (r && r[1] == str.length) return r[0];
             return null;
@@ -36,8 +39,12 @@ module tsumego.LL {
             return this.map((r: any) => {
                 const m: { [key: string]: U } = {};
 
-                for (const p of r)
-                    m[p[keyName]] = merge(m[p[keyName]], p[valName]);
+                for (const p of r) {
+                    const k = p[keyName];
+                    const v = p[valName];
+
+                    m[k] = merge(m[k], v);
+                }
 
                 return m;
             });
@@ -58,18 +65,14 @@ module tsumego.LL {
         }
     }
 
-    export function rgx(r: RegExp) {
-        return new Pattern((str, pos) => {
-            const m = r.exec(str.slice(pos));
-            return m && m.index == 0 ? [m[0], pos + m[0].length] : null;
-        });
-    }
+    export const rgx = (r: RegExp) => new Pattern((str, pos) => {
+        const m = r.exec(str.slice(pos));
+        return m && m.index == 0 ? [m[0], pos + m[0].length] : null;
+    });
 
-    export function txt(s: string) {
-        return new Pattern((str, pos) => {
-            return str.slice(pos, pos + s.length) == s ? [s, pos + s.length] : null;
-        });
-    }
+    export const txt = (s: string) => new Pattern((str, pos) => {
+        return str.slice(pos, pos + s.length) == s ? [s, pos + s.length] : null;
+    });
 
     export function seq<A, B>(a: Pattern<A>, b: Pattern<B>): Pattern<[A, B]>;
     export function seq<A, B, C>(a: Pattern<A>, b: Pattern<B>, c: Pattern<C>): Pattern<[A, B, C]>;
