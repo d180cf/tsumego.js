@@ -72,7 +72,7 @@ namespace testbench.gobanui {
               ${shapes.join('\r\n') }
             </svg>`;
 
-        const goban = <SVGElement>wrapper.querySelector('svg');
+        const goban = <HTMLElement>wrapper.querySelector('svg');
 
         return Object.assign(goban, {
             getStoneCoords(offsetX: number, offsetY: number) {
