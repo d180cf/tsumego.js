@@ -38,6 +38,8 @@ module tsumego {
             for (let i = 1; i < 624; i++)
                 m[i] = (m[i - 1] ^ m[i - 1] >> 30) + i | 0;
         }
+
+        seed(Date.now() | 0);
     }
 
     /** Returns a random number in the 0..1 range. */
