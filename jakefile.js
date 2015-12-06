@@ -85,7 +85,7 @@ task('tb', { async: true }, () => {
 
     exec('node ../node_modules/typescript/lib/tsc').then(() => {
         return babel({
-            blacklist: ['es6.forOf', 'es6.blockScoping']
+            blacklist: ['regenerator', 'es6.forOf', 'es6.blockScoping']
         });
     }).then(() => {
         console.log('rebuilding problems/manifest.json...');
