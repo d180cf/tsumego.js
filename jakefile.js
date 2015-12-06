@@ -52,7 +52,7 @@ function babel(args) {
 desc('Builds the tsumego.js library.');
 task('lib', { async: true }, () => {
     console.log('building tsumego.js...');
-    exec('node ./node_modules/typescript/lib/tsc').then(() => {
+    exec('node ./node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         babel({
             outPath: 'tsumego.es5.js',
             blacklist: []
@@ -69,7 +69,7 @@ task('test', { async: true }, filter => {
     console.log('running tests...');
     process.chdir('tests');
 
-    exec('node ../node_modules/typescript/lib/tsc').then(() => {
+    exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         return babel();
     }).then(() => {
         return exec('node tests ' + (filter || ''), { printStdout: true });
@@ -83,7 +83,7 @@ task('tb', { async: true }, () => {
     console.log('building the testbench app...');
     process.chdir('testbench');
 
-    exec('node ../node_modules/typescript/lib/tsc').then(() => {
+    exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         return babel({
             blacklist: ['regenerator', 'es6.forOf', 'es6.blockScoping']
         });
@@ -103,7 +103,7 @@ task('tgs', { async: true }, () => {
     console.log('building the console app...');
     process.chdir('console');
 
-    exec('node ../node_modules/typescript/lib/tsc').then(() => {
+    exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         return babel();
     }).then(() => {
         process.chdir('..');
