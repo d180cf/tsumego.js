@@ -128,7 +128,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug} =
+            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, unodes, debug} =
                 typeof args === 'string' ? parse(args) : args;
 
             // cache results from static analysis as it's quite slow
