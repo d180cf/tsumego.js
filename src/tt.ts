@@ -76,7 +76,7 @@ module tsumego {
          */
         set(hash: number, color: number, move: stone, nkt: number) {
             if (nkt < -2 || nkt > +2 || !stone.color(move))
-                throw SyntaxError('Invalid TT entry.');
+                throw Error('Invalid TT entry.');
 
             const s = this.data[hash] || ++this.size && entry.base;
             let e = entry.get(s, color);

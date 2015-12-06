@@ -3,6 +3,7 @@
 /// <reference path="ls.ts" />
 /// <reference path="../src/search.ts" />
 /// <reference path="goban.ts" />
+/// <reference path="vm.ts" />
 
 declare var board: tsumego.Board;
 
@@ -222,29 +223,18 @@ module testbench {
                     }
                 });
             } else {
-                const [, source, bw, nkt, nvar] = /^\?([:]?[^:]+)(?::(B|W)([+-]\d+))?(?::(\d+))?/.exec(location.search);
+                const [_, source, nvar] = /^\?([:]?[^:]+)(?::(\d+))?/.exec(location.search);
 
                 document.title = source;
 
                 if (source[0] == ':')
                     lspath = source;
 
-                let lastsi = 'B+0';
-
                 document.querySelector('#solve').addEventListener('click', e => {
-                    const input = prompt('Color and the number of ext ko treats (-2..+2), e.g. W-2, B+1, W, B:', lastsi);
-                    if (!input) return;
-
-                    lastsi = input;
-                    const parsed = /^(B|W)([+-][012])?$/.exec(input);
-
-                    if (!parsed) {
-                        setComment('Invalid input: ' + input);
-                        return;
-                    }
-
-                    const [, color, nkt] = parsed;
-                    solveAndRender(s2c(color), nkt ? +nkt : 0);
+                    if (vm.debugSolver)
+                        dbgsolve(board, vm.solveFor, vm.nkt);
+                    else
+                        solveAndRender(vm.solveFor, vm.nkt);
                 });
 
                 document.querySelector('#reset').addEventListener('click', e => {
@@ -265,10 +255,6 @@ module testbench {
                             return;
                         throw err;
                     }
-                });
-
-                document.querySelector('#debug').addEventListener('click', e=> {
-                    dbgsolve(board, bw == 'W' ? -1 : +1, +nkt);
                 });
 
                 if (source[0] == ':' && !ls.data[source]) {
@@ -322,17 +308,17 @@ module testbench {
         });
 
         ui.addEventListener('click', event => {
-            const rb = <HTMLInputElement>document.querySelector('input[name="tool"]:checked');
-
-            if (!lspath || !rb) return;
-
             event.preventDefault();
             event.stopPropagation();
 
             const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
             const c = board.get(x, y);
 
-            switch (rb.value) {
+            if (!lspath) {
+                const s = stone(x, y, -vm.solveFor);
+                const r = board.play(s);
+                if (!r) console.log(stone.toString(s) + ' cannot be played on this board:\n' + board);
+            } else switch (vm.tool) {
                 case 'MA':
                     // mark the target                    
                     aim = c < 0 ? stone(x, y, 0) : 0;
@@ -414,7 +400,7 @@ module testbench {
     }
 
     function solveAndRender(color: number, nkt = 0) {
-        setComment('Solving... Unfortunately, there is no way to terminate the solver.');
+        setComment('Solving...');
 
         setTimeout(() => {
             const move = solve(board, color, nkt, true);

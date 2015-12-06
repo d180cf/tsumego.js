@@ -11,7 +11,7 @@
         <div class="tsumego"></div>
         <textarea class="tsumego-sgf" id="sgf"></textarea>
 
-        <div class="editor-toolbox">
+        <div class="tsumego-options">
             <span>Use Alt+B, Alt+W, etc.</span>
             <span><input type="radio" name="tool" value="AB" accesskey="B" checked><label for="AB">Black stone.</label></span>
             <span><input type="radio" name="tool" value="AW" accesskey="W"><label for="AW">White stone.</label></span>
@@ -20,11 +20,20 @@
             <span><input type="radio" name="tool" value="--" accesskey="C"><label for="--">Remove a stone.</label></span>
         </div>
 
+        <div class="tsumego-options">
+            <span>Solve for:</span>
+            <span><input type="radio" name="solve-for" value="B" checked><label for="B">Black</label></span>
+            <span><input type="radio" name="solve-for" value="W"><label for="W">White</label></span>
+        </div>
+
+        <div class="tsumego-options">
+            <span><input name="nkt" value="0" /><label for="nkt">The balance of external ko treats.</label></span>
+            <span><input name="debug" type="checkbox" /><label for="debug">Debug the solver.</label></span>
+        </div>
+
         <button id="reset" title="Clears the board">Reset</button>
-        <button id="debug" title="Invokes the solver in the step-by-step mode.">Debug</button>
         <button id="solve">Solve</button>
 
         <div class="tsumego-comment" id="comment"></div>
-    </div>
 </body>
 </html>

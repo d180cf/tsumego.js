@@ -121,4 +121,23 @@
     export function enumerable(isEnumerable: boolean) {
         return (p, m, d) => void (d.enumerable = isEnumerable);
     }
+
+    export function assert(condition) {
+        if (!condition)
+            debugger;
+    }
+
+    export const n32b = (d: { [name: string]: { offset: number, length: number, signed?: boolean } }) => ({
+        parse(x: number) {
+            const r = {};
+
+            for (let name in d) {
+                const {offset, length, signed = false} = d[name];
+                const value = x << 32 - offset - length >> 32 - length;
+                r[name] = signed ? value : value & (1 << length) - 1;
+            }
+
+            return r;
+        }
+    });
 }

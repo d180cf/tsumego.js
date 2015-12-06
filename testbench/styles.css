@@ -37,13 +37,13 @@ h3 {
     padding: 5pt;
 }
 
-.editor-toolbox {
+.tsumego-options {
     display: inline-block;
     border: 1px solid black;
     margin: 5pt;
     padding: 3pt;
 }
 
-    .editor-toolbox span {
+    .tsumego-options span {
         display: block;
     }
