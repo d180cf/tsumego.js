@@ -2,10 +2,10 @@ namespace tests {
     'use strict';
 
     import random = tsumego.random;
-    import Net = tsumego.ann.SimpleLayeredNetwork;
+    import Net = tsumego.DCNN;
 
     ut.group($ => {
-        /// ann
+        /// dcnn
 
         $.test($ => {
             /// simple 2:2:1 net #1

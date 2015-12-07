@@ -1,11 +1,6 @@
 /// <reference path="linalg.ts" />
 
-/**
- * Artificial Neural Networks.
- *
- * https://en.wikipedia.org/wiki/Backpropagation
- */
-module tsumego.ann {
+module tsumego {
     import vector = linalg.vector;
     import matrix = linalg.matrix;
 
@@ -13,7 +8,7 @@ module tsumego.ann {
     const sigmoid1 = (s: number) => s * (1 - s); // d/dx S(x) = S(x) * (1 - S(x))
 
     /**
-     * The simplest layered ANN.
+     * The simplest layered DCNN.
      *
      * A layer v[i] is just a vector of numbers (called neurons) in 0..1 range.
      * The first layer v[0] is the input of the net.
@@ -24,8 +19,10 @@ module tsumego.ann {
      * In other words, v[n] = F(w)(v[0]) where F(w) is the net function.
      * Training of the net is the process of computing F(w) for
      * different inputs and adjusting w to get closer to desired outputs.
+     *
+     * en.wikipedia.org/wiki/Backpropagation
      */
-    export class SimpleLayeredNetwork {
+    export class DCNN {
         private weights: matrix[];
         private outputs: vector[];
 
