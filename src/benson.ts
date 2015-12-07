@@ -2,10 +2,10 @@
  * Implements the Benson's algorithm.
  *
  * Benson's Definition of Unconditional Life
- * http://senseis.xmp.net/?BensonsAlgorithm
+ * senseis.xmp.net/?BensonsAlgorithm
  *
  * David B. Benson. "Life in the Game of Go"
- * http://webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
+ * webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
  */
 module tsumego.benson {
     /** 
