@@ -174,12 +174,6 @@ module tsumego {
             // tells who is being captured
             const target = status(board);
 
-            /** Moves that require a ko treat are considered last.
-                That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
-                b.d - a.d || // moves that require a ko treat are considered last
-                b.w - a.w);  // first consider moves that lead to a winning position
-
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
@@ -211,7 +205,16 @@ module tsumego {
                 let result: stone;
                 let mindepth = infdepth;
 
-                const nodes = sa.reset();
+                interface Node {
+                    board: number;
+                    color: number;
+                    nkt: number;
+                    move: stone;
+                    wins: number;
+                    repd: number;
+                }
+
+                const nodes: Node[] = [];
 
                 for (const move of expand(board, color)) {
                     board.play(move);
@@ -239,12 +242,16 @@ module tsumego {
                     if (d <= depth && nkt * color <= 0)
                         continue;
 
-                    // check if this node has already been solved
-                    const r = tt.get(hash, -color, d <= depth ? nkt - color : nkt);
+                    const newnkt = d <= depth ? nkt - color : nkt;
+                    const cached = tt.get(hash, -color, newnkt);
 
-                    sa.insert(repd.set(move, d), {
-                        d: d,
-                        w: stone.color(r) * color
+                    nodes.push({
+                        board: hash,
+                        color: -color,
+                        nkt: newnkt,
+                        move: repd.set(move, d),                        
+                        wins: stone.color(cached) * color,
+                        repd: d
                     });
                 }
 
@@ -255,10 +262,17 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert(0, { d: infdepth, w: 0 });
+                nodes.push({
+                    board: hashb,
+                    color: -color,
+                    nkt: nkt,
+                    move: 0,
+                    wins: 0,
+                    repd: infdepth
+                });
 
-                for (const move of nodes) {
-                    const d = !move ? infdepth : repd.get(move);
+                for (const node of nodes) {
+                    const d = node.repd;
                     let s: stone;
 
                     // this is a hash of the path: reordering moves must change the hash;
