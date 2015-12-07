@@ -202,13 +202,14 @@ module tsumego {
                     return repd.set(ttres, infdepth);
                 }
 
-                let result: stone;
+                let result: stone = 0;
                 let mindepth = infdepth;
 
                 interface Node {
                     board: number;
                     color: number;
                     nkt: number;
+                    ko: boolean;
                     move: stone;
                     wins: number;
                     repd: number;
@@ -226,9 +227,7 @@ module tsumego {
                     while (d >= 0 && path[d] != hash)
                         d = d > 0 && path[d] == path[d - 1] ? -1 : d - 1;
 
-                    d++;
-
-                    if (!d) d = infdepth;
+                    d = d + 1 || infdepth;
 
                     if (d < mindepth)
                         mindepth = d;
@@ -249,7 +248,8 @@ module tsumego {
                         board: hash,
                         color: -color,
                         nkt: newnkt,
-                        move: repd.set(move, d),                        
+                        ko: d <= depth,
+                        move: repd.set(move, d),
                         wins: stone.color(cached) * color,
                         repd: d
                     });
@@ -266,13 +266,38 @@ module tsumego {
                     board: hashb,
                     color: -color,
                     nkt: nkt,
+                    ko: false,
                     move: 0,
                     wins: 0,
                     repd: infdepth
                 });
 
-                for (const node of nodes) {
-                    const d = node.repd;
+                function pick() {
+                    let node: Node;
+                    let dn1: number;
+                    let dn2: number;
+                    let dn0: number;
+                    let pn0: number;
+
+                    for (const x of nodes) {
+                        const p = pn.get(x.board, x.color, x.nkt);
+                        const d = dn.get(x.board, x.color, x.nkt);
+
+                        //if (!x.ko && 
+
+                        if (!node || d < dn1)
+                            node = x, dn1 = d;
+                    }
+
+                    return { node: node, dn1: dn1, dn2: dn2, dn0, pn0 };
+                }
+
+                while (true) {
+                    const {node, dn1, dn2, dn0, pn0} = pick();
+
+                    if (dn0 > dmax || pn0 > pmax)
+                        break;
+
                     let s: stone;
 
                     // this is a hash of the path: reordering moves must change the hash;
