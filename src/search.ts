@@ -270,30 +270,41 @@ module tsumego {
                 });
 
                 while (true) {
-                    let node: Node;
-                    let dn1: number;
-                    let dn2: number;
-                    let dn0 = 0;
-                    let pn0 = Infinity;
+                    let node: Node; // it has the smallest dn                
+                    let pn0 = Infinity; // = min dn <= pmax
+                    let dn0 = 0; // = sum pn <= dmax
+                    let dn2: number; // the next smallest dn
+                    let pnc: number; // pn of the chosen node
 
                     for (const x of nodes) {
                         const p = pn.get(x.board, x.color, x.nkt);
                         const d = dn.get(x.board, x.color, x.nkt);
 
-                        pn0 = min(pn0, d);
                         dn0 += p;
 
-                        if (!node || (d - dn1) < 0) {
-                            node = x;
-                            dn2 = dn1;
-                            dn1 = d;
+                        if (!node || d <= pn0) {
+                            if (d < pn0) {
+                                dn2 = pn0;
+                                pn0 = d;
+                                pnc = p;
+                                node = x;
+                            } else if (d < dn2) {
+                                dn2 = d;
+                            }
+
+                            if ((node.wins - x.wins || node.repd - x.repd) < 0)
+                                node = x;
                         }
                     }
 
                     if (dn0 > dmax || pn0 > pmax)
-                        break;
+                        return 0;
 
-                    const d = node.repd;                    
+                    const pmax1 = dmax - (dn0 - pnc);
+                    const dmax1 = min(pmax, dn2);
+
+                    const d = node.repd;
+                    const move = node.move;                
 
                     // this is a hash of the path: reordering moves must change the hash;
                     // 0x87654321 is meant to be a generator of the field, but I didn't
@@ -386,22 +397,24 @@ module tsumego {
                 return result;
             }
 
-            const moves: stone[] = [];
-            let move: stone;
+            {
+                const moves: stone[] = [];
+                let move: stone;
 
-            while (move = board.undo())
-                moves.unshift(move);
+                while (move = board.undo())
+                    moves.unshift(move);
 
-            for (move of moves) {
-                path.push(board.hash);
-                board.play(move);
+                for (move of moves) {
+                    path.push(board.hash);
+                    board.play(move);
+                }
+
+                move = yield* solve(color, nkt, 1e5, 1e5);
+
+                return typeof args === 'string' ?
+                    stone.toString(move) :
+                    move;
             }
-
-            move = yield* solve(color, nkt, 1e5, 1e5);
-
-            return typeof args === 'string' ?
-                stone.toString(move) :
-                move;
         }
     }
 }
