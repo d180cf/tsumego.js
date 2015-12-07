@@ -21,6 +21,43 @@ module tsumego {
     }
 
     /**
+     * Stores (dis)proof numbers for investigated nodes.
+     * A node is a triple: (board, color, nkt).
+     */
+    class PDNS {
+        private data: { [hash: number]: number } = {};
+
+        private hc = rand();
+        private hk = rand();
+        private h = [rand(), rand()];
+
+        private hash(hash: number, color: number, nkt: number) {
+            assert(nkt > -3 && nkt < +3);
+
+            if (color < 0)
+                hash ^= this.hc;
+
+            if (nkt > 0)
+                hash ^= this.h[-1 + nkt];
+
+            if (nkt < 0)
+                hash ^= this.h[-1 - nkt] ^ this.hk;
+
+            return hash;
+        }
+
+        get(board: number, color: number, nkt: number) {
+            const h = this.hash(board, color, nkt);
+            return this.data[h] || 0;
+        }
+
+        set(board: number, color: number, nkt: number, pdn: number) {
+            const h = this.hash(board, color, nkt);
+            this.data[h] = pdn;
+        }
+    }
+
+    /**
      * The problem's description is given as an SGF string:
      *
      *      (;FF[4]SZ[9]
@@ -146,7 +183,10 @@ module tsumego {
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
-            function* solve(color: number, nkt: number) {
+            const pn = new PDNS; // proof numbers
+            const dn = new PDNS; // disproof numbers
+
+            function* solve(color: number, nkt: number, pmax: number, dmax: number) {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
@@ -243,7 +283,7 @@ module tsumego {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
                             // elsewhere resets the local history of moves
-                            s = yield* solve(-color, nkt);
+                            s = yield* solve(-color, nkt, pmax, dmax);
                         }
                     } else {
                         board.play(move);
@@ -254,10 +294,10 @@ module tsumego {
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
-                                d > depth ? yield* solve(-color, nkt) :
+                                d > depth ? yield* solve(-color, nkt, pmax, dmax) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color));
+                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color, pmax, dmax));
 
                         board.undo();
                     }
@@ -321,7 +361,7 @@ module tsumego {
                 board.play(move);
             }
 
-            move = yield* solve(color, nkt);
+            move = yield* solve(color, nkt, 1e5, 1e5);
 
             return typeof args === 'string' ?
                 stone.toString(move) :
