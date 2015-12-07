@@ -316,7 +316,7 @@ module tsumego {
                     path.push(hashb);
                     stats && stats.nodes++;
 
-                    let s: stone;
+                    let s: stone; // can be zero if solving exceeds pdn thresholds
 
                     if (!move) {
                         debug && (yield 'yielding the turn to the opponent');
@@ -330,7 +330,7 @@ module tsumego {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
                             // elsewhere resets the local history of moves
-                            s = yield* solve(-color, nkt, pmax, dmax);
+                            s = yield* solve(-color, nkt, pmax1, dmax1);
                         }
                     } else {
                         board.play(move);
@@ -341,10 +341,10 @@ module tsumego {
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
-                                d > depth ? yield* solve(-color, nkt, pmax, dmax) :
+                                d > depth ? yield* solve(-color, nkt, pmax1, dmax1) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color, pmax, dmax));
+                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color, pmax1, dmax1));
 
                         board.undo();
                     }
