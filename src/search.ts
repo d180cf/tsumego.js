@@ -209,7 +209,6 @@ module tsumego {
                     board: number;
                     color: number;
                     nkt: number;
-                    ko: boolean;
                     move: stone;
                     wins: number;
                     repd: number;
@@ -248,7 +247,6 @@ module tsumego {
                         board: hash,
                         color: -color,
                         nkt: newnkt,
-                        ko: d <= depth,
                         move: repd.set(move, d),
                         wins: stone.color(cached) * color,
                         repd: d
@@ -266,39 +264,36 @@ module tsumego {
                     board: hashb,
                     color: -color,
                     nkt: nkt,
-                    ko: false,
                     move: 0,
                     wins: 0,
                     repd: infdepth
                 });
 
-                function pick() {
+                while (true) {
                     let node: Node;
                     let dn1: number;
                     let dn2: number;
-                    let dn0: number;
-                    let pn0: number;
+                    let dn0 = 0;
+                    let pn0 = Infinity;
 
                     for (const x of nodes) {
                         const p = pn.get(x.board, x.color, x.nkt);
                         const d = dn.get(x.board, x.color, x.nkt);
 
-                        //if (!x.ko && 
+                        pn0 = min(pn0, d);
+                        dn0 += p;
 
-                        if (!node || d < dn1)
-                            node = x, dn1 = d;
+                        if (!node || (d - dn1) < 0) {
+                            node = x;
+                            dn2 = dn1;
+                            dn1 = d;
+                        }
                     }
-
-                    return { node: node, dn1: dn1, dn2: dn2, dn0, pn0 };
-                }
-
-                while (true) {
-                    const {node, dn1, dn2, dn0, pn0} = pick();
 
                     if (dn0 > dmax || pn0 > pmax)
                         break;
 
-                    let s: stone;
+                    const d = node.repd;                    
 
                     // this is a hash of the path: reordering moves must change the hash;
                     // 0x87654321 is meant to be a generator of the field, but I didn't
@@ -309,6 +304,8 @@ module tsumego {
                     tags.push(h & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
                     stats && stats.nodes++;
+
+                    let s: stone;
 
                     if (!move) {
                         debug && (yield 'yielding the turn to the opponent');
