@@ -116,10 +116,10 @@ task('release', ['lib'], () => {
     jake.rmRf('bin/release');
     jake.mkdirP('bin');
     jake.cpR('release', 'bin');
+    jake.cpR('libs/regenerator-runtime.js', 'bin/release/regenerator-runtime.js');
 
     var copy = path => jake.cpR(path, 'bin/release/' + path);
-
-    copy('regenerator-runtime.js');
+    
     copy('tsumego.es5.js');
     copy('tsumego.es6.js');
 });
@@ -131,7 +131,7 @@ task('site', ['tb'], () => {
     jake.mkdirP('bin');
     jake.cpR('site', 'bin');
     jake.cpR('problems', 'bin/site/problems');
-    jake.cpR('regenerator-runtime.js', 'bin/site/regenerator-runtime.js');
+    jake.cpR('libs/regenerator-runtime.js', 'bin/site/regenerator-runtime.js');
     jake.mkdirP('bin/site/testbench');
     jake.cpR('testbench/app.js', 'bin/site/testbench/app.js');
     jake.cpR('testbench/index.html', 'bin/site/testbench/index.html');

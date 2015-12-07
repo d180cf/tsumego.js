@@ -286,7 +286,7 @@ try {
         new Function('function*f(){}');
     } catch (err) {
         console.warn('loading the regenerator runtime');
-        global.regeneratorRuntime = require('../regenerator-runtime');
+        global.regeneratorRuntime = require('../libs/regenerator-runtime');
     }
 } catch (e) {
     console.warn(e);
