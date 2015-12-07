@@ -181,16 +181,19 @@ module tests {
                         console.log(c2p + ' plays first');
 
                         if (nkt)
-                            console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt) } ko treats`);
+                            console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt)} ko treats`);
 
                         const seed = Date.now() | 0;
                         console.log('rand seed:', hex(seed));
+
+                        const unodes = { size: 0 };
 
                         const result = solve({
                             root: b.fork(),
                             color: c2p == 'B' ? +1 : -1,
                             nkt: +nkt | 0,
                             tt: tt,
+                            unodes: unodes as any,
                             expand: BasicMoveGen(rzone),
                             status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
@@ -202,6 +205,8 @@ module tests {
                         const [x, y] = stone.coords(result);
                         const move = !stone.hascoords(result) ? 0 : stone(x, y, 0);
                         $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
+
+                        return unodes.size + '';
                     }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
                 }
             }
