@@ -404,7 +404,7 @@ module tsumego {
                     board.play(move);
                 }
 
-                move = yield* solve(color, nkt, 1e5, 1e5);
+                move = yield* solve(color, nkt, maxint, maxint);
 
                 return typeof args === 'string' ?
                     stone.toString(move) :

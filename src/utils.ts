@@ -1,6 +1,8 @@
 ﻿module tsumego {
     export const version = '0.1.0';
 
+    export const maxint = -1 >>> 1;
+
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
