@@ -193,7 +193,7 @@ module tests {
                             color: c2p == 'B' ? +1 : -1,
                             nkt: +nkt | 0,
                             tt: tt,
-                            unodes: unodes as any,
+                            unodes: unodes,
                             expand: BasicMoveGen(rzone),
                             status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
