@@ -48,7 +48,7 @@ module tsumego {
 
         get(board: number, color: number, nkt: number) {
             const h = this.hash(board, color, nkt);
-            return this.data[h] || 0;
+            return this.data[h] || 1;
         }
 
         set(board: number, color: number, nkt: number, pdn: number) {
@@ -277,17 +277,22 @@ module tsumego {
 
                         dn0 += p;
 
-                        if (d <= pn0) {
+                        if (d < pn0) {
+                            node = x, dn2 = pn0, pn0 = d, pnc = p;
+                        } else {
+                            if (d < dn2)
+                                dn2 = d;
+
                             // this check must respect the existing order of nodes given by expand(...)
-                            if (!node || (d - pn0 || node.wins - x.wins || node.repd - x.repd) < 0)
-                                node = x, dn2 = pn0, pn0 = d, pnc = p;
-                        } else if (d < dn2) {
-                            dn2 = d;
+                            if (d == pn0 && (node.wins - x.wins || node.repd - x.repd) < 0)
+                                node = x, pnc = p;
                         }
                     }
 
-                    if (dn0 > dmax || pn0 > pmax)
+                    if (dn0 > dmax || pn0 > pmax) {
+                        yield `${stone.toString(stone.nocoords(color))} pn = ${pn0} > ${pmax} || dn = ${dn0} > ${dmax}`;
                         break;
+                    }
 
                     // these are pn/dn constraints for the chosen node:
                     // once they are exceeded, the solver comes back
@@ -324,9 +329,11 @@ module tsumego {
                             // elsewhere resets the local history of moves
                             s = yield* solve(-color, nkt, pmax1, dmax1);
                         }
+
+                        debug && (yield 'the outcome of passing: ' + stone.toString(s));
                     } else {
                         board.play(move);
-                        debug && (yield stone.toString(move));
+                        debug && (yield `${stone.toString(move)} pn <= ${pmax} dn <= ${dmax}`);
 
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
@@ -338,10 +345,10 @@ module tsumego {
                                     // spend a ko treat and yield the turn to the opponent
                                     yield* solve(-color, nkt - color, pmax1, dmax1);
 
+                        debug && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
                     }
-
-                    debug && (yield 'the outcome of this move: ' + stone.toString(s));
+                    
                     path.pop();
                     tags.pop();
 
