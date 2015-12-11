@@ -71,6 +71,10 @@ module tsumego {
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: boolean;
+            unodes?: {
+                [hash: number]: boolean;
+                size: number;
+            };
             stats?: {
                 nodes: number;
                 depth: number;
@@ -124,7 +128,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, debug} =
+            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, unodes, debug} =
                 typeof args === 'string' ? parse(args) : args;
 
             // cache results from static analysis as it's quite slow
@@ -149,6 +153,15 @@ module tsumego {
                 const ttres = tt.get(hashb, color, nkt);
 
                 stats && (stats.depth = depth, yield);
+
+                if (unodes) {
+                    const h = gf32.mul(board.hash ^ (color > 0 ? 0 : -1), gf32.pow(3, nkt));
+
+                    if (!unodes[h]) {
+                        unodes[h] = true;
+                        unodes.size++;
+                    }
+                }
 
                 if (ttres) {
                     debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
