@@ -180,6 +180,7 @@ module tsumego {
             const pn = new PDNS; // proof numbers
             const dn = new PDNS; // disproof numbers
 
+            // returns 0 if the node cannot be solved within the given pn/dn constraints
             function* solve(color: number, nkt: number, pmax: number, dmax: number) {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
@@ -214,6 +215,7 @@ module tsumego {
                     repd: number;
                 }
 
+                /** Once a node is solved, it's removed from the list. */
                 const nodes: Node[] = [];
 
                 for (const move of expand(board, color)) {
@@ -273,7 +275,7 @@ module tsumego {
                     let node: Node; // it has the smallest dn                
                     let pn0 = Infinity; // = min dn <= pmax
                     let dn0 = 0; // = sum pn <= dmax
-                    let dn2: number; // the next smallest dn
+                    let dn2 = Infinity; // the next smallest dn after pn0
                     let pnc: number; // pn of the chosen node
 
                     for (const x of nodes) {
@@ -282,24 +284,21 @@ module tsumego {
 
                         dn0 += p;
 
-                        if (!node || d <= pn0) {
-                            if (d < pn0) {
-                                dn2 = pn0;
-                                pn0 = d;
-                                pnc = p;
-                                node = x;
-                            } else if (d < dn2) {
-                                dn2 = d;
-                            }
-
-                            if ((node.wins - x.wins || node.repd - x.repd) < 0)
-                                node = x;
+                        if (d <= pn0) {
+                            // this check must respect the existing order of nodes given by expand(...)
+                            if (!node || (d - pn0 || node.wins - x.wins || node.repd - x.repd) < 0)
+                                node = x, dn2 = pn0, pn0 = d, pnc = p;
+                        } else if (d < dn2) {
+                            dn2 = d;
                         }
                     }
 
                     if (dn0 > dmax || pn0 > pmax)
-                        return 0;
+                        break;
 
+                    // these are pn/dn constraints for the chosen node:
+                    // once they are exceeded, the solver comes back
+                    // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
                     const dmax1 = min(pmax, dn2);
 
@@ -316,10 +315,10 @@ module tsumego {
                     path.push(hashb);
                     stats && stats.nodes++;
 
-                    let s: stone; // can be zero if solving exceeds pdn thresholds
+                    let s: stone; // can be zero if solving exceeds pn/dn thresholds
 
                     if (!move) {
-                        debug && (yield 'yielding the turn to the opponent');
+                        debug && (yield stone.toString(stone.nocoords(color)) + ' passes');
                         const i = tags.lastIndexOf(tags[depth], -2);
 
                         if (i >= 0) {
@@ -334,7 +333,7 @@ module tsumego {
                         }
                     } else {
                         board.play(move);
-                        debug && (yield);
+                        debug && (yield stone.toString(move));
 
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
@@ -344,7 +343,7 @@ module tsumego {
                                 d > depth ? yield* solve(-color, nkt, pmax1, dmax1) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color, pmax1, dmax1));
+                                    yield* solve(-color, nkt - color, pmax1, dmax1);
 
                         board.undo();
                     }
@@ -352,6 +351,9 @@ module tsumego {
                     debug && (yield 'the outcome of this move: ' + stone.toString(s));
                     path.pop();
                     tags.pop();
+
+                    // if the node is solved, it must be removed
+                    if (s) nodes.splice(nodes.indexOf(node), 1);
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
@@ -381,8 +383,8 @@ module tsumego {
                     }
                 }
 
-                // if there is no winning move, record a loss
-                if (!result)
+                // if all moves and passing have been proven to be a loss...
+                if (!result && !nodes.length)
                     result = repd.set(stone.nocoords(-color), mindepth);
 
                 // if the solution doesn't depend on a ko above the current node,
