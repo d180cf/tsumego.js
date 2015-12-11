@@ -109,7 +109,6 @@ module tsumego {
             alive?(node: Node): boolean;
             debug?: boolean;
             unodes?: {
-                [hash: number]: boolean;
                 size: number;
             };
             stats?: {
@@ -189,19 +188,13 @@ module tsumego {
 
                 stats && (stats.depth = depth, yield);
 
-                if (unodes) {
-                    const h = gf32.mul(board.hash ^ (color > 0 ? 0 : -1), gf32.pow(3, nkt));
-
-                    if (!unodes[h]) {
-                        unodes[h] = true;
-                        unodes.size++;
-                    }
-                }
-
                 if (ttres) {
                     debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
                     return repd.set(ttres, infdepth);
                 }
+
+                if (unodes)
+                    unodes.size++;
 
                 let result: stone = 0;
                 let mindepth = infdepth;
