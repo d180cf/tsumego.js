@@ -348,7 +348,7 @@ module tsumego {
                         debug && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
                     }
-                    
+
                     path.pop();
                     tags.pop();
 
@@ -381,6 +381,32 @@ module tsumego {
                                 d);
                         break;
                     }
+                }
+
+                if (result * color > 0) {
+                    pn.set(hashb, color, nkt, 0);
+                    dn.set(hashb, color, nkt, maxint);
+                }
+
+                if (result * color < 0) {
+                    pn.set(hashb, color, nkt, maxint);
+                    dn.set(hashb, color, nkt, 0);
+                }
+
+                if (!result && nodes.length) {
+                    let dmin = Infinity;
+                    let psum = 0;
+
+                    for (const x of nodes) {
+                        const p = pn.get(x.board, x.color, x.nkt);
+                        const d = dn.get(x.board, x.color, x.nkt);
+
+                        psum += p;
+                        dmin = min(dmin, d);                        
+                    }
+
+                    pn.set(hashb, color, nkt, dmin);
+                    dn.set(hashb, color, nkt, psum);
                 }
 
                 // if all moves and passing have been proven to be a loss...
