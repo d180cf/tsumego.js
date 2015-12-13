@@ -92,6 +92,9 @@ module testbench {
                 lspath = null;
                 renderBoard(comment);
             }
+
+            if (done)
+                console.log(stone.toString(value));
         };
 
         const stepOver = (ct: CancellationToken) => {
