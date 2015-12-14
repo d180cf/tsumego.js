@@ -395,6 +395,7 @@ module testbench {
 
     function setComment(comment: string) {
         document.querySelector('#comment').textContent = comment;
+        console.log(comment);
     }
 
     function parse(si: string, size: number): stone {

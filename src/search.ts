@@ -312,28 +312,19 @@ module tsumego {
                         }
                     }
 
+                    if (debug) {
+                        yield comment((node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]') +
+                            ` [${pn0} ${dn0}] <= [${pmax}, ${dmax}]`, { moves: pdn1 });
+                    }
+
+                    if (dn0 > dmax || pn0 > pmax)
+                        break;
+
                     // these are pn/dn constraints for the chosen node:
                     // once they are exceeded, the solver comes back
                     // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
                     const dmax1 = min(pmax, dn2);
-
-                    if (debug) {
-                        yield comment(node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]', {
-                            p0: pn0,
-                            d0: dn0,
-                            pm0: pmax,
-                            dm0: dmax,
-                            pm1: pmax1,
-                            dm1: dmax1,
-                            pd1: pdn1
-                        });
-                    }
-
-                    if (dn0 > dmax || pn0 > pmax) {
-                        debug && (yield 'pd thresholds exceeded');
-                        break;
-                    }
 
                     const d = node.repd;
                     const move = node.move;                
@@ -368,7 +359,7 @@ module tsumego {
                         debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
                     } else {
                         board.play(move);
-                        //debug && (yield stone.toString(move));
+                        debug && (yield stone.toString(move));
 
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
