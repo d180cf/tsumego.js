@@ -210,8 +210,10 @@ module tsumego {
                     const p = pn.get(hashb, color, nkt);
                     const d = dn.get(hashb, color, nkt);
 
-                    if (p > pmax || d > dmax)
+                    if (p > pmax || d > dmax) {
+                        debug && (yield `${p} > ${pmax} or ${d} > ${dmax}`);
                         return 0;
+                    }
                 }
 
                 if (unodes)
@@ -222,7 +224,6 @@ module tsumego {
 
                 interface Node {
                     board: number;
-                    color: number;
                     nkt: number;
                     move: stone;
                     wins: number;
@@ -261,7 +262,6 @@ module tsumego {
 
                     nodes.push({
                         board: hash,
-                        color: -color,
                         nkt: newnkt,
                         move: repd.set(move, d),
                         wins: stone.color(cached) * color,
@@ -278,7 +278,6 @@ module tsumego {
                 // solved despite the move is yilded to the opponent.
                 nodes.push({
                     board: hashb,
-                    color: -color,
                     nkt: nkt,
                     move: 0,
                     wins: 0,
@@ -295,10 +294,10 @@ module tsumego {
                     const pdn1 = [];
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, x.color, x.nkt);
-                        const d = dn.get(x.board, x.color, x.nkt);
+                        const p = pn.get(x.board, -color, x.nkt);
+                        const d = dn.get(x.board, -color, x.nkt);
 
-                        pdn1.push(`${stone.toString(x.move)} p=${p} d=${d}`);
+                        pdn1.push(`${stone.toString(x.move)} ${p} ${d}`);
                         dn0 += p;
 
                         if (d < pn0) {
@@ -332,8 +331,7 @@ module tsumego {
                     }
 
                     if (dn0 > dmax || pn0 > pmax) {
-                        if (pn0 >= maxdpn)
-                            result = stone.nocoords(-color);
+                        debug && (yield 'pd thresholds exceeded');
                         break;
                     }
 
@@ -353,7 +351,7 @@ module tsumego {
                     let s: stone; // can be zero if solving exceeds pn/dn thresholds
 
                     if (!move) {
-                        //debug && (yield stone.toString(stone.nocoords(color)) + ' passes');
+                        debug && (yield stone.toString(stone.nocoords(color)) + ' passes');
                         const i = tags.lastIndexOf(tags[depth], -2);
 
                         if (i >= 0) {
@@ -367,7 +365,7 @@ module tsumego {
                             s = yield* solve(-color, nkt, pmax1, dmax1);
                         }
 
-                        //debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
+                        debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
                     } else {
                         board.play(move);
                         //debug && (yield stone.toString(move));
@@ -382,7 +380,7 @@ module tsumego {
                                     // spend a ko treat and yield the turn to the opponent
                                     yield* solve(-color, nkt - color, pmax1, dmax1);
 
-                        //debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
+                        debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
                     }
 
@@ -435,8 +433,8 @@ module tsumego {
                     let psum = 0;
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, x.color, x.nkt);
-                        const d = dn.get(x.board, x.color, x.nkt);
+                        const p = pn.get(x.board, -color, x.nkt);
+                        const d = dn.get(x.board, -color, x.nkt);
 
                         psum += p;
                         dmin = min(dmin, d);
