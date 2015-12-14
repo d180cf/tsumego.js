@@ -67,6 +67,8 @@ module testbench {
     }
 
     function dbgsolve(board: Board, color: number, nkotreats = 0) {
+        tsumego.rand.seed(123);
+
         const solver = tsumego.solve.start({
             debug: true,
             root: board,
@@ -84,7 +86,7 @@ module testbench {
 
         const next = (render = true) => {
             const {done, value} = solver.next();
-            const comment: string = value;
+            const comment: string = value + '';
             !done && tick++;
 
             if (render) {

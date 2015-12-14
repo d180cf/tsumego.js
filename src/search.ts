@@ -8,6 +8,7 @@
 
 module tsumego {
     const infdepth = 255;
+    const maxdpn = 99;
 
     module repd {
         export const get = move => move >> 8 & 255;
@@ -18,6 +19,18 @@ module tsumego {
         hash: number;
         play(move: stone): number;
         undo(): stone;
+    }
+
+    function comment(text: string, args) {
+        if (!args) return text;
+
+        text = text.replace(/\${(.+?)}/gm, (_, name) => args[name]);
+
+        return Object.assign({
+            toString() {
+                return text + ' ' + JSON.stringify(args, null, 4);
+            }
+        }, args);
     }
 
     /**
@@ -193,6 +206,14 @@ module tsumego {
                     return repd.set(ttres, infdepth);
                 }
 
+                {
+                    const p = pn.get(hashb, color, nkt);
+                    const d = dn.get(hashb, color, nkt);
+
+                    if (p > pmax || d > dmax)
+                        return 0;
+                }
+
                 if (unodes)
                     unodes.size++;
 
@@ -271,10 +292,13 @@ module tsumego {
                     let dn2 = Infinity; // the next smallest dn after pn0
                     let pnc: number; // pn of the chosen node
 
+                    const pdn1 = [];
+
                     for (const x of nodes) {
                         const p = pn.get(x.board, x.color, x.nkt);
                         const d = dn.get(x.board, x.color, x.nkt);
 
+                        pdn1.push(`${stone.toString(x.move)} p=${p} d=${d}`);
                         dn0 += p;
 
                         if (d < pn0) {
@@ -289,16 +313,27 @@ module tsumego {
                         }
                     }
 
-                    if (dn0 > dmax || pn0 > pmax) {
-                        yield `${stone.toString(stone.nocoords(color))} pn = ${pn0} > ${pmax} || dn = ${dn0} > ${dmax}`;
-                        break;
-                    }
-
                     // these are pn/dn constraints for the chosen node:
                     // once they are exceeded, the solver comes back
                     // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
                     const dmax1 = min(pmax, dn2);
+
+                    if (debug) {
+                        yield comment('${color} p = ${p} d = ${d}', {
+                            color: color > 0 ? 'B' : 'W',
+                            p: pn0,
+                            d: dn0,
+                            pmax: pmax,
+                            dmax: dmax,
+                            pmax_new: pmax1,
+                            dmax_new: dmax1,
+                            pd: pdn1
+                        });
+                    }
+
+                    if (dn0 > dmax || pn0 > pmax)
+                        break;
 
                     const d = node.repd;
                     const move = node.move;                
@@ -330,10 +365,10 @@ module tsumego {
                             s = yield* solve(-color, nkt, pmax1, dmax1);
                         }
 
-                        debug && (yield 'the outcome of passing: ' + stone.toString(s));
+                        debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
                     } else {
                         board.play(move);
-                        debug && (yield `${stone.toString(move)} pn <= ${pmax} dn <= ${dmax}`);
+                        debug && (yield stone.toString(move));
 
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
@@ -345,7 +380,7 @@ module tsumego {
                                     // spend a ko treat and yield the turn to the opponent
                                     yield* solve(-color, nkt - color, pmax1, dmax1);
 
-                        debug && (yield 'the outcome of this move: ' + stone.toString(s));
+                        debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
                     }
 
@@ -385,11 +420,11 @@ module tsumego {
 
                 if (result * color > 0) {
                     pn.set(hashb, color, nkt, 0);
-                    dn.set(hashb, color, nkt, maxint);
+                    dn.set(hashb, color, nkt, maxdpn);
                 }
 
                 if (result * color < 0) {
-                    pn.set(hashb, color, nkt, maxint);
+                    pn.set(hashb, color, nkt, maxdpn);
                     dn.set(hashb, color, nkt, 0);
                 }
 
@@ -402,7 +437,7 @@ module tsumego {
                         const d = dn.get(x.board, x.color, x.nkt);
 
                         psum += p;
-                        dmin = min(dmin, d);                        
+                        dmin = min(dmin, d);
                     }
 
                     pn.set(hashb, color, nkt, dmin);
@@ -437,7 +472,7 @@ module tsumego {
                     board.play(move);
                 }
 
-                move = yield* solve(color, nkt, maxint, maxint);
+                move = yield* solve(color, nkt, maxdpn, maxdpn);
 
                 return typeof args === 'string' ?
                     stone.toString(move) :
