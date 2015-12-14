@@ -21,7 +21,7 @@ module tsumego {
         undo(): stone;
     }
 
-    function comment(text: string, args) {
+    function comment(text: string, args?) {
         if (!args) return text;
 
         text = text.replace(/\${(.+?)}/gm, (_, name) => args[name]);
@@ -320,20 +320,22 @@ module tsumego {
                     const dmax1 = min(pmax, dn2);
 
                     if (debug) {
-                        yield comment('${color} p = ${p} d = ${d}', {
-                            color: color > 0 ? 'B' : 'W',
-                            p: pn0,
-                            d: dn0,
-                            pmax: pmax,
-                            dmax: dmax,
-                            pmax_new: pmax1,
-                            dmax_new: dmax1,
-                            pd: pdn1
+                        yield comment(node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]', {
+                            p0: pn0,
+                            d0: dn0,
+                            pm0: pmax,
+                            dm0: dmax,
+                            pm1: pmax1,
+                            dm1: dmax1,
+                            pd1: pdn1
                         });
                     }
 
-                    if (dn0 > dmax || pn0 > pmax)
+                    if (dn0 > dmax || pn0 > pmax) {
+                        if (pn0 >= maxdpn)
+                            result = stone.nocoords(-color);
                         break;
+                    }
 
                     const d = node.repd;
                     const move = node.move;                
@@ -351,7 +353,7 @@ module tsumego {
                     let s: stone; // can be zero if solving exceeds pn/dn thresholds
 
                     if (!move) {
-                        debug && (yield stone.toString(stone.nocoords(color)) + ' passes');
+                        //debug && (yield stone.toString(stone.nocoords(color)) + ' passes');
                         const i = tags.lastIndexOf(tags[depth], -2);
 
                         if (i >= 0) {
@@ -365,10 +367,10 @@ module tsumego {
                             s = yield* solve(-color, nkt, pmax1, dmax1);
                         }
 
-                        debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
+                        //debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
                     } else {
                         board.play(move);
-                        debug && (yield stone.toString(move));
+                        //debug && (yield stone.toString(move));
 
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
@@ -380,7 +382,7 @@ module tsumego {
                                     // spend a ko treat and yield the turn to the opponent
                                     yield* solve(-color, nkt - color, pmax1, dmax1);
 
-                        debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
+                        //debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
                     }
 
@@ -456,6 +458,9 @@ module tsumego {
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
+
+                if (result && debug)
+                    yield comment(`solved: ${stone.toString(result)}`);
 
                 return result;
             }
