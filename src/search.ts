@@ -41,31 +41,21 @@ module tsumego {
         private data: { [hash: number]: number } = {};
 
         private hc = rand();
-        private hk = rand();
-        private h = [rand(), rand()];
 
-        private hash(hash: number, color: number, nkt: number) {
-            assert(nkt > -3 && nkt < +3);
-
+        private hash(hash: number, color: number) {
             if (color < 0)
                 hash ^= this.hc;
-
-            if (nkt > 0)
-                hash ^= this.h[-1 + nkt];
-
-            if (nkt < 0)
-                hash ^= this.h[-1 - nkt] ^ this.hk;
 
             return hash;
         }
 
-        get(board: number, color: number, nkt: number) {
-            const h = this.hash(board, color, nkt);
+        get(board: number, color: number) {
+            const h = this.hash(board, color);
             return this.data[h] || 1;
         }
 
-        set(board: number, color: number, nkt: number, pdn: number) {
-            const h = this.hash(board, color, nkt);
+        set(board: number, color: number, pdn: number) {
+            const h = this.hash(board, color);
             this.data[h] = pdn;
         }
     }
@@ -207,8 +197,8 @@ module tsumego {
                 }
 
                 {
-                    const p = pn.get(hashb, color, nkt);
-                    const d = dn.get(hashb, color, nkt);
+                    const p = pn.get(hashb, color);
+                    const d = dn.get(hashb, color);
 
                     if (p > pmax || d > dmax) {
                         debug && (yield `${p} > ${pmax} or ${d} > ${dmax}`);
@@ -294,8 +284,8 @@ module tsumego {
                     const pdn1 = [];
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, -color, x.nkt);
-                        const d = dn.get(x.board, -color, x.nkt);
+                        const p = pn.get(x.board, -color);
+                        const d = dn.get(x.board, -color);
 
                         pdn1.push(`${stone.toString(x.move)} ${p} ${d}`);
                         dn0 += p;
@@ -410,13 +400,13 @@ module tsumego {
                 }
 
                 if (result * color > 0) {
-                    pn.set(hashb, color, nkt, 0);
-                    dn.set(hashb, color, nkt, maxdpn);
+                    pn.set(hashb, color, 0);
+                    dn.set(hashb, color, maxdpn);
                 }
 
                 if (result * color < 0) {
-                    pn.set(hashb, color, nkt, maxdpn);
-                    dn.set(hashb, color, nkt, 0);
+                    pn.set(hashb, color, maxdpn);
+                    dn.set(hashb, color, 0);
                 }
 
                 if (!result && nodes.length) {
@@ -424,15 +414,15 @@ module tsumego {
                     let psum = 0;
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, -color, x.nkt);
-                        const d = dn.get(x.board, -color, x.nkt);
+                        const p = pn.get(x.board, -color);
+                        const d = dn.get(x.board, -color);
 
                         psum += p;
                         dmin = min(dmin, d);
                     }
 
-                    pn.set(hashb, color, nkt, dmin);
-                    dn.set(hashb, color, nkt, psum);
+                    pn.set(hashb, color, dmin);
+                    dn.set(hashb, color, psum);
                 }
 
                 // if all moves and passing have been proven to be a loss...

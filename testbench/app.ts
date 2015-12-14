@@ -9,6 +9,8 @@ declare var board: tsumego.Board;
 
 window['board'] = null;
 
+tsumego.rand.seed(123);
+
 module testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
@@ -67,8 +69,6 @@ module testbench {
     }
 
     function dbgsolve(board: Board, color: number, nkotreats = 0) {
-        tsumego.rand.seed(123);
-
         const solver = tsumego.solve.start({
             debug: true,
             root: board,
