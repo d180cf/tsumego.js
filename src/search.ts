@@ -34,33 +34,6 @@ module tsumego {
     }
 
     /**
-     * Stores (dis)proof numbers for investigated nodes.
-     * A node is a triple: (board, color, nkt).
-     */
-    class PDNS {
-        private data: { [hash: number]: number } = {};
-
-        private hc = rand();
-
-        private hash(hash: number, color: number) {
-            if (color < 0)
-                hash ^= this.hc;
-
-            return hash;
-        }
-
-        get(board: number, color: number) {
-            const h = this.hash(board, color);
-            return this.data[h] || 1;
-        }
-
-        set(board: number, color: number, pdn: number) {
-            const h = this.hash(board, color);
-            this.data[h] = pdn;
-        }
-    }
-
-    /**
      * The problem's description is given as an SGF string:
      *
      *      (;FF[4]SZ[9]
@@ -179,8 +152,11 @@ module tsumego {
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
-            const pn = new PDNS; // proof numbers
-            const dn = new PDNS; // disproof numbers
+            // keeps (dis)proof numbers: [pn, dn]
+            const pdns: { [nhash: number]: [number, number] } = {};
+
+            const hcval = rand();
+            const nhash = (board: number, color: number) => color > 0 ? board : board ^ hcval;
 
             // returns 0 if the node cannot be solved within the given pn/dn constraints
             function* solve(color: number, nkt: number, pmax: number, dmax: number) {
@@ -197,8 +173,7 @@ module tsumego {
                 }
 
                 {
-                    const p = pn.get(hashb, color);
-                    const d = dn.get(hashb, color);
+                    const [p = 1, d = 1] = pdns[nhash(hashb, color)] || [];
 
                     if (p > pmax || d > dmax) {
                         debug && (yield `${p} > ${pmax} or ${d} > ${dmax}`);
@@ -284,8 +259,7 @@ module tsumego {
                     const pdn1 = [];
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, -color);
-                        const d = dn.get(x.board, -color);
+                        const [p = 1, d = 1] = pdns[nhash(x.board, -color)] || [];
 
                         pdn1.push(`${stone.toString(x.move)} ${p} ${d}`);
                         dn0 += p;
@@ -399,30 +373,23 @@ module tsumego {
                     }
                 }
 
-                if (result * color > 0) {
-                    pn.set(hashb, color, 0);
-                    dn.set(hashb, color, maxdpn);
-                }
+                if (result * color > 0)
+                    pdns[nhash(hashb, color)] = [0, maxdpn];
 
-                if (result * color < 0) {
-                    pn.set(hashb, color, maxdpn);
-                    dn.set(hashb, color, 0);
-                }
+                if (result * color < 0)
+                    pdns[nhash(hashb, color)] = [maxdpn, 0];
 
                 if (!result && nodes.length) {
                     let dmin = Infinity;
                     let psum = 0;
 
                     for (const x of nodes) {
-                        const p = pn.get(x.board, -color);
-                        const d = dn.get(x.board, -color);
-
+                        const [p = 1, d = 1] = pdns[nhash(x.board, -color)] || [];
                         psum += p;
                         dmin = min(dmin, d);
                     }
 
-                    pn.set(hashb, color, dmin);
-                    dn.set(hashb, color, psum);
+                    pdns[nhash(hashb, color)] = [dmin, psum];
                 }
 
                 // if all moves and passing have been proven to be a loss...
