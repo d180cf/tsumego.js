@@ -702,6 +702,8 @@ module tsumego {
                 path.push(this.fork());
                 this.play(move);
             }
+
+            return path;
         }
     }
 }

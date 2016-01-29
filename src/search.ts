@@ -152,14 +152,14 @@ module tsumego {
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
-            // keeps (dis)proof numbers: [pn, dn]
-            const pdns: { [nhash: number]: [number, number] } = {};
+            // keeps (dis)proof numbers as well as the min distance form the root: [pn, dn, md]
+            const pdns: { [nhash: number]: [number, number, number] } = {};
 
             const hcval = rand();
             const nhash = (board: number, color: number) => color > 0 ? board : board ^ hcval;
 
             // returns 0 if the node cannot be solved within the given pn/dn constraints
-            function* solve(color: number, nkt: number, pmax: number, dmax: number) {
+            function* solve(color: number, nkt: number, pmax: number, dmax: number, mind: number) {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
@@ -250,19 +250,27 @@ module tsumego {
                 });
 
                 while (true) {
-                    let node: Node; // it has the smallest dn                
+                    let node: Node; // it has the smallest dn                                    
                     let pn0 = Infinity; // = min dn <= pmax
-                    let dn0 = 0; // = sum pn <= dmax
+                    let dns = 0; // = sum pn <= dmax
+                    let dnm = 0; // = max pn, if all nodes are old
+                    let md0 = Infinity; // = min md, if all nodes are old
                     let dn2 = Infinity; // the next smallest dn after pn0
                     let pnc: number; // pn of the chosen node
 
                     const pdn1 = [];
 
                     for (const x of nodes) {
-                        const [p = 1, d = 1] = pdns[nhash(x.board, -color)] || [];
+                        const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
 
-                        pdn1.push(`${stone.toString(x.move)} ${p} ${d}`);
-                        dn0 += p;
+                        let dbgs = `${stone.toString(x.move)} p=${p} d=${d} md=${md}`;
+
+                        if (md > mind) // if the node is new...
+                            dns += p;
+                        else
+                            dnm = max(dnm, p), md0 = min(md0, md), dbgs += ` <= ${mind}`;
+
+                        pdn1.push(dbgs);
 
                         if (d < pn0) {
                             node = x, dn2 = pn0, pn0 = d, pnc = p;
@@ -276,13 +284,31 @@ module tsumego {
                         }
                     }
 
-                    if (debug) {
-                        yield comment((node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]') +
-                            ` [${pn0} ${dn0}] <= [${pmax}, ${dmax}]`, { moves: pdn1 });
-                    }
+                    // to make dfpn handle repetitions the disproof number of the parent
+                    // node is computed with a slightly modified formula:
+                    //
+                    //  dn0 = sum pn, of all nodes that are new, i.e. have md > mind
+                    //  dn0 = max pn, if all nodes are old, i.e. they have md <= mind
+                    //
+                    // the proof number is computed as usual, as the min of disproof numbers
+                    const dn0 = dns > 0 ? dns : (mind = md0, dnm);
 
-                    if (dn0 > dmax || pn0 > pmax)
+                    const mvstr = node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]';
+
+                    if (dn0 > dmax || pn0 > pmax) {
+                        yield comment(`${mvstr} exceeded pmax=${pmax} dmax=${dmax}`, {
+                            pmax: pmax,
+                            dmax: dmax,
+                            moves: pdn1
+                        });
                         break;
+                    } else if (debug) {
+                        yield comment(`taking ${mvstr}`, {
+                            pmax: pmax,
+                            dmax: dmax,
+                            moves: pdn1
+                        });
+                    }
 
                     // these are pn/dn constraints for the chosen node:
                     // once they are exceeded, the solver comes back
@@ -317,7 +343,7 @@ module tsumego {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
                             // elsewhere resets the local history of moves
-                            s = yield* solve(-color, nkt, pmax1, dmax1);
+                            s = yield* solve(-color, nkt, pmax1, dmax1, mind + 1);
                         }
 
                         debug && s && (yield 'the outcome of passing: ' + stone.toString(s));
@@ -330,10 +356,10 @@ module tsumego {
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
-                                d > depth ? yield* solve(-color, nkt, pmax1, dmax1) :
+                                d > depth ? yield* solve(-color, nkt, pmax1, dmax1, mind + 1) :
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
-                                    yield* solve(-color, nkt - color, pmax1, dmax1);
+                                    yield* solve(-color, nkt - color, pmax1, dmax1, mind + 1);
 
                         debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
@@ -374,22 +400,31 @@ module tsumego {
                 }
 
                 if (result * color > 0)
-                    pdns[nhash(hashb, color)] = [0, maxdpn];
+                    pdns[nhash(hashb, color)] = [0, maxdpn, mind];
 
                 if (result * color < 0)
-                    pdns[nhash(hashb, color)] = [maxdpn, 0];
+                    pdns[nhash(hashb, color)] = [maxdpn, 0, mind];
 
                 if (!result && nodes.length) {
                     let dmin = Infinity;
                     let psum = 0;
+                    let pmax = 0;
+                    let mdmin = Infinity;
 
                     for (const x of nodes) {
-                        const [p = 1, d = 1] = pdns[nhash(x.board, -color)] || [];
-                        psum += p;
+                        const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
+
+                        if (md > mind)
+                            psum += p;
+                        else
+                            pmax = max(pmax, p), mdmin = min(mdmin, md);
+
                         dmin = min(dmin, d);
                     }
 
-                    pdns[nhash(hashb, color)] = [dmin, psum];
+                    pdns[nhash(hashb, color)] = psum > 0 ?
+                        [dmin, psum, mind] :
+                        [dmin, pmax, mind = mdmin];
                 }
 
                 // if all moves and passing have been proven to be a loss...
@@ -423,7 +458,7 @@ module tsumego {
                     board.play(move);
                 }
 
-                move = yield* solve(color, nkt, maxdpn, maxdpn);
+                move = yield* solve(color, nkt, maxdpn, maxdpn, 0);
 
                 return typeof args === 'string' ?
                     stone.toString(move) :
