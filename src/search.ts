@@ -83,7 +83,9 @@ module tsumego {
             expand(node: Node, color: number): stone[];
             status(node: Node): number;
             alive?(node: Node): boolean;
-            debug?: boolean;
+            debug?: {
+                update?(path: number[], data): void;
+            };
             unodes?: {
                 size: number;
             };
@@ -175,6 +177,13 @@ module tsumego {
                 {
                     const [p = 1, d = 1] = pdns[nhash(hashb, color)] || [];
 
+                    debug && debug.update([...path, hashb], {
+                        pn: p,
+                        dn: d,
+                        pmax: pmax,
+                        dmax: dmax
+                    });
+
                     if (p > pmax || d > dmax) {
                         debug && (yield `${p} > ${pmax} or ${d} > ${dmax}`);
                         return 0;
@@ -265,6 +274,13 @@ module tsumego {
 
                         let dbgs = `${stone.toString(x.move)} p=${p} d=${d} md=${md}`;
 
+                        debug && debug.update([...path, hashb, x.board], {
+                            move: x.move,
+                            pn: p,
+                            dn: d,
+                            md: md
+                        });
+
                         if (md > mind) // if the node is new...
                             dns += p;
                         else
@@ -295,19 +311,21 @@ module tsumego {
 
                     const mvstr = node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]';
 
-                    if (dn0 > dmax || pn0 > pmax) {
-                        yield comment(`${mvstr} exceeded pmax=${pmax} dmax=${dmax}`, {
-                            pmax: pmax,
-                            dmax: dmax,
-                            moves: pdn1
-                        });
-                        break;
-                    } else if (debug) {
-                        yield comment(`taking ${mvstr}`, {
-                            pmax: pmax,
-                            dmax: dmax,
-                            moves: pdn1
-                        });
+                    if (debug) {
+                        if (dn0 > dmax || pn0 > pmax) {
+                            yield comment(`${mvstr} exceeded pmax=${pmax} dmax=${dmax}`, {
+                                pmax: pmax,
+                                dmax: dmax,
+                                moves: pdn1
+                            });
+                            break;
+                        } else {
+                            yield comment(`taking ${mvstr}`, {
+                                pmax: pmax,
+                                dmax: dmax,
+                                moves: pdn1
+                            });
+                        }
                     }
 
                     // these are pn/dn constraints for the chosen node:
@@ -317,7 +335,7 @@ module tsumego {
                     const dmax1 = min(pmax, dn2);
 
                     const d = node.repd;
-                    const move = node.move;                
+                    const move = node.move;
 
                     // this is a hash of the path: reordering moves must change the hash;
                     // 0x87654321 is meant to be a generator of the field, but I didn't
@@ -425,6 +443,16 @@ module tsumego {
                     pdns[nhash(hashb, color)] = psum > 0 ?
                         [dmin, psum, mind] :
                         [dmin, pmax, mind = mdmin];
+                }
+
+                if (debug && debug.update) {
+                    const [p, d, md] = pdns[nhash(hashb, color)];
+
+                    debug.update([...path, hashb], {
+                        pn: p,
+                        dn: d,
+                        md: md
+                    });
                 }
 
                 // if all moves and passing have been proven to be a loss...

@@ -4,6 +4,7 @@
 /// <reference path="../src/search.ts" />
 /// <reference path="goban.ts" />
 /// <reference path="vm.ts" />
+/// <reference path="tree.ts" />
 
 declare var board: tsumego.Board;
 
@@ -69,15 +70,21 @@ module testbench {
     }
 
     function dbgsolve(board: Board, color: number, nkotreats = 0) {
+        const tree = new SearchTreeView(document.querySelector('#search-tree') as HTMLElement);
+
         const solver = tsumego.solve.start({
-            debug: true,
             root: board,
             color: color,
             nkt: nkotreats,
             tt: tt,
             expand: tsumego.generators.Basic(rzone),
             status: status,
-            alive: (b: Board) => tsumego.benson.alive(b, aim)
+            alive: (b: Board) => tsumego.benson.alive(b, aim),
+            debug: {
+                update(path, data) {
+                    tree.updateNode(path, data);
+                }
+            }
         });
 
         window['solver'] = solver;
@@ -85,18 +92,18 @@ module testbench {
         let tick = 0;
 
         const next = (render = true) => {
-            const {done, value} = solver.next();
-            const comment: string = value + '';
+            const {done, value: data} = solver.next();
+            const comment: string = data + '';
             !done && tick++;
 
             if (render) {
                 location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
                 lspath = null;
-                renderBoard(comment);
+                renderBoard(comment);                
             }
 
             if (done)
-                console.log(stone.toString(value));
+                console.log(stone.toString(data));
         };
 
         const stepOver = (ct: CancellationToken) => {
@@ -172,6 +179,7 @@ module testbench {
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
             if (!location.search) {
+                // rendering previews for all the saved problems
                 document.querySelector('.solver').remove();
 
                 function addSection(name = 'Unnamed') {
@@ -228,6 +236,7 @@ module testbench {
                     }
                 });
             } else {
+                // rendering a specific problem: eitehr from the local storage or from a file
                 const [_, source, nvar] = /^\?([:]?[^:]+)(?::(\d+))?/.exec(location.search);
 
                 document.title = source;

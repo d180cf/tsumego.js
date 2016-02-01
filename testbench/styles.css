@@ -21,6 +21,15 @@ h3 {
     font-family: "Segoe UI";
 }
 
+#search-tree {
+    border: 1px solid black;
+}
+
+#search-tree div {
+    padding-left: 10pt;
+    margin-bottom: 1px;
+}
+
 .tsumego-sgf {
     width: 300pt;
     height: 80pt;
