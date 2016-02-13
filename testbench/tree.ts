@@ -4,6 +4,15 @@ namespace testbench {
         data: any;
     }
 
+    function stringify(data) {
+        const pairs: string[] = [];
+
+        for (const key in data)
+            pairs.push(key + '=' + data[key]);
+
+        return pairs.join(' ');
+    }
+
     export class SearchTreeView {
         private nodes: { [hash: number]: Node } = {};
         private divs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
@@ -39,14 +48,16 @@ namespace testbench {
 
                 if (!elem) {
                     divs[hash] = elem = document.createElement('div');
-                    tdiv.appendChild(elem);
+                    tdiv.appendChild(elem);                    
                 }
 
-                if (!elem.textContent)
-                    elem.textContent = '.';
+                if (!elem.firstChild || elem.firstChild.nodeName.toLowerCase() != 'span') {
+                    const span = document.createElement('span');
+                    elem.appendChild(span);
+                }
 
-                elem.childNodes[0].textContent = title + ' '
-                    + JSON.stringify(node.data, null);
+                elem.firstChild.textContent = i + 1 < path.length ? title :
+                    title + ' ' + stringify(node.data);
 
                 tdiv = elem;
                 prev = node;

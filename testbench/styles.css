@@ -23,12 +23,20 @@ h3 {
 
 #search-tree {
     border: 1px solid black;
+    font: 10pt "Lucida Console";
 }
 
-#search-tree div {
-    padding-left: 10pt;
-    margin-bottom: 1px;
-}
+    #search-tree div {
+        margin-bottom: 1px;
+    }
+
+        #search-tree div > div {
+            margin-left: 10pt;
+        }
+
+    #search-tree span {
+        display: block;
+    }
 
 .tsumego-sgf {
     width: 300pt;
