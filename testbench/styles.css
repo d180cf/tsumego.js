@@ -36,6 +36,14 @@ h3 {
 
     #search-tree span {
         display: block;
+    }    
+
+    #search-tree div.current span {
+        background-color: palegreen;
+    }
+
+    #search-tree div:hover > span {
+        background-color: palegoldenrod;
     }
 
 .tsumego-sgf {

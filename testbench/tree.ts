@@ -16,6 +16,7 @@ namespace testbench {
     export class SearchTreeView {
         private nodes: { [hash: number]: Node } = {};
         private divs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
+        private current: HTMLElement;
 
         constructor(private container: HTMLElement) {
 
@@ -62,6 +63,10 @@ namespace testbench {
                 tdiv = elem;
                 prev = node;
             }
+
+            this.current && this.current.setAttribute('class', '');
+            this.current = tdiv;
+            this.current.setAttribute('class', 'current');
         }
     }
 }
