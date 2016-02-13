@@ -686,6 +686,25 @@ module tsumego {
                     const s = this.get(x, y);
                     if (s) yield stone(x, y, s);
                 }
+
+            }
+        }
+
+        diff(from: number, to: number): stone {
+            const hash = from ^ to;
+
+            if (!hash) return 0;
+
+            for (let y = 0; y < this.size; y++) {
+                for (let x = 0; x < this.size; x++) {
+                    const i = y * this.size + x;
+
+                    if (this.hashtb[i] == hash)
+                        return stone(x, y, +1);
+
+                    if (this.hashtw[i] == hash)
+                        return stone(x, y, -1);
+                }
             }
         }
 

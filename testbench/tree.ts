@@ -12,12 +12,13 @@ namespace testbench {
 
         }
 
-        updateNode(path: number[], data) {
+        updateNode(path: number[], titles: string[], data) {
             let prev: Node;
             let tdiv = this.container;
 
             for (let i = 0; i < path.length; i++) {
                 let hash = path[i];
+                let title = titles[i];
                 let node = this.nodes[hash];
 
                 if (!node)
@@ -44,7 +45,7 @@ namespace testbench {
                 if (!elem.textContent)
                     elem.textContent = '.';
 
-                elem.childNodes[0].textContent = (hash + 0x100000000).toString(16).slice(-8)
+                elem.childNodes[0].textContent = title + ' '
                     + JSON.stringify(node.data, null);
 
                 tdiv = elem;

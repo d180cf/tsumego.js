@@ -275,7 +275,6 @@ module tsumego {
                         let dbgs = `${stone.toString(x.move)} p=${p} d=${d} md=${md}`;
 
                         debug && debug.update([...path, hashb, x.board], {
-                            move: x.move,
                             pn: p,
                             dn: d,
                             md: md

@@ -82,7 +82,27 @@ module testbench {
             alive: (b: Board) => tsumego.benson.alive(b, aim),
             debug: {
                 update(path, data) {
-                    tree.updateNode(path, data);
+                    const path2: number[] = [];
+                    const moves: stone[] = [];
+
+                    if (path.length > 0) {
+                        path2[0] = path[0] ^ color;
+                        moves[0] = 0;
+
+                        for (let i = 1; i < path.length; i++) {
+                            const move = board.diff(path[i - 1], path[i]);
+
+                            if (typeof move != 'number')
+                                console.error('cannot find the diff move', i, path);
+
+                            moves[i] = move;
+                            path2[i] = path[i] ^ stone.color(move);
+                        }
+                    }
+
+                    const titles = moves.map(stone.toString);
+
+                    tree.updateNode(path, titles, data);
                 }
             }
         });
