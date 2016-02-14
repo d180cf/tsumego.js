@@ -639,6 +639,32 @@
             }
         });
 
+        $.test($ => {
+            /// diff
+
+            const b = new Board(5, [
+                ' - O - X O ',
+                ' X X O X O ',
+                ' - - X O O ',
+            ]);
+
+            const hash0 = b.hash;
+
+            const moves = [
+                stone(1, 2, +1), // just extra b stone
+                stone(1, 2, -1), // just extra w stone
+                stone(2, 0, +1), // some w stones captured
+                stone(2, 0, -1), // some b stones captured
+            ];
+
+            for (const s of moves) {
+                b.play(s);
+                const d = b.diff(hash0, b.hash);
+                b.undo();
+                $(d).equal(s);
+            }           
+        });
+
         $.test($ => { 
             /// empty 3x3
             const board = new Board(3);

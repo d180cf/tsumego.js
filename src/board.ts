@@ -179,8 +179,8 @@ module tsumego {
          *
          * This is also known as Zobrist hashing.
          */
-        private hashtb = sequence(256, rand);
-        private hashtw = sequence(256, rand);
+        private hashtb = sequence(256, rand).map(x => x & 0x0000FFFF);
+        private hashtw = sequence(256, rand).map(x => x & 0xFFFF0000);
 
         constructor(size: number);
         constructor(size: number, rows: string[]);
@@ -687,6 +687,26 @@ module tsumego {
                     if (s) yield stone(x, y, s);
                 }
             }
+        }
+
+        diff(from: number, to: number): stone {
+            const hash = from ^ to;
+
+            if (!hash) return 0;
+
+            for (let y = 0; y < this.size; y++) {
+                for (let x = 0; x < this.size; x++) {
+                    const i = y * this.size + x;
+
+                    if (this.hashtb[i] == (hash & 0x0000FFFF))
+                        return stone(x, y, +1);
+
+                    if (this.hashtw[i] == (hash & 0xFFFF0000))
+                        return stone(x, y, -1);
+                }
+            }
+
+            return null;
         }
 
         private path() {
