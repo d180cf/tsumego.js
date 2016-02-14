@@ -38,6 +38,37 @@ namespace tests {
     }
 }
 
+namespace tests {
+    const vals = [];
+
+    const args: string[] = isNode ?
+        process.argv.slice(2) :
+        location.search.slice(1).split('&');
+
+    console.log(args);
+
+    for (const a of args) {
+        if (!a) continue;
+
+        const i = a.indexOf('=');
+        console.log(a);
+
+        if (i < 0)
+            vals.push(a);
+        else
+            vals[a.slice(0, i)] = a.slice(i + 1);
+    }
+
+    /**
+     * node test qwerty foo=bar
+     * ?qwerty&foo=bar
+     */
+    export const argv: {
+        [index: number]: string;
+        unodes?: boolean;
+    } = vals;
+}
+
 namespace tests.ut {
     export interface GroupContext {
         test(test: ($: typeof expect) => string | void, name?: string): void;
@@ -52,9 +83,7 @@ namespace tests.ut {
     declare const process;
     declare const location;
 
-    const filter: string = typeof location === 'object' ?
-        location.hash.slice(1) :
-        process.argv[2];
+    const filter = argv[0];
 
     if (filter)
         console.warn('tests filtered by: ' + JSON.stringify(filter));
