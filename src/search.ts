@@ -84,7 +84,7 @@ module tsumego {
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: {
-                update?(path: number[], data): void;
+                update?(path: number[], data?): void;
             };
             unodes?: {
                 size: number;
@@ -311,6 +311,15 @@ module tsumego {
                     const mvstr = node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]';
 
                     if (debug) {
+                        debug.update([...path, hashb], {
+                            pmax: pmax,
+                            dmax: dmax,
+                            pn: pn0,
+                            dn: dn0
+                        });
+
+                        node && debug.update([...path, hashb, node.board]);
+
                         if (dn0 > dmax || pn0 > pmax) {
                             yield comment(`${mvstr} exceeded pmax=${pmax} dmax=${dmax}`, {
                                 pmax: pmax,

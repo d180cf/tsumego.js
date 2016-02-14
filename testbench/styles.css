@@ -36,9 +36,9 @@ h3 {
 
     #search-tree span {
         display: block;
-    }    
+    }
 
-    #search-tree div.current span {
+    #search-tree div.current > span {
         background-color: palegreen;
     }
 

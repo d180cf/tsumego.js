@@ -107,9 +107,9 @@ module testbench {
                         }
                     }
 
-                    const titles = moves.map(stone.toString);
+                    const titles = moves.map(m => m ? stone.toString(m) : 'null');
 
-                    tree.updateNode(path, titles, data);
+                    tree.updateNode(path2, titles, data);
                 }
             }
         });

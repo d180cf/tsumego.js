@@ -22,7 +22,7 @@ namespace testbench {
 
         }
 
-        updateNode(path: number[], titles: string[], data) {
+        updateNode(path: number[], titles: string[], data?) {
             let prev: Node;
             let tdiv = this.container;
 
@@ -49,7 +49,7 @@ namespace testbench {
 
                 if (!elem) {
                     divs[hash] = elem = document.createElement('div');
-                    tdiv.appendChild(elem);                    
+                    tdiv.appendChild(elem);
                 }
 
                 if (!elem.firstChild || elem.firstChild.nodeName.toLowerCase() != 'span') {
@@ -57,14 +57,14 @@ namespace testbench {
                     elem.appendChild(span);
                 }
 
-                elem.firstChild.textContent = i + 1 < path.length ? title :
-                    title + ' ' + stringify(node.data);
+                if (i == path.length - 1)
+                    elem.firstChild.textContent = title + ' ' + stringify(node.data);
 
                 tdiv = elem;
                 prev = node;
             }
 
-            this.current && this.current.setAttribute('class', '');
+            this.current && this.current.removeAttribute('class');
             this.current = tdiv;
             this.current.setAttribute('class', 'current');
         }
