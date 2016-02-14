@@ -706,6 +706,8 @@ module tsumego {
                         return stone(x, y, -1);
                 }
             }
+
+            return null;
         }
 
         private path() {

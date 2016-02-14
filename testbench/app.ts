@@ -89,14 +89,21 @@ module testbench {
                         path2[0] = path[0] ^ color;
                         moves[0] = 0;
 
+                        let player = color;
+
                         for (let i = 1; i < path.length; i++) {
                             const move = board.diff(path[i - 1], path[i]);
 
-                            if (typeof move != 'number')
-                                console.error('cannot find the diff move', i, path);
+                            if (move === null)
+                                console.error('cannot find the diff move', i, path);                            
+
+                            if (move && stone.color(move) != player)
+                                console.error('unexpected move color', stone.toString(move), i, path);
+
+                            player = -player;
 
                             moves[i] = move;
-                            path2[i] = path[i] ^ stone.color(move);
+                            path2[i] = path[i] ^ player;
                         }
                     }
 
@@ -119,7 +126,7 @@ module testbench {
             if (render) {
                 location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
                 lspath = null;
-                renderBoard(comment);                
+                renderBoard(comment);
             }
 
             if (done)
