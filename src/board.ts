@@ -689,7 +689,7 @@ module tsumego {
             }
         }
 
-        diff(from: number, to: number): stone {
+        diff(from: number, to: number, color: number): stone {
             const hash = from ^ to;
 
             if (!hash) return 0;
@@ -698,10 +698,10 @@ module tsumego {
                 for (let x = 0; x < this.size; x++) {
                     const i = y * this.size + x;
 
-                    if (this.hashtb[i] == (hash & 0x0000FFFF))
+                    if (color > 0 && this.hashtb[i] == (hash & 0x0000FFFF))
                         return stone(x, y, +1);
 
-                    if (this.hashtw[i] == (hash & 0xFFFF0000))
+                    if (color < 0 && this.hashtw[i] == (hash & 0xFFFF0000))
                         return stone(x, y, -1);
                 }
             }

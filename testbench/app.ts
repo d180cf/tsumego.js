@@ -93,13 +93,12 @@ module testbench {
                         let player = color;
 
                         for (let i = 1; i < path.length; i++) {
-                            const move = board.diff(path[i - 1], path[i]);
+                            const move = board.diff(path[i - 1], path[i], player);
 
-                            if (move === null)
-                                console.error('cannot find the diff move', i, path);                            
-
-                            if (move && stone.color(move) != player)
-                                console.error('unexpected move color', stone.toString(move), i, path);
+                            if (move === null) {
+                                console.error('cannot find the diff move', i, path);
+                                debugger;
+                            }
 
                             player = -player;
 

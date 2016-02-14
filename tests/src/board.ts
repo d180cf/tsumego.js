@@ -659,7 +659,7 @@
 
             for (const s of moves) {
                 b.play(s);
-                const d = b.diff(hash0, b.hash);
+                const d = b.diff(hash0, b.hash, stone.color(s));
                 b.undo();
                 $(d).equal(s);
             }           
