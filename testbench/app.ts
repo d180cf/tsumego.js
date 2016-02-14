@@ -84,6 +84,7 @@ module testbench {
                 update(path, data) {
                     const path2: number[] = [];
                     const moves: stone[] = [];
+                    const titles: string[] = [];
 
                     if (path.length > 0) {
                         path2[0] = path[0] ^ color;
@@ -102,12 +103,11 @@ module testbench {
 
                             player = -player;
 
+                            titles[i] = move === null ? '?[??]' : stone.toString(move);
                             moves[i] = move;
                             path2[i] = path[i] ^ player;
                         }
-                    }
-
-                    const titles = moves.map(m => m ? stone.toString(m) : 'null');
+                    }                    
 
                     tree.updateNode(path2, titles, data);
                 }

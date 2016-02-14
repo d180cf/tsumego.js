@@ -691,6 +691,10 @@ module tsumego {
         }
 
         diff(from: number, to: number): stone {
+            // the diff actually tells the sum of added and removed
+            // stones: if the stone didn't capture any blocks, it can
+            // be easily inferred from the diff, but if it did, then
+            // inferring the added stone is not a trivial task
             const hash = from ^ to;
 
             if (!hash) return 0;

@@ -55,18 +55,22 @@ namespace testbench {
                 if (!elem.firstChild || elem.firstChild.nodeName.toLowerCase() != 'span') {
                     const span = document.createElement('span');
                     elem.appendChild(span);
+
+                    span.addEventListener('click', event => {
+                        if (event.ctrlKey)
+                            elem.classList.toggle('collapsed');
+                    });
                 }
 
                 if (i == path.length - 1)
-                    elem.firstChild.textContent = title + ' ' + stringify(node.data);
+                    elem.firstChild.textContent = (2 ** 32 + hash).toString(16).slice(-8) + ' ' + title + ' ' + stringify(node.data);
 
                 tdiv = elem;
                 prev = node;
             }
 
-            this.current && this.current.removeAttribute('class');
-            this.current = tdiv;
-            this.current.setAttribute('class', 'current');
+            this.current && this.current.classList.remove('current');
+            (this.current = tdiv).classList.add('current');
         }
     }
 }

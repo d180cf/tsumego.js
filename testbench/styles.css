@@ -42,6 +42,14 @@ h3 {
         background-color: palegreen;
     }
 
+    #search-tree div.collapsed > div {
+        display: none;
+    }
+
+    #search-tree div.collapsed > span {
+        background-color: darkkhaki;
+    }
+
     #search-tree div:hover > span {
         background-color: palegoldenrod;
     }
