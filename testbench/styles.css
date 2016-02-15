@@ -27,7 +27,8 @@ h3 {
 }
 
     #search-tree div {
-        margin-bottom: 1px;
+        padding-bottom: 1px;
+        border-left: 1px solid lightgray;
     }
 
         #search-tree div > div {
@@ -38,16 +39,16 @@ h3 {
         display: block;
     }
 
-    #search-tree div.current > span {
-        background-color: palegreen;
-    }
-
     #search-tree div.collapsed > div {
         display: none;
     }
 
     #search-tree div.collapsed > span {
-        background-color: darkkhaki;
+        background-color: lightblue;
+    }
+
+    #search-tree div.current > span {
+        background-color: palegreen;
     }
 
     #search-tree div:hover > span {

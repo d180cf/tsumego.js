@@ -258,7 +258,7 @@ module tsumego {
                     repd: infdepth
                 });
 
-                while (true) {
+                while (nodes.length > 0) {
                     let node: Node; // it has the smallest dn                                    
                     let pn0 = Infinity; // = min dn <= pmax
                     let dns = 0; // = sum pn <= dmax
@@ -268,7 +268,9 @@ module tsumego {
                     let pnc: number; // pn of the chosen node
 
                     for (const x of nodes) {
-                        const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
+                        const nh = nhash(x.board, -color);
+                        const [p = 1, d = 1, md = mind + 1] = pdns[nh] || [];
+                        pdns[nh] = [p, d, md];
 
                         debug && debug.update([...path, hashb, x.board], {
                             pn: p,
@@ -415,6 +417,10 @@ module tsumego {
                     }
                 }
 
+                // if all moves and passing have been proven to be a loss...
+                if (!result && !nodes.length)
+                    result = repd.set(stone.nocoords(-color), mindepth);
+
                 if (result * color > 0)
                     pdns[nhash(hashb, color)] = [0, maxdpn, mind];
 
@@ -453,10 +459,6 @@ module tsumego {
                     });
                 }
 
-                // if all moves and passing have been proven to be a loss...
-                if (!result && !nodes.length)
-                    result = repd.set(stone.nocoords(-color), mindepth);
-
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
                 // depend on a path that leads to the node; this stands true if all
@@ -466,8 +468,13 @@ module tsumego {
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
 
-                if (result && debug)
+                if (result && debug) {
+                    debug.update([...path, hashb], {
+                        res: stone.toString(result)
+                    });
+
                     yield comment(`solved: ${stone.toString(result)}`);
+                }
 
                 return result;
             }
