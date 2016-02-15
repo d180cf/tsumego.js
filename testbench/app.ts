@@ -98,15 +98,18 @@ module testbench {
                             if (move === null) {
                                 console.error('cannot find the diff move', i, path);
                                 debugger;
-                            }
+                            }                            
+
+                            titles[i] = move === null ? '?[??]' :
+                                move === 0 ? c2s(player) + '[--]' :
+                                    stone.toString(move);
 
                             player = -player;
 
-                            titles[i] = move === null ? '?[??]' : stone.toString(move);
                             moves[i] = move;
                             path2[i] = path[i] ^ player;
                         }
-                    }                    
+                    }
 
                     tree.updateNode(path2, titles, data);
                 }

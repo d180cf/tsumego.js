@@ -267,12 +267,8 @@ module tsumego {
                     let dn2 = Infinity; // the next smallest dn after pn0
                     let pnc: number; // pn of the chosen node
 
-                    const pdn1 = [];
-
                     for (const x of nodes) {
                         const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
-
-                        let dbgs = `${stone.toString(x.move)} p=${p} d=${d} md=${md}`;
 
                         debug && debug.update([...path, hashb, x.board], {
                             pn: p,
@@ -283,9 +279,7 @@ module tsumego {
                         if (md > mind) // if the node is new...
                             dns += p;
                         else
-                            dnm = max(dnm, p), md0 = min(md0, md), dbgs += ` <= ${mind}`;
-
-                        pdn1.push(dbgs);
+                            dnm = max(dnm, p), md0 = min(md0, md);
 
                         if (d < pn0) {
                             node = x, dn2 = pn0, pn0 = d, pnc = p;
@@ -308,8 +302,6 @@ module tsumego {
                     // the proof number is computed as usual, as the min of disproof numbers
                     const dn0 = dns > 0 ? dns : (mind = md0, dnm);
 
-                    const mvstr = node && node.move ? stone.toString(node.move) : (color > 0 ? 'B' : 'W') + '[--]';
-
                     if (debug) {
                         debug.update([...path, hashb], {
                             pmax: pmax,
@@ -319,21 +311,19 @@ module tsumego {
                         });
 
                         node && debug.update([...path, hashb, node.board]);
+                    }
 
-                        if (dn0 > dmax || pn0 > pmax) {
-                            yield comment(`${mvstr} exceeded pmax=${pmax} dmax=${dmax}`, {
-                                pmax: pmax,
-                                dmax: dmax,
-                                moves: pdn1
+                    if (dn0 > dmax || pn0 > pmax) {
+                        if (debug) {
+                            debug.update([...path, hashb], {
+                                pn: pn0,
+                                dn: dn0
                             });
-                            break;
-                        } else {
-                            yield comment(`taking ${mvstr}`, {
-                                pmax: pmax,
-                                dmax: dmax,
-                                moves: pdn1
-                            });
+
+                            yield comment(`thresholds exceeded for ${hashb}: ${pn0}:${dn0} > ${pmax}:${dmax}`);
                         }
+
+                        break;
                     }
 
                     // these are pn/dn constraints for the chosen node:
