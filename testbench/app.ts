@@ -89,6 +89,7 @@ module testbench {
                     if (path.length > 0) {
                         path2[0] = path[0] ^ color;
                         moves[0] = 0;
+                        titles[0] = '-[--]';
 
                         let player = color;
 
@@ -122,7 +123,7 @@ module testbench {
 
         const next = (render = true) => {
             const {done, value: data} = solver.next();
-            const comment: string = data + '';
+            const comment: string = `step ${tick}: ${data}`;
             !done && tick++;
 
             if (render) {
@@ -132,7 +133,7 @@ module testbench {
             }
 
             if (done) {
-                console.log(stone.toString(data));
+                console.log('solution:', stone.toString(data));
 
                 for (const h of hooks)
                     h.dispose();

@@ -47,8 +47,12 @@ h3 {
         background-color: lightblue;
     }
 
-    #search-tree div.current > span {
+    #search-tree div.in-path > span {
         background-color: palegreen;
+    }
+
+    #search-tree div.current > span {
+        outline: 1px solid green;
     }
 
     #search-tree div:hover > span {

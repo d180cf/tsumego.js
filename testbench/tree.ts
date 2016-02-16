@@ -16,7 +16,7 @@ namespace testbench {
     export class SearchTreeView {
         private nodes: { [hash: number]: Node } = {};
         private divs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
-        private current: HTMLElement;
+        private current: HTMLElement[] = [];
 
         constructor(private container: HTMLElement) {
 
@@ -25,6 +25,11 @@ namespace testbench {
         updateNode(path: number[], titles: string[], data?) {
             let prev: Node;
             let tdiv = this.container;
+
+            for (const x of this.current)
+                x.classList.remove('in-path', 'current');
+
+            this.current = [];
 
             for (let i = 0; i < path.length; i++) {
                 let hash = path[i];
@@ -67,10 +72,12 @@ namespace testbench {
 
                 tdiv = elem;
                 prev = node;
+
+                tdiv.classList.add('in-path');
+                this.current.push(tdiv);
             }
 
-            this.current && this.current.classList.remove('current');
-            (this.current = tdiv).classList.add('current');
+            tdiv.classList.add('current');
         }
     }
 }
