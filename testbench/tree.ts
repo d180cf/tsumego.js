@@ -15,7 +15,7 @@ namespace testbench {
 
     export class SearchTreeView {
         private nodes: { [hash: number]: Node } = {};
-        private divs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
+        private childs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
         private current: HTMLElement[] = [];
 
         constructor(private container: HTMLElement) {
@@ -36,8 +36,10 @@ namespace testbench {
                 let title = titles[i];
                 let node = this.nodes[hash];
 
-                if (!node)
-                    this.nodes[hash] = node = { next: [], data: {} };
+                if (!node) {
+                    node = { next: [], data: {} };
+                    this.nodes[hash] = node;
+                }
 
                 if (prev && prev.next.indexOf(hash) < 0)
                     prev.next.push(hash);
@@ -45,10 +47,10 @@ namespace testbench {
                 if (i == path.length - 1)
                     Object.assign(node.data, data);
 
-                let divs = this.divs.get(tdiv);
+                let divs = this.childs.get(tdiv);
 
                 if (!divs)
-                    this.divs.set(tdiv, divs = {});
+                    this.childs.set(tdiv, divs = {});
 
                 let elem = divs[hash];
 
@@ -68,7 +70,8 @@ namespace testbench {
                 }
 
                 if (i == path.length - 1)
-                    elem.firstChild.textContent = (2 ** 32 + hash).toString(16).slice(-8) + ' ' + title + ' ' + stringify(node.data);
+                    elem.firstChild.textContent = (2 ** 32 + hash).toString(16).slice(-8)
+                        + ' ' + title + ' ' + stringify(node.data);
 
                 tdiv = elem;
                 prev = node;
