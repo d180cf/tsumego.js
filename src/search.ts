@@ -279,7 +279,7 @@ module tsumego {
                         });
 
                         if (md > mind) // if the node is new...
-                            dns += p;
+                            dns = min(dns + p, maxdpn);
                         else
                             dnm = max(dnm, p), md0 = min(md0, md);
 
@@ -437,7 +437,7 @@ module tsumego {
                         const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
 
                         if (md > mind)
-                            psum += p;
+                            psum = min(psum + p, maxdpn);
                         else
                             pmax = max(pmax, p), mdmin = min(mdmin, md);
 
