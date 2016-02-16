@@ -82,10 +82,10 @@ namespace testbench {
                 this.current.push(tdiv);
             }
 
+            Object.assign(node.data, data);
             tdiv.classList.add('current');
             tdiv.firstChild.textContent = title + ' ' + stringify(node.data);
-            tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);
-            Object.assign(node.data, data);
+            tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);            
 
             const parent = this.nodes[this.hashof.get(tdiv.parentElement)];
 
