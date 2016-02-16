@@ -37,6 +37,10 @@ h3 {
         display: block;
     }
 
+    #search-tree div.old-child > span {
+        background-color: gainsboro;
+    }
+
     #search-tree div.collapsed > div {
         display: none;
     }

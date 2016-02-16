@@ -72,6 +72,8 @@ module testbench {
     function dbgsolve(board: Board, color: number, nkotreats = 0) {
         const tree = new SearchTreeView(document.querySelector('#search-tree') as HTMLElement);
 
+        tree.rules['old-child'] = (child, parent) => child.md <= parent.md; // highlight these nodes
+
         const solver = tsumego.solve.start({
             root: board,
             color: color,
@@ -99,7 +101,7 @@ module testbench {
                             if (move === null) {
                                 console.error('cannot find the diff move', i, path);
                                 debugger;
-                            }                            
+                            }
 
                             titles[i] = move === null ? '?[??]' :
                                 move === 0 ? c2s(player) + '[--]' :

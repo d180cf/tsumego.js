@@ -19,8 +19,11 @@ namespace testbench {
     }
 
     export class SearchTreeView {
+        rules: { [style: string]: (child, parent) => boolean } = {};
+
         private nodes: { [hash: number]: Node } = {};
         private childs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
+        private hashof = new WeakMap<HTMLElement, number>();
         private current: HTMLElement[] = [];
 
         constructor(private container: HTMLElement) {
@@ -52,16 +55,18 @@ namespace testbench {
                 if (prev && prev.next.indexOf(hash) < 0)
                     prev.next.push(hash);
 
-                let divs = this.childs.get(tdiv);
+                let childs = this.childs.get(tdiv);
 
-                if (!divs)
-                    this.childs.set(tdiv, divs = {});
+                if (!childs)
+                    this.childs.set(tdiv, childs = {});
 
-                let elem = divs[hash];
+                let elem = childs[hash];
 
                 if (!elem) {
-                    divs[hash] = elem = document.createElement('div');
+                    elem = document.createElement('div');
+                    childs[hash] = elem;
                     tdiv.appendChild(elem);
+                    this.hashof.set(elem, hash);
                 }
 
                 if (!elem.firstChild || elem.firstChild.nodeName.toLowerCase() != 'span') {
@@ -81,6 +86,19 @@ namespace testbench {
             tdiv.firstChild.textContent = title + ' ' + stringify(node.data);
             tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);
             Object.assign(node.data, data);
+
+            const parent = this.nodes[this.hashof.get(tdiv.parentElement)];
+
+            if (parent) {
+                for (const rule in this.rules) {
+                    const predicate = this.rules[rule];
+
+                    if (predicate(node.data, parent.data))
+                        tdiv.classList.add(rule);
+                    else
+                        tdiv.classList.remove(rule);
+                }
+            }
         }
     }
 }
