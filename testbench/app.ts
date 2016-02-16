@@ -131,8 +131,12 @@ module testbench {
                 renderBoard(comment);
             }
 
-            if (done)
+            if (done) {
                 console.log(stone.toString(data));
+
+                for (const h of hooks)
+                    h.dispose();
+            }
         };
 
         const stepOver = (ct: CancellationToken) => {
@@ -156,30 +160,42 @@ module testbench {
             */
         };
 
-        keyboard.hook(keyboard.Key.F10, event => {
-            event.preventDefault();
-            const ct = new CancellationToken;
-            const hook = keyboard.hook(keyboard.Key.Esc, event => {
+        const hooks = [
+            keyboard.hook(keyboard.Key.F10, event => {
                 event.preventDefault();
-                console.log('cancelling...');
-                ct.cancelled = true;
-            });
+                const ct = new CancellationToken;
+                const hook = keyboard.hook(keyboard.Key.Esc, event => {
+                    event.preventDefault();
+                    console.log('cancelling...');
+                    ct.cancelled = true;
+                });
 
-            stepOver(ct);
-        });
+                stepOver(ct);
+            }),
 
-        keyboard.hook(keyboard.Key.F11, event => {
-            if (!event.shiftKey) {
+            keyboard.hook(keyboard.Key.F11, event => {
+                if (!event.shiftKey) {
+                    event.preventDefault();
+                    if (event.ctrlKey)
+                        debugger;
+                    next();
+                } else {
+                    // Shift+F11
+                    event.preventDefault();
+                    stepOut();
+                }
+            }),
+
+            keyboard.hook('G'.charCodeAt(0), event => {
                 event.preventDefault();
-                if (event.ctrlKey)
-                    debugger;
-                next();
-            } else {
-                // Shift+F11
-                event.preventDefault();
-                stepOut();
-            }
-        });
+                const stopat = +prompt('Step #:');
+                if (!stopat) return;
+                console.log('skipping first', stopat, 'steps...');
+                while (tick < stopat)
+                    next();
+                renderBoard();
+            })
+        ];
 
         console.log(c2s(color), 'to play with', nkotreats, 'external ko treats\n',
             'F11 - step into\n',
@@ -187,16 +203,6 @@ module testbench {
             'F10 - step over\n',
             'Shift+F11 - step out\n',
             'G - go to a certain step\n');
-
-        keyboard.hook('G'.charCodeAt(0), event => {
-            event.preventDefault();
-            const stopat = +prompt('Step #:');
-            if (!stopat) return;
-            console.log('skipping first', stopat, 'steps...');
-            while (tick < stopat)
-                next();
-            renderBoard();
-        });
     }
 
     function status(b: Board) {
