@@ -22,12 +22,10 @@ h3 {
 }
 
 #search-tree {
-    border: 1px solid black;
     font: 10pt "Lucida Console";
 }
 
     #search-tree div {
-        padding-bottom: 1px;
         border-left: 1px solid lightgray;
     }
 

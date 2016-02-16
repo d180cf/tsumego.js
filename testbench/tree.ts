@@ -13,6 +13,11 @@ namespace testbench {
         return pairs.join(' ');
     }
 
+    function onSpanClick(event: MouseEvent) {
+        if (event.ctrlKey)
+            this.parentNode.classList.toggle('collapsed');
+    }
+
     export class SearchTreeView {
         private nodes: { [hash: number]: Node } = {};
         private childs = new WeakMap<HTMLElement, { [hash: number]: HTMLElement }>();
@@ -23,6 +28,9 @@ namespace testbench {
         }
 
         updateNode(path: number[], titles: string[], data?) {
+            let hash: number;
+            let node: Node;
+            let title: string;
             let prev: Node;
             let tdiv = this.container;
 
@@ -32,9 +40,9 @@ namespace testbench {
             this.current = [];
 
             for (let i = 0; i < path.length; i++) {
-                let hash = path[i];
-                let title = titles[i];
-                let node = this.nodes[hash];
+                hash = path[i];
+                title = titles[i];
+                node = this.nodes[hash];
 
                 if (!node) {
                     node = { next: [], data: {} };
@@ -43,9 +51,6 @@ namespace testbench {
 
                 if (prev && prev.next.indexOf(hash) < 0)
                     prev.next.push(hash);
-
-                if (i == path.length - 1)
-                    Object.assign(node.data, data);
 
                 let divs = this.childs.get(tdiv);
 
@@ -62,16 +67,8 @@ namespace testbench {
                 if (!elem.firstChild || elem.firstChild.nodeName.toLowerCase() != 'span') {
                     const span = document.createElement('span');
                     elem.appendChild(span);
-
-                    span.addEventListener('click', event => {
-                        if (event.ctrlKey)
-                            elem.classList.toggle('collapsed');
-                    });
+                    span.addEventListener('click', onSpanClick);
                 }
-
-                if (i == path.length - 1)
-                    elem.firstChild.textContent = (2 ** 32 + hash).toString(16).slice(-8)
-                        + ' ' + title + ' ' + stringify(node.data);
 
                 tdiv = elem;
                 prev = node;
@@ -81,6 +78,9 @@ namespace testbench {
             }
 
             tdiv.classList.add('current');
+            tdiv.firstChild.textContent = title + ' ' + stringify(node.data);
+            tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);
+            Object.assign(node.data, data);
         }
     }
 }
