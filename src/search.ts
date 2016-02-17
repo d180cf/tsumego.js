@@ -9,7 +9,7 @@
 
 module tsumego {
     const infdepth = 255;
-    const maxdpn = 99;
+    const hugedpn = 99;
 
     module repd {
         export const get = move => move >> 8 & 255;
@@ -157,7 +157,6 @@ module tsumego {
             const pdns = new DfpnCache; // keeps p/d numbers as well as the min dist form the root
 
             const hcval = rand();
-            const nhash = (board: number, color: number) => color > 0 ? board : board ^ hcval;
 
             // returns 0 if the node cannot be solved within the given pn/dn constraints
             function* solve(color: number, nkt: number, pmax: number, dmax: number, mind: number) {
@@ -276,7 +275,7 @@ module tsumego {
                         });
 
                         if (md > mind) // if the node is new...
-                            dns = min(dns + p, maxdpn);
+                            dns += p;
                         else
                             dnm = max(dnm, p), md0 = min(md0, md);
 
@@ -419,10 +418,10 @@ module tsumego {
                     result = repd.set(stone.nocoords(-color), mindepth);
 
                 if (result * color > 0)
-                    pdns.set(hashb, color, [0, maxdpn, mind]);
+                    pdns.set(hashb, color, [0, hugedpn, mind]);
 
                 if (result * color < 0)
-                    pdns.set(hashb, color, [maxdpn, 0, mind]);
+                    pdns.set(hashb, color, [hugedpn, 0, mind]);
 
                 if (!result && nodes.length) {
                     let dmin = Infinity;
@@ -434,7 +433,7 @@ module tsumego {
                         const [p, d, md] = pdns.get(x.board, -color, [1, 1, mind + 1]);
 
                         if (md > mind)
-                            psum = min(psum + p, maxdpn);
+                            psum += p;
                         else
                             pmax = max(pmax, p), mdmin = min(mdmin, md);
 
@@ -488,7 +487,15 @@ module tsumego {
                     board.play(move);
                 }
 
-                move = yield* solve(color, nkt, maxdpn, maxdpn, 0);
+                let pmax = 1, dmax = 1;
+
+                do {
+                    move = yield* solve(color, nkt, pmax, dmax, 0);
+                    [pmax, dmax] = pdns.get(board.hash, color, null);
+
+                    if (debug && !move)
+                        yield `restarting the search with new thresholds: pmax = ${pmax} dmax = ${dmax}`;
+                } while (!move);
 
                 return typeof args === 'string' ?
                     stone.toString(move) :
