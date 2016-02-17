@@ -5,6 +5,7 @@
 /// <reference path="benson.ts" />
 /// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
+/// <reference path="dfpncache.ts" />
 
 module tsumego {
     const infdepth = 255;
@@ -153,9 +154,7 @@ module tsumego {
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
-
-            // keeps (dis)proof numbers as well as the min distance form the root: [pn, dn, md]
-            const pdns: { [nhash: number]: [number, number, number] } = {};
+            const pdns = new DfpnCache; // keeps p/d numbers as well as the min dist form the root
 
             const hcval = rand();
             const nhash = (board: number, color: number) => color > 0 ? board : board ^ hcval;
@@ -175,7 +174,7 @@ module tsumego {
                 }
 
                 {
-                    const [p = 1, d = 1] = pdns[nhash(hashb, color)] || [];
+                    const [p, d] = pdns.get(hashb, color, [1, 1, mind]);
 
                     debug && debug.update([...path, hashb], {
                         pn: p,
@@ -268,9 +267,7 @@ module tsumego {
                     let pnc: number; // pn of the chosen node
 
                     for (const x of nodes) {
-                        const nh = nhash(x.board, -color);
-                        const [p = 1, d = 1, md = mind + 1] = pdns[nh] || [];
-                        pdns[nh] = [p, d, md];
+                        const [p, d, md] = pdns.get(x.board, -color, [1, 1, mind + 1]);
 
                         debug && debug.update([...path, hashb, x.board], {
                             pn: p,
@@ -422,10 +419,10 @@ module tsumego {
                     result = repd.set(stone.nocoords(-color), mindepth);
 
                 if (result * color > 0)
-                    pdns[nhash(hashb, color)] = [0, maxdpn, mind];
+                    pdns.set(hashb, color, [0, maxdpn, mind]);
 
                 if (result * color < 0)
-                    pdns[nhash(hashb, color)] = [maxdpn, 0, mind];
+                    pdns.set(hashb, color, [maxdpn, 0, mind]);
 
                 if (!result && nodes.length) {
                     let dmin = Infinity;
@@ -434,7 +431,7 @@ module tsumego {
                     let mdmin = Infinity;
 
                     for (const x of nodes) {
-                        const [p = 1, d = 1, md = mind + 1] = pdns[nhash(x.board, -color)] || [];
+                        const [p, d, md] = pdns.get(x.board, -color, [1, 1, mind + 1]);
 
                         if (md > mind)
                             psum = min(psum + p, maxdpn);
@@ -444,13 +441,13 @@ module tsumego {
                         dmin = min(dmin, d);
                     }
 
-                    pdns[nhash(hashb, color)] = psum > 0 ?
+                    pdns.set(hashb, color, psum > 0 ?
                         [dmin, psum, mind] :
-                        [dmin, pmax, mind = mdmin];
+                        [dmin, pmax, mind = mdmin]);
                 }
 
                 if (debug && debug.update) {
-                    const [p, d, md] = pdns[nhash(hashb, color)];
+                    const [p, d, md] = pdns.get(hashb, color, null);
 
                     debug.update([...path, hashb], {
                         pn: p,
