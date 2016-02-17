@@ -173,7 +173,9 @@ module tsumego {
                 }
 
                 {
-                    const [p, d] = pdns.get(hashb, color, [1, 1, mind]);
+                    const [p, d, md] = pdns.get(hashb, color, [1, 1, mind]);
+
+                    mind = md;
 
                     debug && debug.update([...path, hashb], {
                         pn: p,
@@ -491,7 +493,10 @@ module tsumego {
 
                 do {
                     move = yield* solve(color, nkt, pmax, dmax, 0);
-                    [pmax, dmax] = pdns.get(board.hash, color, null);
+                    const [newpmax, newdmax] = pdns.get(board.hash, color, null);
+
+                    pmax = max(pmax, newpmax);
+                    dmax = max(dmax, newdmax);
 
                     if (debug && !move)
                         yield `restarting the search with new thresholds: pmax = ${pmax} dmax = ${dmax}`;
