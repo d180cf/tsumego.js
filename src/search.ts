@@ -9,7 +9,7 @@
 
 module tsumego {
     const infdepth = 255;
-    const hugedpn = 99;
+    const hugedpn = 1e6;
 
     module repd {
         export const get = move => move >> 8 & 255;
@@ -330,7 +330,7 @@ module tsumego {
                     // once they are exceeded, the solver comes back
                     // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
-                    const dmax1 = min(pmax, dn2);
+                    const dmax1 = min(pmax, dn2 * 1.01);
 
                     const d = node.repd;
                     const move = node.move;
