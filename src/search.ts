@@ -88,7 +88,8 @@ module tsumego {
                 update?(path: number[], data?): void;
             };
             unodes?: {
-                size: number;
+                total: number;
+                unique: number;
             };
             stats?: {
                 nodes: number;
@@ -190,8 +191,14 @@ module tsumego {
                     }
                 }
 
-                if (unodes)
-                    unodes.size++;
+                if (unodes) {
+                    unodes.total++;
+
+                    if (!unodes[hashb]) {
+                        unodes[hashb] = true;
+                        unodes.unique++;
+                    }
+                }
 
                 let result: stone = 0;
                 let mindepth = infdepth;
@@ -330,7 +337,7 @@ module tsumego {
                     // once they are exceeded, the solver comes back
                     // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
-                    const dmax1 = min(pmax, dn2);
+                    const dmax1 = min(pmax, max(dn2 + 1, dn2 * 1.3));
 
                     const d = node.repd;
                     const move = node.move;
