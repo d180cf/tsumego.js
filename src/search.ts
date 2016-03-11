@@ -72,7 +72,8 @@ module tsumego {
             alive?(node: Node): boolean;
             debug?: boolean;
             unodes?: {
-                size: number;
+                total: number;
+                unique: number;
             };
             stats?: {
                 nodes: number;
@@ -158,8 +159,14 @@ module tsumego {
                     return repd.set(ttres, infdepth);
                 }
 
-                if (unodes)
-                    unodes.size++;
+                if (unodes) {
+                    unodes.total++;
+
+                    if (!unodes[hashb]) {
+                        unodes[hashb] = true;
+                        unodes.unique++;
+                    }
+                }
 
                 let result: stone;
                 let mindepth = infdepth;

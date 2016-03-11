@@ -186,7 +186,7 @@ module tests {
                         const seed = Date.now() | 0;
                         console.log('rand seed:', hex(seed));
 
-                        const unodes = { size: 0 };
+                        const unodes = { total: 0, unique: 0 };
 
                         const result = solve({
                             root: b.fork(),
@@ -206,7 +206,7 @@ module tests {
                         const move = !stone.hascoords(result) ? 0 : stone(x, y, 0);
                         $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
 
-                        return unodes.size + '';
+                        return unodes.unique + '/' + unodes.total;
                     }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
                 }
             }
