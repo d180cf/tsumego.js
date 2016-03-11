@@ -181,7 +181,7 @@ module tests {
                         console.log(c2p + ' plays first');
 
                         if (nkt)
-                            console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt) } ko treats`);
+                            console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt)} ko treats`);
 
                         const seed = Date.now() | 0;
                         console.log('rand seed:', hex(seed));
@@ -206,7 +206,7 @@ module tests {
                         const move = !stone.hascoords(result) ? 0 : stone(x, y, 0);
                         $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
 
-                        return unodes.unique + '/' + unodes.total;
+                        return unodes.unique + '/' + unodes.total + ' = ' + (100 * unodes.unique / unodes.total | 0) + '%';
                     }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
                 }
             }
