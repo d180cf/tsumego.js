@@ -44,40 +44,13 @@ module tsumego {
     }
 
     export function sumlibs(board: Board, color: number) {
-        let outer = 0;
+        let n = 0;
 
-        for (let i = 1; i < board.blocks.length; i++) {
-            const b = board.blocks[i];
+        for (const b of board.blocks)
+            if (b * color > 0)
+                n += block.libs(b);
 
-            if (block.size(b) > 0 && b * color > 0)
-                outer = outer ? block.join(outer, b) : b;
-        }
-
-        let [xmin, xmax, ymin, ymax] = block.dims(outer);
-
-        if (xmin > 0) xmin--;
-        if (ymin > 0) ymin--;
-        if (xmax < board.size - 1) xmax++;
-        if (ymax < board.size - 1) ymax++;
-
-        let total = 0;
-
-        for (let x = xmin; x <= xmax; x++) {
-            for (let y = ymin; y <= ymax; y++) {
-                if (!board.get(x, y)) {
-                    const isnb =
-                        board.get(x - 1, y) * color > 0 ||
-                        board.get(x + 1, y) * color > 0 ||
-                        board.get(x, y - 1) * color > 0 ||
-                        board.get(x, y + 1) * color > 0;
-
-                    if (isnb)
-                        total++;
-                }
-            }
-        }
-
-        return total;
+        return n;
     }
 
     function ninatari(board: Board, color: number) {
