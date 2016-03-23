@@ -160,7 +160,7 @@ module tsumego {
             const hcval = rand();
 
             // returns 0 if the node cannot be solved within the given pn/dn constraints
-            function* solve(color: number, nkt: number, pmax: number, dmax: number, mind: number) {
+            function* solve(color: number, nkt: number, pmax: number, dmax: number, mind: number, quick = false) {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
@@ -173,6 +173,7 @@ module tsumego {
                     return repd.set(ttres, infdepth);
                 }
 
+                // check if local p/d thresholds are exceeded
                 {
                     const [p, d, md] = pdns.get(hashb, color, [1, 1, mind]);
 
@@ -185,7 +186,7 @@ module tsumego {
                         dmax: dmax
                     });
 
-                    if (p > pmax || d > dmax) {
+                    if (p >= pmax || d >= dmax) {
                         debug && (yield `${p} > ${pmax} or ${d} > ${dmax}`);
                         return 0;
                     }
@@ -283,6 +284,8 @@ module tsumego {
                             md: md
                         });
 
+                        quick && console.log(`${hex(x.board ^ -color)} ${stone.toString(x.move)} p=${p} d=${d}`);
+
                         if (md > mind) // if the node is new...
                             dns = min(infty, dns + p);
                         else
@@ -299,6 +302,11 @@ module tsumego {
                                 node = x, pnc = p;
                         }
                     }
+
+                    quick && console.log(`move ${stone.toString(node.move)}`);
+
+                    if (quick)
+                        return !pn0 ? node.move || stone.nocoords(target) : stone.nocoords(-color);
 
                     // to make dfpn handle repetitions the disproof number of the parent
                     // node is computed with a slightly modified formula:
@@ -320,7 +328,7 @@ module tsumego {
                         node && debug.update([...path, hashb, node.board]);
                     }
 
-                    if (dn0 > dmax || pn0 > pmax) {
+                    if (dn0 >= dmax || pn0 >= pmax) {
                         if (debug) {
                             debug.update([...path, hashb], {
                                 pn: pn0,
@@ -337,7 +345,7 @@ module tsumego {
                     // once they are exceeded, the solver comes back
                     // and picks the next node with the samllest dn
                     const pmax1 = dmax - (dn0 - pnc);
-                    const dmax1 = min(pmax, max(dn2 + 1, dn2 * 1.3));
+                    const dmax1 = min(pmax, dn2 + 1);
 
                     const d = node.repd;
                     const move = node.move;
@@ -383,6 +391,14 @@ module tsumego {
                                     // this move repeat a previously played position:
                                     // spend a ko treat and yield the turn to the opponent
                                     yield* solve(-color, nkt - color, pmax1, dmax1, mind + 1);
+
+                        // static tests don't set prrof numbers
+
+                        if (s * -color > 0)
+                            pdns.set(board.hash, -color, [0, infty, mind + 1]);
+
+                        if (s * -color < 0)
+                            pdns.set(board.hash, -color, [infty, 0, mind + 1]);
 
                         debug && s && (yield 'the outcome of this move: ' + stone.toString(s));
                         board.undo();
@@ -496,8 +512,12 @@ module tsumego {
                     board.play(move);
                 }
 
+                yield* solve(color, nkt, infty, infty, 0);
 
-                move = yield* solve(color, nkt, infty, infty, 0);
+                console.log('quick');
+
+                // infty + 1 to skip the pmax/dmax check
+                move = yield* solve(color, nkt, infty + 1, infty + 1, 0, true);
 
                 return typeof args === 'string' ?
                     stone.toString(move) :

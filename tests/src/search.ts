@@ -183,9 +183,6 @@ module tests {
                         if (nkt)
                             console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt)} ko treats`);
 
-                        const seed = Date.now() | 0;
-                        console.log('rand seed:', hex(seed));
-
                         const unodes = { total: 0, unique: 0 };
 
                         const result = solve({
