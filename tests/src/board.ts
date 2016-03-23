@@ -756,69 +756,6 @@
         });
 
         $.test($ => { 
-            /// total libs
-            const b = new Board(5);
-
-            try {
-                $(sumlibs(b, +1)).equal(0);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(0, 0, +1));
-
-                $(sumlibs(b, +1)).equal(2);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(1, 0, +1));
-
-                $(sumlibs(b, +1)).equal(3);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(4, 0, +1));
-
-                $(sumlibs(b, +1)).equal(5);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(3, 0, +1));
-
-                $(sumlibs(b, +1)).equal(5);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(2, 0, +1));
-
-                $(sumlibs(b, +1)).equal(5);
-                $(sumlibs(b, -1)).equal(0);
-
-                b.play(stone(0, 1, -1));
-
-                $(sumlibs(b, +1)).equal(4);
-                $(sumlibs(b, -1)).equal(2);
-
-                b.play(stone(1, 1, -1));
-
-                $(sumlibs(b, +1)).equal(3);
-                $(sumlibs(b, -1)).equal(3);
-
-                b.play(stone(4, 1, -1));
-
-                $(sumlibs(b, +1)).equal(2);
-                $(sumlibs(b, -1)).equal(5);
-
-                b.play(stone(3, 1, -1));
-
-                $(sumlibs(b, +1)).equal(1);
-                $(sumlibs(b, -1)).equal(5);
-
-                b.play(stone(2, 1, -1));
-
-                $(sumlibs(b, +1)).equal(0);
-                $(sumlibs(b, -1)).equal(10);
-            } catch (e) {
-                console.log(b + '');
-                throw e;
-            }
-        });
-
-        $.test($ => { 
             /// capture
             const b = new Board(9, [
                 'X-XXOOOO',
