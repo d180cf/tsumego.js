@@ -15,7 +15,7 @@ namespace testbench {
 
     function onSpanClick(event: MouseEvent) {
         if (event.ctrlKey)
-            this.parentNode.classList.toggle('collapsed');
+            this.parentNode.classList.toggle('expanded');
     }
 
     export class SearchTreeView {
@@ -85,7 +85,7 @@ namespace testbench {
             Object.assign(node.data, data);
             tdiv.classList.add('current');
             tdiv.firstChild.textContent = title + ' ' + stringify(node.data);
-            tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);            
+            tdiv.title = (2 ** 32 + hash).toString(16).slice(-8);
 
             const parent = this.nodes[this.hashof.get(tdiv.parentElement)];
 

@@ -31,6 +31,7 @@ h3 {
 
         #search-tree div > div {
             margin-left: 10pt;
+            display: none;
         }
 
     #search-tree span {
@@ -41,12 +42,12 @@ h3 {
         background-color: gainsboro;
     }
 
-    #search-tree div.collapsed > div {
-        display: none;
+    #search-tree div.expanded > div {
+        display: inherit;
     }
 
-    #search-tree div.collapsed > span {
-        background-color: lightblue;
+    #search-tree div.in-path > div {
+        display: inherit;
     }
 
     #search-tree div.in-path > span {
