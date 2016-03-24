@@ -192,7 +192,7 @@ module tests {
                             tt: tt,
                             unodes: unodes as any,
                             expand: BasicMoveGen(rzone),
-                            status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
+                            target: aim,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });
 

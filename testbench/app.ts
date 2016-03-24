@@ -50,7 +50,7 @@ module testbench {
             nkt: nkotreats,
             tt: tt,
             expand: tsumego.generators.Basic(rzone),
-            status: status
+            target: aim
         });
 
         if (log) {
@@ -80,7 +80,7 @@ module testbench {
             nkt: nkotreats,
             tt: tt,
             expand: tsumego.generators.Basic(rzone),
-            status: status,
+            target: aim,
             alive: (b: Board) => tsumego.benson.alive(b, aim),
             debug: {
                 update(path, data) {

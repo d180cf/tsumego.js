@@ -16,12 +16,6 @@ module tsumego {
         export const set = (move, repd) => move & ~0xFF00 | repd << 8;
     }
 
-    interface Node {
-        hash: number;
-        play(move: stone): number;
-        undo(): stone;
-    }
-
     function comment(text: string, args?) {
         if (!args) return text;
 
@@ -77,13 +71,13 @@ module tsumego {
 
     export namespace solve {
         export interface Args {
-            root: Node;
+            root: Board;
             color: number;
             nkt?: number;
             tt?: TT;
-            expand(node: Node, color: number): stone[];
-            status(node: Node): number;
-            alive?(node: Node): boolean;
+            expand(node: Board, color: number): stone[];
+            target: stone;
+            alive?(node: Board): boolean;
             debug?: {
                 update?(path: number[], data?): void;
             };
@@ -138,20 +132,20 @@ module tsumego {
                 color: color,
                 nkt: komaster,
                 expand: generators.Basic(rzone),
-                status: (b: Board) => b.get(target) < 0 ? -1 : +1,
+                target: target,
                 alive: (b: Board) => tsumego.benson.alive(b, target)
             };
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, unodes, debug} =
+            let {root: board, color, nkt = 0, tt = new TT, expand, target, alive, stats, unodes, debug} =
                 typeof args === 'string' ? parse(args) : args;
 
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
-            // tells who is being captured
-            const target = status(board);
+            // it may not have the color initially
+            target = stone(stone.x(target), stone.y(target), board.get(target));
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
@@ -210,6 +204,7 @@ module tsumego {
                     move: stone;
                     wins: number;
                     repd: number;
+                    libs: number;
                 }
 
                 /** Once a node is solved, it's removed from the list. */
@@ -218,6 +213,7 @@ module tsumego {
                 for (const move of expand(board, color)) {
                     board.play(move);
                     const hash = board.hash;
+                    const libs = block.libs(board.get(target));
                     board.undo();
 
                     let d = depth - 1;
@@ -247,6 +243,7 @@ module tsumego {
                         nkt: newnkt,
                         move: repd.set(move, d),
                         wins: stone.color(cached) * color,
+                        libs: libs,
                         repd: d
                     });
                 }
@@ -263,6 +260,7 @@ module tsumego {
                     nkt: nkt,
                     move: 0,
                     wins: 0,
+                    libs: block.libs(board.get(target)),
                     repd: infdepth
                 });
 
@@ -276,7 +274,9 @@ module tsumego {
                     let pnc: number; // pn of the chosen node
 
                     for (const x of nodes) {
-                        const [p, d, md] = pdns.get(x.board, -color, [1, 1, mind + 1]);
+                        const n = x.libs > 0 ? 2 ** (x.libs - 1) : 1;
+                        const [dpn, ddn] = target * color < 0 ? [1, n] : [n, 1];
+                        const [p, d, md] = pdns.get(x.board, -color, [dpn, ddn, mind + 1]);
 
                         debug && debug.update([...path, hashb, x.board], {
                             pn: p,
@@ -369,7 +369,7 @@ module tsumego {
                         if (i >= 0) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(status(board)), i + 1);
+                            s = repd.set(stone.nocoords(board.get(target) || -target), i + 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -382,7 +382,7 @@ module tsumego {
                         board.play(move);
                         debug && (yield stone.toString(move));
 
-                        s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
+                        s = !board.get(target) ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
