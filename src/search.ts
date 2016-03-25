@@ -171,6 +171,8 @@ module tsumego {
                     }
                 }
 
+                const guess = tt.move[hashb ^ color] || 0;
+
                 let result: stone;
                 let mindepth = infdepth;
 
@@ -313,6 +315,15 @@ module tsumego {
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
+
+                if (guess) {
+                    log && log.write({
+                        board: hashb,
+                        color: color,
+                        guess: guess,
+                        result: result
+                    });
+                }
 
                 tt.move[hashb ^ color] = result;
 

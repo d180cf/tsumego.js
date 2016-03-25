@@ -3,7 +3,7 @@ namespace stats {
 
     const _ = require('lodash');
 
-    const pad = (x, n: number, c = ' ') => ('0'.repeat(n) + x).slice(-n);
+    const pad = (x, n: number, c = ' ') => (c.repeat(n) + x).slice(-n);
 
     _.mixin({
         pie(data) {
@@ -35,11 +35,19 @@ namespace stats {
     });
 
     export function analyze(json) {
-        console.log('log size:', json.length);
+        console.log('\nlog size:', json.length);
 
         const src = _(json);
 
-        console.log('number of moves before a win:\n' + src
+        console.log('\ntt guess success rate:\n' + src
+            .filter(x => x.guess)
+            .countBy(x => +!((x.guess ^ x.result) & 0x800000FF))
+            .toSparseArray(0)
+            .barChart()
+            .value()
+            .join('\n'));
+
+        console.log('\nnumber of moves before a win:\n' + src
             .filter(x => x.result > 0)
             .countBy('trials')
             .toSparseArray(0)
@@ -47,7 +55,7 @@ namespace stats {
             .value()
             .join('\n'));
 
-        console.log('number of moves before a loss:\n' + src
+        console.log('\nnumber of moves before a loss:\n' + src
             .filter(x => x.result < 0)
             .countBy('trials')
             .toSparseArray(0)
