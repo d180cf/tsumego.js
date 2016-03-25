@@ -3,6 +3,8 @@ namespace stats {
 
     const _ = require('lodash');
 
+    const pad = (x, n: number, c = ' ') => ('0'.repeat(n) + x).slice(-n);
+
     _.mixin({
         pie(data) {
             const sum = _.sum(data);
@@ -22,6 +24,13 @@ namespace stats {
                 a[i] = data[i] || defaultValue;
 
             return a;
+        },
+
+        barChart(data: number[]) {
+            const s = _.sum(data);
+            const n = 60;
+
+            return _.map(data, (x, i) => `${pad(i, 2)} ${pad(x / s * 100 | 0, 2)}% ${'#'.repeat(x / s * n | 0)}`);
         }
     });
 
@@ -30,18 +39,20 @@ namespace stats {
 
         const src = _(json);
 
-        console.log('number of moves before a win:', src
+        console.log('number of moves before a win:\n' + src
             .filter(x => x.result > 0)
             .countBy('trials')
             .toSparseArray(0)
-            .pie()
-            .value());
+            .barChart()
+            .value()
+            .join('\n'));
 
-        console.log('number of moves before a loss:', src
+        console.log('number of moves before a loss:\n' + src
             .filter(x => x.result < 0)
             .countBy('trials')
             .toSparseArray(0)
-            .pie()
-            .value());
+            .barChart()
+            .value()
+            .join('\n'));
     }
 }
