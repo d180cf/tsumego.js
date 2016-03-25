@@ -70,6 +70,25 @@ namespace tests {
     } = vals;
 }
 
+namespace tests {
+    declare const require;
+
+    const fs = require('fs');
+
+    const path = argv.log || 'logs.json';
+
+    export const log = {
+        path: path,
+        stream: fs.createWriteStream(path),
+        write(data) {
+            this.stream.write(JSON.stringify(data));
+            this.stream.write(',\n');
+        }
+    };
+
+    log.stream.write('[\n');
+}
+
 namespace tests.ut {
     export interface GroupContext {
         test(test: ($: typeof expect) => string | void, name?: string): void;

@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "glob": "5.0.15",
+    "lodash": "4.6.1",
     "source-map-support": "0.3.2",
     "es6-symbol": "2.0.1"
   }

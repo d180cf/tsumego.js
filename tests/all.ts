@@ -1,6 +1,7 @@
 /// <reference path="../src/search.ts" />
 
 /// <reference path="infra.ts" />
+/// <reference path="stats.ts" />
 /// <reference path="es6aiter.ts" />
 
 /// <reference path="src/utils.ts" />
@@ -16,6 +17,15 @@ namespace tests {
     console.log('\nTotal:', ((Date.now() - _dt0) / 1000).toFixed(1).white() + 's');
 
     tsumego.profile.log();
+
+    declare const require;
+
+    log.stream.end('{}]', () => {
+        const fs = require('fs');
+        const text = fs.readFileSync(log.path, 'utf8');
+        const json = JSON.parse(text);
+        stats.analyze(json);
+    });
 
     // process.exit(0) somehow prevents stream
     // buffers from being flushed to files

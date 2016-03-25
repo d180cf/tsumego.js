@@ -129,18 +129,6 @@ module tests {
         if (typeof require === 'undefined')
             console.log('these tests are available only in node.js');
 
-        const fs = require('fs');
-        const stream = fs.createWriteStream('logs.json');
-
-        stream.write('[\n');
-
-        const log = {
-            write(data) {
-                stream.write(JSON.stringify(data));
-                stream.write(',\n');
-            }
-        };        
-
         const ls = require('glob').sync;
         const cat = require('fs').readFileSync;
 
@@ -224,7 +212,5 @@ module tests {
                 }
             }
         }
-
-        stream.write('{}]');
     });
 }

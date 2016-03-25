@@ -217,7 +217,7 @@ module tsumego {
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
                 sa.insert(0, {
-                    d: infdepth,                    
+                    d: infdepth,
                     w: 0
                 });
 
@@ -317,8 +317,8 @@ module tsumego {
                 tt.move[hashb ^ color] = result;
 
                 log && log.write({
-                    result: color * result > 0,
-                    trials: trials 
+                    result: color * stone.color(result),
+                    trials: trials
                 });
 
                 return result;
