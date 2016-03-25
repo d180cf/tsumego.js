@@ -39,7 +39,15 @@ namespace stats {
 
         const src = _(json);
 
-        console.log('\ntt guess success rate:\n' + src
+        console.log('\nbenson test:\n' + src
+            .filter(x => 'benson' in x)
+            .countBy(x => +x.benson)
+            .toSparseArray(0)
+            .barChart()
+            .value()
+            .join('\n'));
+
+        console.log('\ntt guess:\n' + src
             .filter(x => x.guess)
             .countBy(x => +!((x.guess ^ x.result) & 0x800000FF))
             .toSparseArray(0)

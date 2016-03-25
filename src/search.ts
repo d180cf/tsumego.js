@@ -134,6 +134,21 @@ module tsumego {
             let {root: board, color, nkt = 0, tt = new TT, log, expand, status, alive, stats, unodes, debug} =
                 typeof args === 'string' ? parse(args) : args;
 
+            if (log) {
+                const test = alive;
+
+                alive = node => {
+                    const res = test(node);
+
+                    log && log.write({
+                        board: node.hash,
+                        benson: res
+                    });
+
+                    return res;
+                };
+            }
+
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
