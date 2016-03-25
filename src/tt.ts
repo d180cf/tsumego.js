@@ -47,6 +47,8 @@ module tsumego {
     export class TT {
         size = 0;
 
+        move: { [node: number]: stone } = {};
+
         private data: { [hash: number]: entry } = {};
 
         get(hash: number, color: number, nkt: number) {
@@ -62,7 +64,7 @@ module tsumego {
                         0; // not solved for this number of ko treats
 
             if (!winner) return 0;
-            
+
             // the move must be dropped if the outcome is a loss
             return winner * color > 0 && entry.m(e) ?
                 stone(entry.x(e), entry.y(e), winner) :

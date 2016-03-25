@@ -142,7 +142,7 @@ module tsumego {
 
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<stone, { d: number, w: number; }>((a, b) =>
+            const sa = new SortedArray<stone, { d: number, w: number }>((a, b) =>
                 b.d - a.d || // moves that require a ko treat are considered last
                 b.w - a.w);  // first consider moves that lead to a winning position
 
@@ -202,12 +202,10 @@ module tsumego {
                     if (d <= depth && nkt * color <= 0)
                         continue;
 
-                    // check if this node has already been solved
-                    const r = tt.get(hash, -color, d <= depth ? nkt - color : nkt);
-
                     sa.insert(repd.set(move, d), {
                         d: d,
-                        w: stone.color(r) * color
+                        // use previously found solution as a hint
+                        w: stone.color(tt.move[hash ^ -color] || 0) * color
                     });
                 }
 
@@ -218,7 +216,10 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert(0, { d: infdepth, w: 0 });
+                sa.insert(0, {
+                    d: infdepth,                    
+                    w: 0
+                });
 
                 let trials = 0;
 
@@ -312,6 +313,8 @@ module tsumego {
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
+
+                tt.move[hashb ^ color] = result;
 
                 log && log.write({
                     result: color * result > 0,
