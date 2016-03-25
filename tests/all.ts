@@ -17,6 +17,8 @@ namespace tests {
 
     tsumego.profile.log();
 
-    if (isNode)
-        process.exit(ut.failed ? 1 : 0);
+    // process.exit(0) somehow prevents stream
+    // buffers from being flushed to files
+    if (isNode && ut.failed)
+        process.exit(1);
 }

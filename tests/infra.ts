@@ -61,11 +61,12 @@ namespace tests {
 
     /**
      * node test qwerty foo=bar
-     * ?qwerty&foo=bar
+     * /test?qwerty&foo=bar
      */
     export const argv: {
         [index: number]: string;
         unodes?: boolean;
+        log?: string;
     } = vals;
 }
 

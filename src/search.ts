@@ -71,6 +71,9 @@ module tsumego {
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: boolean;
+            log?: {
+                write(data): void;
+            };
             unodes?: {
                 total: number;
                 unique: number;
@@ -128,7 +131,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, expand, status, alive, stats, unodes, debug} =
+            let {root: board, color, nkt = 0, tt = new TT, log, expand, status, alive, stats, unodes, debug} =
                 typeof args === 'string' ? parse(args) : args;
 
             // cache results from static analysis as it's quite slow
@@ -217,7 +220,10 @@ module tsumego {
                 // solved despite the move is yilded to the opponent.
                 sa.insert(0, { d: infdepth, w: 0 });
 
+                let trials = 0;
+
                 for (const move of nodes) {
+                    trials++;
                     const d = !move ? infdepth : repd.get(move);
                     let s: stone;
 
@@ -306,6 +312,11 @@ module tsumego {
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, nkt);
+
+                log && log.write({
+                    result: color * result > 0,
+                    trials: trials 
+                });
 
                 return result;
             }
