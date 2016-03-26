@@ -340,14 +340,12 @@ module testbench {
                     // add a black stone
                     if (c) return;
                     board.play(stone(x, y, +1));
-                    board = board.fork(); // drop history
                     break;
 
                 case 'AW':
                     // add a white stone
                     if (c) return;
                     board.play(stone(x, y, -1));
-                    board = board.fork(); // drop history
                     break;
 
                 case '--':
