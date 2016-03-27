@@ -21,6 +21,10 @@ namespace tests {
     declare const require;
 
     log.stream.end('{}]', () => {
+        // skip analysis if all tests are selected;
+        // otherwise the analysis will run out of memory
+        if (!argv[0]) return;
+
         const fs = require('fs');
         const text = fs.readFileSync(log.path, 'utf8');
         const json = JSON.parse(text);
