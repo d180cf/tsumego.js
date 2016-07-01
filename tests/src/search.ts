@@ -13,10 +13,9 @@ module tests {
         $.test($ => {
             /// best move exists, black wins
 
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
                 AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AB[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('B[ba]');
         });
@@ -24,10 +23,9 @@ module tests {
         $.test($ => {
             /// best move exists, white wins
 
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
                 AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AB[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('W[ba]');
         });
@@ -35,10 +33,9 @@ module tests {
         $.test($ => {
             /// no best move exists, black wins
 
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
                 AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea][ba]\
-                SQ[aa][ba][ca])');
+                AB[ac][bc][cc][dc][ec][eb][ea][ba])');
 
             $(move).equal('B');
         });
@@ -46,10 +43,9 @@ module tests {
         $.test($ => {
             /// no best move exists, white wins
 
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
                 AW[ab][bb][cb][db][da][ba]\
-                AB[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AB[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('W');
         });
@@ -57,10 +53,9 @@ module tests {
         $.test($ => {
             /// black is captured
 
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
                 AB[ab][bb][cb][db][da]\
-                AW[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AW[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('W[ba]');
         });
@@ -68,10 +63,9 @@ module tests {
         $.test($ => {
             /// black lives
 
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
                 AB[ab][bb][cb][db][da]\
-                AW[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AW[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('B[ba]');
         });
@@ -79,10 +73,9 @@ module tests {
         $.test($ => {
             /// black cannot be captured
 
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[ba]\
+            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
                 AB[ab][bb][cb][db][da][ba]\
-                AW[ac][bc][cc][dc][ec][eb][ea]\
-                SQ[aa][ba][ca])');
+                AW[ac][bc][cc][dc][ec][eb][ea])');
 
             $(move).equal('B');
         });
@@ -105,7 +98,6 @@ module tests {
             $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
                 + '\n\tSZ[n] tag must specify the size of the board.'
                 + '\n\tPL[W] or PL[B] must tell who plays first.'
-                + '\n\tSQ[xy][..] must tell the set of possible moves.'
                 + '\n\tMA[xy] must specify the target white stone.');
         });
 
@@ -118,7 +110,6 @@ module tests {
             $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
                 + '\n\tBoard 19x19 is too big. Up to 16x16 boards are supported.'
                 + '\n\tPL[W] or PL[B] must tell who plays first.'
-                + '\n\tSQ[xy][..] must tell the set of possible moves.'
                 + '\n\tMA[xy] must specify the target white stone.');
         });
     });
@@ -143,11 +134,10 @@ module tests {
 
             const setup = sgf.steps[0];
 
-            if (!setup['MA'] || !setup['SL'])
+            if (!setup['MA'])
                 continue;
 
             const aim = stone.fromString(setup['MA'][0]);
-            const rzone = setup['SL'].map(stone.fromString);
             const board = new Board(sgf);
             const tt = new TT; // shared by all variations
 
@@ -195,7 +185,7 @@ module tests {
                             tt: tt,
                             log: log,
                             unodes: unodes,
-                            expand: BasicMoveGen(forked, rzone),
+                            expand: BasicMoveGen(forked, aim),
                             status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });

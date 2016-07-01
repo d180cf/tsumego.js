@@ -6,6 +6,7 @@
 /// <reference path="ascii-board.ts" />
 
 /// <reference path="src/dist.ts" />
+/// <reference path="src/fixed.ts" />
 /// <reference path="src/utils.ts" />
 /// <reference path="src/gf2.ts" />
 /// <reference path="src/sgf.ts" />

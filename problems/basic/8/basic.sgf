@@ -2,7 +2,6 @@
   C[B => W][B+1 => W][W => W+aa,ab,ba,bb,ca,cb,da,db]
   AB[fa][fb][fc][ad][bd][cd][dd][ed][fd]
   AW[ea][eb][ac][bc][cc][dc][ec]
-  SL[aa][ab][ba][bb][ca][cb][da][db]
 
 	(;AB[aa][ba][ca][cb]
 	  AW[bb][da]

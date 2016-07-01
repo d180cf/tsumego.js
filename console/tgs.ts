@@ -19,7 +19,6 @@ namespace tsumego {
     const sgf = SGF.parse(sgfdata);
     const setup = sgf.steps[0];
     const target = stone.fromString(setup['MA'][0]);
-    const rzone = setup['SL'].map(stone.fromString);
     const board = new Board(sgf);
     const tt = new TT;
 
@@ -113,7 +112,7 @@ namespace tsumego {
             color: color,
             nkt: +nkt | 0,
             tt: tt,
-            expand: mgen.fixed(board, rzone),
+            expand: mgen.fixed(board, target),
             status: (b: Board) => b.get(target) < 0 ? -1 : +1,
             alive: (b: Board) => benson.alive(b, target)
         });

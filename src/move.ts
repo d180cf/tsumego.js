@@ -50,6 +50,48 @@ module tsumego {
                 y <= 0x0 ? 0 : stone(x, y - 1, c),
                 y >= 0xF ? 0 : stone(x, y + 1, c)];
         }
+
+        export const diagonals = (m: stone) => {
+            const [x, y] = stone.coords(m);
+            const c = stone.color(m);
+
+            return [
+                x <= 0x0 || y <= 0x0 ? 0 : stone(x - 1, y - 1, c),
+                x >= 0xF || y <= 0x0 ? 0 : stone(x + 1, y - 1, c),
+                x <= 0x0 || y >= 0xF ? 0 : stone(x - 1, y + 1, c),
+                x >= 0xF || y >= 0xF ? 0 : stone(x + 1, y + 1, c)];
+        }
+
+        export class SmallSet {
+            public stones: stone[] = [];
+
+            constructor(private test = same) {
+
+            }
+
+            toString() {
+                return '[' + this.stones.sort((a, b) => a - b).map(stone.toString).join(',') + ']';
+            }
+
+            has(s: stone) {
+                for (const x of this.stones)
+                    if (this.test(x, s))
+                        return true;
+
+                return false;
+            }
+
+            add(s: stone) {
+                if (!this.has(s))
+                    this.stones.push(s);
+            }
+
+            remove(p: (s: stone) => boolean) {
+                for (let i = this.stones.length - 1; i >= 0; i--)
+                    if (p(this.stones[i]))
+                        this.stones.splice(i, 1);
+            }
+        }
     }
 
     export module stone {

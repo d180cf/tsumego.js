@@ -46,7 +46,7 @@ module testbench {
             color: color,
             nkt: nkotreats,
             tt: tt,
-            expand: tsumego.mgen.fixed(board, rzone),
+            expand: tsumego.mgen.fixed(board, aim),
             status: status
         });
 
@@ -73,7 +73,7 @@ module testbench {
             color: color,
             nkt: nkotreats,
             tt: tt,
-            expand: tsumego.mgen.fixed(board, rzone),
+            expand: tsumego.mgen.fixed(board, aim),
             status: status,
             alive: (b: Board) => tsumego.benson.alive(b, aim)
         });
@@ -162,7 +162,7 @@ module testbench {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var rzone: stone[] = [], aim = 0, lspath = '';
+    var aim = 0, lspath = '';
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
@@ -239,7 +239,6 @@ module testbench {
 
                 document.querySelector('#reset').addEventListener('click', e => {
                     aim = 0;
-                    rzone = [];
                     board = new Board(board.size);
                     renderBoard();
                 });
@@ -286,7 +285,6 @@ module testbench {
 
         board = new Board(sgfdata, nvar);
         aim = stone.fromString((setup['MA'] || ['aa'])[0]);
-        rzone = (setup['SL'] || []).map(stone.fromString);
 
         board = board.fork(); // drop the history of moves
         renderBoard();
@@ -298,8 +296,7 @@ module testbench {
 
         const ui = gobanui.render(board, {
             TR: stone.hascoords(move) && [move],
-            MA: stone.hascoords(aim) && [aim],
-            SL: !stone.hascoords(move) && rzone
+            MA: stone.hascoords(aim) && [aim]
         });
 
         ui.addEventListener('mousemove', event => {
@@ -322,18 +319,6 @@ module testbench {
                 case 'MA':
                     // mark the target                    
                     aim = c < 0 ? stone(x, y, 0) : 0;
-                    break;
-
-                case 'SQ':
-                    // extend the r-zone
-                    const s = stone(x, y, 0);
-                    const i = rzone.indexOf(s);
-
-                    if (i < 0)
-                        rzone.push(s);
-                    else
-                        rzone.splice(i, 1);
-
                     break;
 
                 case 'AB':
@@ -374,7 +359,6 @@ module testbench {
         const editor = document.querySelector('.tsumego-sgf') as HTMLElement;
 
         const sgf = board.toStringSGF('\n  ').replace(/\)$/,
-            (rzone.length > 0 ? '\n  SL[' + rzone.map(stone.toString).join('][') + ']' : '') +
             (stone.hascoords(aim) ? '\n  MA[' + stone.toString(aim) + ']' : '') +
             ')');
 

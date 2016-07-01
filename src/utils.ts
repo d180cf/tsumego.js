@@ -7,7 +7,7 @@
 
     export const nesw = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
 
-    export function* region(root: stone, belongs: (target: stone, source: stone) => boolean) {
+    export function* region(root: stone, belongs: (target: stone, source: stone) => boolean, neighbors = stone.neighbors) {
         const body: stone[] = [];
         const edge = [root];
 
@@ -17,7 +17,7 @@
             yield xy;
             body.push(xy);
 
-            for (const nxy of stone.neighbors(xy))
+            for (const nxy of neighbors(xy))
                 if (belongs(nxy, xy) && body.indexOf(nxy) < 0 && edge.indexOf(nxy) < 0)
                     edge.push(nxy);
         }

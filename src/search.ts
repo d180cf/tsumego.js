@@ -25,7 +25,6 @@ module tsumego {
      *      (;FF[4]SZ[9]
      *        AB[aa][bb][cd][ef]
      *        AW[ab][df]
-     *        SQ[aa][bb][ab][ba]
      *        MA[ab]
      *        KM[B]
      *        PL[W])
@@ -36,7 +35,6 @@ module tsumego {
      *      AB  The set of black stones.
      *      AW  The set of white stones.
      *      MA  The target that needs to be captured or secured.
-     *      SQ  The set of intersections where the solver will play (aka the relevancy zone or the R-zone).
      *      PL  Who plays first.
      *      KM  Who is the ko master (optional).
      *
@@ -104,10 +102,6 @@ module tsumego {
                 () => sgf.get('PL')[0] == 'W' ? -1 : +1,
                 'PL[W] or PL[B] must tell who plays first.');
 
-            const rzone = exec(
-                () => sgf.get('SQ').map(stone.fromString),
-                'SQ[xy][..] must tell the set of possible moves.');
-
             const target = exec(
                 () => stone.fromString(sgf.get('MA')[0]),
                 'MA[xy] must specify the target white stone.');
@@ -119,12 +113,14 @@ module tsumego {
             if (errors.length)
                 throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
 
+            const tb = board.get(target);
+
             return {
                 root: board,
                 color: color,
                 nkt: komaster,
-                expand: mgen.fixed(board, rzone),
-                status: (b: Board) => b.get(target) < 0 ? -1 : +1,
+                expand: mgen.fixed(board, target),
+                status: (b: Board) => b.get(target) ? tb : -tb,
                 alive: (b: Board) => tsumego.benson.alive(b, target)
             };
         }
