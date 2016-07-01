@@ -1,11 +1,108 @@
 ﻿module tests {
     import stone = tsumego.stone;
     import block = tsumego.block;
-    import sumlibs = tsumego.sumlibs;
+    import sumlibs = tsumego.mgen.sumlibs;
     import Board = tsumego.Board;
 
-    ut.group($ => { 
+    ut.group($ => {
         /// board
+
+        $.test($ => {
+            /// liberties
+
+            const b = new Board(5, [
+                '- X - O -',
+                'X X O O O',
+                'O X - X X',
+                '- X X X -',
+                'X O O - X',
+            ]);
+
+            const r = {
+                0x00: [],
+                0x11: [0x00, 0x02, 0x30, 0x22, 0x43, 0x34],
+                0x40: [0x30],
+                0x44: [0x43, 0x34],
+                0x12: [0x02, 0x04, 0x22],
+                0x41: [0x43]
+            };
+
+            for (const t in r) {
+                const w = [];
+                const q = b.get(+t & 15, +t >> 4);
+
+                for (const [x, y] of b.libs(q))
+                    w.push(x | y << 4);
+
+                console.log(t, r[t].sort(), w.sort());
+
+                $(r[t].sort()).equal(w.sort());
+            }
+        });
+
+        $.test($ => {
+            /// stones
+
+            const b = new Board(5, [
+                '- X - O -',
+                'X X O O O',
+                'O X - X X',
+                '- X X X -',
+                'X O O - X',
+            ]);
+
+            const r = {
+                0x00: [],
+                0x10: [0x10, 0x11, 0x01, 0x12, 0x13, 0x23, 0x33, 0x32, 0x42],
+                0x04: [0x04],
+                0x44: [0x44],
+                0x21: [0x21, 0x30, 0x31, 0x41],
+                0x14: [0x14, 0x24]
+            };
+
+            for (const t in r) {
+                const w = [];
+                const q = b.get(+t >> 4, +t & 15);
+
+                for (const [x, y] of b.list(q))
+                    w.push(x << 4 | y);
+
+                console.log(t, q, r[t], w);
+
+                $(r[t].sort()).equal(w.sort());
+            }
+        });
+
+        $.test($ => {
+            /// neighbors
+
+            const b = new Board(3);
+            const a = new CharBoard(3);
+
+            const nbs = {
+                // corners
+                0x00: [0x01, 0x10],
+                0x20: [0x10, 0x21],
+                0x22: [0x21, 0x12],
+                0x02: [0x01, 0x12],
+                // sides
+                0x10: [0x00, 0x20, 0x11],
+                0x21: [0x20, 0x11, 0x22],
+                0x12: [0x11, 0x02, 0x22],
+                0x01: [0x00, 0x11, 0x02],
+                // center
+                0x11: [0x10, 0x21, 0x12, 0x01]
+            };
+
+            for (const t in nbs) {
+                const f = [];
+
+                for (const [x, y] of b.neighbors(+t & 15, +t >> 4))
+                    f.push(x | y << 4);
+
+                $(f.sort()).equal(nbs[t].sort());
+            }
+        });
 
         $.test($ => {
             /// blocks
@@ -572,7 +669,7 @@
                 // undo all the moves
                 for (let i = moves.length - 1; i > 0; i--) {
                     const [, , test] = moves[i - 1];
-                    const [move, , ] = moves[i];
+                    const [move, ,] = moves[i];
                     const h = hash[i];
 
                     try {
@@ -662,10 +759,10 @@
                 const d = b.diff(hash0, b.hash);
                 b.undo();
                 $(d).equal(s);
-            }           
+            }
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// empty 3x3
             const board = new Board(3);
 
@@ -674,7 +771,7 @@
             $(board.toStringCompact()).equal('3x3()');
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// 5x5 with a stone
             const board = new Board(5);
             board.play(stone(2, 2, +1));
@@ -684,13 +781,13 @@
             $(board.toStringCompact()).equal('5x5(;;--X)');
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// empty 3x3 from sgf
             const board = new Board(`(;FF[4]SZ[3])`);
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// variation from sgf
             const board = new Board(`(;FF[4]SZ[3]AB[aa][bb]AW[ba](;AB[cc]AW[ab]))`, 1);
             $(board + '').equal(
@@ -700,7 +797,7 @@
                 ' 1 - - X');
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// serialization
             const board = new Board(`
            (;FF[4]SZ[9]
@@ -727,7 +824,7 @@
             $(board.toStringCompact()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// 9x9 from txt to txt
             const board = new Board(9, [
                 '-X-------',
@@ -755,7 +852,7 @@
             ].join('\n'));
         });
 
-        $.test($ => { 
+        $.test($ => {
             /// capture
             const b = new Board(9, [
                 'X-XXOOOO',

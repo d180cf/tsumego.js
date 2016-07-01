@@ -129,7 +129,7 @@ module tsumego {
          * exists.
          */
         private table: block.id[];
-        
+
         /**
          * Every time a stone is added, changes in the list of blocks
          * and in the board table are stored in the history so that that
@@ -273,7 +273,9 @@ module tsumego {
             return b;
         }
 
+        /** Returns a block descriptor. */
         get(x: number, y: number): block;
+        /** Returns a block descriptor. */
         get(xy: stone): block;
 
         get(x: number, y?: number): block {
@@ -354,7 +356,7 @@ module tsumego {
                 for (let x = xmin; x <= xmax; x++)
                     if (this.getBlockId(x, y) == id)
                         this.hash ^= hasht[y * this.size + x],
-                        this.adjust(x, y, -bd, +1);
+                            this.adjust(x, y, -bd, +1);
 
             this.change(id, 0);
         }
@@ -419,7 +421,7 @@ module tsumego {
 
             for (let i = 0; i < 4; i++)
                 nbs[i] = this.blocks[ids[i]],
-                lib[i] = block.libs(nbs[i]);
+                    lib[i] = block.libs(nbs[i]);
 
             // remove captured blocks            
 
@@ -446,7 +448,7 @@ module tsumego {
             // if nothing has been captured...
 
             if (result == 0) {
-                const isll = 
+                const isll =
                 /* L */ (nbs[0] * color < 0 || lib[0] == 1 || x == 0) &&
                 /* R */ (nbs[1] * color < 0 || lib[1] == 1 || x == size - 1) &&
                 /* T */ (nbs[2] * color < 0 || lib[2] == 1 || y == 0) &&
@@ -455,7 +457,7 @@ module tsumego {
                 // suicide is not allowed
                 if (isll)
                     return 0;
-            }            
+            }
 
             // take away a lib of every neighboring enemy group
 
@@ -469,7 +471,7 @@ module tsumego {
             for (let i = 0; i < 4; i++)
                 if (nbs[i] * color > 0 && ids[i] < id_new)
                     id_new = ids[i],
-                    is_new = false;
+                        is_new = false;
 
             const id_old = this.table[y * size + x];
 
@@ -479,7 +481,7 @@ module tsumego {
             if (is_new) {
                 // create a new block if the new stone has no neighbors
 
-                const n = 
+                const n =
                     /* L */ +(!nbs[0] && x > 0) +
                     /* R */ +(!nbs[1] && x < size - 1) +
                     /* T */ +(!nbs[2] && y > 0) +
@@ -641,7 +643,7 @@ module tsumego {
                 for (let y = 0; y < this.size; y++)
                     if (this.get(x, y))
                         xmax = max(x, xmax),
-                        ymax = max(y, ymax);
+                            ymax = max(y, ymax);
 
             if (!hideLabels) {
                 s += '  ';
@@ -707,6 +709,78 @@ module tsumego {
             }
 
             return null;
+        }
+
+        /**
+         * for (const [x, y] of board.libs(block))
+         *      console.log("a liberty of the block", x, y);
+         */
+        *libs(b: block) {
+            for (const [x, y] of this.edge(b))
+                if (!this.get(x, y))
+                    yield [x, y];
+        }
+
+        /** All cells adjacent to the block: empty and occupied by the opponent. */
+        *edge(b: block) {
+            if (!b) return;
+
+            let [xmin, xmax, ymin, ymax] = block.dims(b);
+
+            if (xmin > 0) xmin--;
+            if (ymin > 0) ymin--;
+
+            if (xmax < this.size - 1) xmax++;
+            if (ymax < this.size - 1) ymax++;
+
+            for (let x = xmin; x <= xmax; x++) {
+                for (let y = ymin; y <= ymax; y++) {
+                    if (this.get(x, y) * b > 0)
+                        continue;
+
+                    const isLib =
+                        this.inBounds(x - 1, y) && this.get(x - 1, y) == b ||
+                        this.inBounds(x, y - 1) && this.get(x, y - 1) == b ||
+                        this.inBounds(x + 1, y) && this.get(x + 1, y) == b ||
+                        this.inBounds(x, y + 1) && this.get(x, y + 1) == b;
+
+                    if (isLib)
+                        yield [x, y];
+                }
+            }
+        }
+
+        /**
+         * for (const [x, y] of board.list(block))
+         *      console.log("a stone of the block", x, y);
+         */
+        *list(b: block) {
+            if (!b) return;
+
+            let [xmin, xmax, ymin, ymax] = block.dims(b);
+
+            for (let x = xmin; x <= xmax; x++)
+                for (let y = ymin; y <= ymax; y++)
+                    if (this.get(x, y) == b)
+                        yield [x, y];
+        }
+
+        neighbors(x: number, y: number): [number, number][] {
+            const nbs = [];
+
+            if (this.inBounds(x - 1, y))
+                nbs.push([x - 1, y]);
+
+            if (this.inBounds(x + 1, y))
+                nbs.push([x + 1, y]);
+
+            if (this.inBounds(x, y - 1))
+                nbs.push([x, y - 1]);
+
+            if (this.inBounds(x, y + 1))
+                nbs.push([x, y + 1]);
+
+            return nbs;
         }
 
         private path() {

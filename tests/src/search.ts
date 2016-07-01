@@ -4,7 +4,7 @@ module tests {
     import stone = tsumego.stone;
     import hex = tsumego.hex;
     import TT = tsumego.TT;
-    import BasicMoveGen = tsumego.generators.Basic;
+    import BasicMoveGen = tsumego.mgen.fixed;
     import rand = tsumego.rand;
 
     ut.group($ => {
@@ -187,15 +187,15 @@ module tests {
                         console.log('rand seed:', hex(seed));
 
                         const unodes = { total: 0, unique: 0 };
-
+                        const forked = b.fork();
                         const result = solve({
-                            root: b.fork(),
+                            root: forked,
                             color: c2p == 'B' ? +1 : -1,
                             nkt: +nkt | 0,
                             tt: tt,
                             log: log,
                             unodes: unodes,
-                            expand: BasicMoveGen(rzone),
+                            expand: BasicMoveGen(forked, rzone),
                             status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });

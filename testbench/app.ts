@@ -5,14 +5,14 @@
 /// <reference path="goban.ts" />
 /// <reference path="vm.ts" />
 
-declare var board: tsumego.Board;
-
 window['board'] = null;
 
 module testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
+
+    declare var board: tsumego.Board;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -46,7 +46,7 @@ module testbench {
             color: color,
             nkt: nkotreats,
             tt: tt,
-            expand: tsumego.generators.Basic(rzone),
+            expand: tsumego.mgen.fixed(board, rzone),
             status: status
         });
 
@@ -73,7 +73,7 @@ module testbench {
             color: color,
             nkt: nkotreats,
             tt: tt,
-            expand: tsumego.generators.Basic(rzone),
+            expand: tsumego.mgen.fixed(board, rzone),
             status: status,
             alive: (b: Board) => tsumego.benson.alive(b, aim)
         });

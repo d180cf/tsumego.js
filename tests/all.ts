@@ -3,7 +3,9 @@
 /// <reference path="infra.ts" />
 /// <reference path="stats.ts" />
 /// <reference path="es6aiter.ts" />
+/// <reference path="ascii-board.ts" />
 
+/// <reference path="src/dist.ts" />
 /// <reference path="src/utils.ts" />
 /// <reference path="src/gf2.ts" />
 /// <reference path="src/sgf.ts" />

@@ -29,12 +29,16 @@ module tsumego {
     export module stone {
         export const nocoords = (color: number) => kColor | color & kWhite;
         export const color = (m: stone) => (m & kColor) && (m & kWhite ? -1 : +1);
+        export const setcolor = (m: stone, c: number) => m & ~kColor & ~kWhite | (c && kColor) | c & kWhite;
         export const hascoords = (m: stone) => !!(m & kCoord);
 
         export const x = (m: stone) => m & 15;
         export const y = (m: stone) => m >> 4 & 15;
 
         export const coords = (m: stone) => [x(m), y(m)];
+
+        export const same = (a: stone, b: stone) => !((a ^ b) & 0xFFFF);
+        export const dist = (a: stone, b: stone) => Math.abs(x(a) - x(b)) + Math.abs(y(a) - y(b));
 
         export const neighbors = (m: stone) => {
             const [x, y] = stone.coords(m);
@@ -72,6 +76,10 @@ module tsumego {
             const y = s2n(s[1]);
 
             return stone(x, y, c);
+        }
+
+        export module list {
+            export const toString = (x: stone[]) => '[' + x.map(stone.toString).join(',') + ']';
         }
     }
 }

@@ -2,7 +2,6 @@
 /// <reference path="movegen.ts" />
 /// <reference path="tt.ts" />
 /// <reference path="benson.ts" />
-/// <reference path="benson.ts" />
 /// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
 
@@ -67,7 +66,7 @@ module tsumego {
             color: number;
             nkt?: number;
             tt?: TT;
-            expand(node: Node, color: number): stone[];
+            expand(color: number): stone[];
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: boolean;
@@ -124,7 +123,7 @@ module tsumego {
                 root: board,
                 color: color,
                 nkt: komaster,
-                expand: generators.Basic(rzone),
+                expand: mgen.fixed(board, rzone),
                 status: (b: Board) => b.get(target) < 0 ? -1 : +1,
                 alive: (b: Board) => tsumego.benson.alive(b, target)
             };
@@ -193,7 +192,7 @@ module tsumego {
 
                 const nodes = sa.reset();
 
-                for (const move of expand(board, color)) {
+                for (const move of expand(color)) {
                     board.play(move);
                     const hash = board.hash;
                     board.undo();

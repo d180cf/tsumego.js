@@ -126,7 +126,7 @@ namespace tests.ut {
                     const _console_log = console.log;
 
                     console.log = (...args) => {
-                        logs.push([...args].join(' '));
+                        logs.push(args.map(JSON.stringify));
                     };
 
                     const started = new Date;
@@ -147,8 +147,8 @@ namespace tests.ut {
                     failed = true;
                     console.log(indent + tname, 'failed'.red());
 
-                    for (const log of logs)
-                        console.log(log);
+                    for (const args of logs)
+                        console.log.apply(console, args.map(JSON.parse));
 
                     while (err) {
                         console.log(err && err.stack || err);
@@ -275,7 +275,7 @@ namespace tests.ut {
                     try {
                         match(pattern[i])(value[i]);
                     } catch (err) {
-                        throw MatchError(`[${i}] has a wrong value`, err);
+                        throw MatchError(`[${i}] has a wrong value: ${JSON.stringify(pattern)} != ${JSON.stringify(value)}`, err);
                     }
                 }
 
