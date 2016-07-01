@@ -303,7 +303,7 @@ module testbench {
         });
 
         ui.addEventListener('mousemove', event => {
-            const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
+            const [x, y] = ui.getStoneCoords(event);
             document.querySelector('#coords').textContent = stone.toString(stone(x, y, board.get(x, y)));
         });
 
@@ -311,7 +311,7 @@ module testbench {
             event.preventDefault();
             event.stopPropagation();
 
-            const [x, y] = ui.getStoneCoords(event.offsetX, event.offsetY);
+            const [x, y] = ui.getStoneCoords(event);
             const c = board.get(x, y);
 
             if (!lspath) {

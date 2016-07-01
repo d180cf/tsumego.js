@@ -8,7 +8,7 @@ namespace testbench.gobanui {
     }
 
     interface GobanElement extends HTMLElement {
-        getStoneCoords(offsetX: number, offsetY: number): [number, number];
+        getStoneCoords(event: MouseEvent): [number, number];
     }
 
     export function render(board: Board, marks = {}): GobanElement {
@@ -75,7 +75,14 @@ namespace testbench.gobanui {
         const goban = <HTMLElement>wrapper.querySelector('svg');
 
         return Object.assign(goban, {
-            getStoneCoords(offsetX: number, offsetY: number) {
+            getStoneCoords(event: MouseEvent) {
+                // Chrome had a bug which made offsetX/offsetY coords wrong
+                // this workaround computes the offset using client coords
+                const r = goban.getBoundingClientRect();
+
+                const offsetX = event.clientX - r.left;
+                const offsetY = event.clientY - r.top;
+
                 const x = offsetX / goban.clientWidth;
                 const y = offsetY / goban.clientHeight;
 
