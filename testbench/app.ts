@@ -313,6 +313,15 @@ module testbench {
                 a.click();
             });
 
+            document.querySelector('#getsvg').addEventListener('click', e => {
+                const div = <HTMLDivElement>document.querySelector('.tsumego');
+                const a = document.createElement('a');
+                const blob = new Blob([div.innerHTML], { type: 'image/svg+xml' });
+                a.href = URL.createObjectURL(blob);
+                a['download'] = /[^\/]+$/.exec(lspath)[0] + '.svg';
+                a.click();
+            });
+
             const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
 
             sgfinput.addEventListener('input', e => {
