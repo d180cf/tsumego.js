@@ -349,7 +349,10 @@ module testbench {
             lspath = source;
 
             return Promise.resolve().then(() => {
-                return ls.data[source] || send('GET', '/problems/' + source + '.sgf');
+                return ls.data[source] || send('GET', '/problems/' + source + '.sgf').catch(e => {
+                    console.log(source, 'cannot be loaded', e);
+                    return new Board(9).toStringSGF();
+                });
             }).then(sgfdata => {
                 updateSGF(sgfdata, nvar && +nvar);
 
