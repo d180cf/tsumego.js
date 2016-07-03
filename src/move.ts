@@ -86,10 +86,30 @@ module tsumego {
                     this.stones.push(s);
             }
 
-            remove(p: (s: stone) => boolean) {
-                for (let i = this.stones.length - 1; i >= 0; i--)
-                    if (p(this.stones[i]))
+            remove(p: ((s: stone) => boolean) | stone) {
+                for (let i = this.stones.length - 1; i >= 0; i--) {
+                    const q = this.stones[i];
+
+                    if (typeof p === 'function' ? p(q) : same(p, q))
                         this.stones.splice(i, 1);
+                }
+            }
+
+            /** Adds the item if it wasn't there or removes it otherwise. */
+            xor(s: stone) {
+                if (this.has(s))
+                    this.remove(s);
+                else
+                    this.add(s);
+            }
+
+            empty() {
+                this.stones = [];
+            }
+
+            *[Symbol.iterator]() {
+                for (const s of this.stones)
+                    yield s;
             }
         }
     }
@@ -122,6 +142,19 @@ module tsumego {
 
         export module list {
             export const toString = (x: stone[]) => '[' + x.map(stone.toString).join(',') + ']';
+        }
+    }
+
+    export module stone.cc {
+        /** 0x25 -> "E2" */
+        export function toString(s: stone) {
+            const x = stone.x(s);
+            const y = stone.y(s);
+
+            const xs = String.fromCharCode('A'.charCodeAt(0) + (x < 8 ? x : x - 1)); // skip the I letter
+            const ys = (y + 1) + '';
+
+            return xs + y;
         }
     }
 }

@@ -1,52 +1,74 @@
-namespace testbench.gobanui {
+namespace testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
 
-    interface Marks {
-        TR?: stone[]; // a little triangle
-        SL?: stone[]; // a little square
+    class Marks {
+        private tag: string;
+
+        constructor(private svg: GobanElement, private def: string) {
+            try {
+                this.tag = /\bid="(\w+)"/.exec(def)[1];
+            } catch (err) {
+                throw SyntaxError('The shape def doesnt have an id="...": ' + def);
+            }
+
+            const defs = <HTMLElement>svg.querySelector('defs');
+
+            defs.innerHTML += def;
+        }
+
+        private *nodes() {
+            const refs = this.svg.querySelectorAll(`use`);
+
+            for (let i = 0; i < refs.length; i++)
+                if (refs[i].getAttribute('xlink:href') == '#' + this.tag)
+                    yield refs[i];
+        }
+
+        get(x: number, y: number) {
+            for (const ref of this.nodes())
+                if (+ref.getAttribute('x') == x && +ref.getAttribute('y') == y)
+                    return ref;
+
+            return null;
+        }
+
+        add(x: number, y: number) {
+            const ref = this.get(x, y);
+            if (ref) return ref;
+            this.svg.innerHTML += `<use x="${x}" y="${y}" xlink:href="#${this.tag}"/>`;
+            this.svg.onupdated(x, y);
+            return this.get(x, y);
+        }
+
+        remove(x: number, y: number) {
+            const ref = this.get(x, y);
+            if (!ref) return;
+            this.svg.removeChild(ref);
+            this.svg.onupdated(x, y);
+        }
     }
 
-    interface GobanElement extends HTMLElement {
+    export interface GobanElement extends HTMLElement {
+        AB: Marks; // black stone
+        AW: Marks; // white stone
+        CR: Marks; // circle
+        TR: Marks; // triangle
+        SQ: Marks; // square
+        MA: Marks; // cross
+        SL: Marks; // selection
+
+        onupdated(x: number, y: number): void;
         getStoneCoords(event: MouseEvent): [number, number];
     }
 
-    export function render(board: Board, marks = {}): GobanElement {
-        const n = board.size;
+    export module GobanElement {
+        export function create(board: Board): GobanElement {
+            const n = board.size;
 
-        let shapes = [];
+            const div = document.createElement('div');
 
-        for (let x = 0; x < n; x++) {
-            for (let y = 0; y < n; y++) {
-                const c = board.get(x, y);
-                if (!c) continue;
-
-                shapes.push(`<use x="${x}" y="${y}" xlink:href="#${c > 0 ? 'AB' : 'AW'}"/>`);
-            }
-        }
-
-        const markers = {
-            TR: (x, y) =>
-                `<use x="${x}" y="${y}" xlink:href="#TR"/>`,
-
-            SL: (x, y) =>
-                `<use x="${x}" y="${y}" xlink:href="#SQ"/>`,
-
-            MA: (x, y) =>
-                `<use x="${x}" y="${y}" xlink:href="#MA"/>`,
-        };
-
-        for (const mark in markers) {
-            for (const s of marks[mark] || []) {
-                const [x, y] = stone.coords(s);
-                const shape = markers[mark](x, y);
-                shapes.push(shape);
-            }
-        }
-
-        const wrapper = document.createElement('div');
-
-        wrapper.innerHTML = `
+            div.innerHTML = `
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
                  xmlns:xlink="http://www.w3.org/1999/xlink"
                  width="100%"
@@ -58,39 +80,68 @@ namespace testbench.gobanui {
                 <pattern id="grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
                   <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black"></path>
                 </pattern>
-
-                <circle id="AW" r="0.475" fill="white" stroke="black"></circle>
-                <circle id="AB" r="0.475" fill="black" stroke="black"></circle>
-                <circle id="CR" r="0.25" fill="none" stroke="red"></circle>
-                <path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none" stroke="red"></path>
-                <path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none" stroke="red"></path>
-                <path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none" stroke="red"></path>
               </defs>
 
               <rect x="0" y="0" width="${n - 1}" height="${n - 1}" fill="url(#grid)" stroke="black" stroke-width="0.1"></rect>
-
-              ${shapes.join('\r\n') }
             </svg>`;
 
-        const goban = <HTMLElement>wrapper.querySelector('svg');
+            const svg = <GobanElement>div.querySelector('svg');
 
-        return Object.assign(goban, {
-            getStoneCoords(event: MouseEvent) {
-                // Chrome had a bug which made offsetX/offsetY coords wrong
-                // this workaround computes the offset using client coords
-                const r = goban.getBoundingClientRect();
+            Object.assign(svg, {
+                AB: new Marks(svg, '<circle id="AB" r="0.475" fill="black" stroke="black"></circle>'),
+                AW: new Marks(svg, '<circle id="AW" r="0.475" fill="white" stroke="black"></circle>'),
+                CR: new Marks(svg, '<circle id="CR" r="0.25" fill="none"></circle>'),
+                TR: new Marks(svg, '<path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none"></path>'),
+                MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none"></path>'),
+                SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none"></path>'),
+                SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></path>'),
 
-                const offsetX = event.clientX - r.left;
-                const offsetY = event.clientY - r.top;
+                // invoked after a marker has been added or removed
+                onupdated(x: number, y: number) {
+                    const color = svg.AB.get(x, y) ? 'white' : 'black';
 
-                const x = offsetX / goban.clientWidth;
-                const y = offsetY / goban.clientHeight;
+                    for (const mark in svg) {
+                        if (/^[A-Z]{2}$/.test(mark) && mark != 'AB' && mark != 'AW') {
+                            try {
+                                const item = (<Marks>svg[mark]).get(x, y);
 
-                return [
-                    Math.round(x * n - 0.5),
-                    Math.round(y * n - 0.5)
-                ];
+                                if (item)
+                                    item.setAttribute('stroke', color);
+                            } catch (err) {
+                                console.log(mark, x, y, err);
+                            }
+                        }
+                    }
+                },
+
+                getStoneCoords(event: MouseEvent) {
+                    // Chrome had a bug which made offsetX/offsetY coords wrong
+                    // this workaround computes the offset using client coords
+                    const r = svg.getBoundingClientRect();
+
+                    const offsetX = event.clientX - r.left;
+                    const offsetY = event.clientY - r.top;
+
+                    const x = offsetX / svg.clientWidth;
+                    const y = offsetY / svg.clientHeight;
+
+                    return [
+                        Math.round(x * n - 0.5),
+                        Math.round(y * n - 0.5)
+                    ];
+                }
+            });
+
+            for (let x = 0; x < n; x++) {
+                for (let y = 0; y < n; y++) {
+                    const c = board.get(x, y);
+
+                    if (c > 0) svg.AB.add(x, y);
+                    if (c < 0) svg.AW.add(x, y);
+                }
             }
-        });
+
+            return svg;
+        }
     }
 }

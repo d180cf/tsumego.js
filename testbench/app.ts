@@ -2,7 +2,7 @@
 /// <reference path="xhr.ts" />
 /// <reference path="ls.ts" />
 /// <reference path="../src/search.ts" />
-/// <reference path="goban.ts" />
+/// <reference path="editor.ts" />
 /// <reference path="vm.ts" />
 
 window['board'] = null;
@@ -89,7 +89,6 @@ module testbench {
 
             if (render) {
                 location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
-                lspath = null;
                 renderBoard(comment);
             }
         };
@@ -162,7 +161,7 @@ module testbench {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var aim = 0, lspath = '';
+    var aim = 0, lspath = '', selectedCells = new stone.SmallSet;
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
@@ -186,7 +185,7 @@ module testbench {
 
                     preview.className = 'tsumego-preview';
                     preview.href = href;
-                    preview.appendChild(gobanui.render(board));
+                    preview.appendChild(GobanElement.create(board));
                     section.appendChild(preview);
 
                     return preview;
@@ -231,15 +230,26 @@ module testbench {
                     lspath = source;
 
                 document.querySelector('#solve').addEventListener('click', e => {
+                    lspath = null;
+
                     if (vm.debugSolver)
                         dbgsolve(board, vm.solveFor, vm.nkt);
                     else
                         solveAndRender(vm.solveFor, vm.nkt);
                 });
 
-                document.querySelector('#reset').addEventListener('click', e => {
-                    aim = 0;
-                    board = new Board(board.size);
+                document.querySelector('#flipc').addEventListener('click', e => {
+                    const b = new Board(board.size);
+
+                    for (const s of board.stones()) {
+                        const x = stone.x(s);
+                        const y = stone.y(s);
+                        const c = stone.color(s);
+
+                        b.play(stone(x, y, -c));
+                    }
+
+                    board = b.fork();
                     renderBoard();
                 });
 
@@ -285,23 +295,81 @@ module testbench {
 
         board = new Board(sgfdata, nvar);
         aim = stone.fromString((setup['MA'] || ['aa'])[0]);
+        selectedCells = new stone.SmallSet;
 
         board = board.fork(); // drop the history of moves
         renderBoard();
     }
 
+    function removeStone(x: number, y: number) {
+        const b = new Board(board.size);
+
+        for (const s of board.stones()) {
+            const [sx, sy] = stone.coords(s);
+            const c = stone.color(s);
+
+            if (sx != x || sy != y)
+                b.play(stone(sx, sy, c));
+        }
+
+        board = b.fork(); // drop history
+    }
+
+    document.addEventListener('keyup', event => {
+        if (event.keyCode == 46) { // del
+            for (const s of selectedCells)
+                removeStone(stone.x(s), stone.y(s));
+
+            selectedCells.empty();
+            renderBoard();
+        }
+    });
+
     function renderBoard(comment = '') {
         const move = board.undo();
         board.play(move);
 
-        const ui = gobanui.render(board, {
-            TR: stone.hascoords(move) && [move],
-            MA: stone.hascoords(aim) && [aim]
+        const ui = GobanElement.create(board);
+
+        if (stone.hascoords(move))
+            ui.TR.add(stone.x(move), stone.y(move));
+
+        if (stone.hascoords(aim))
+            ui.MA.add(stone.x(aim), stone.y(aim));
+
+        for (const s of selectedCells)
+            ui.SL.add(stone.x(s), stone.y(s));
+
+        // this is where selection started
+        let sel0x: number;
+        let sel0y: number;
+
+        ui.addEventListener('mousedown', event => {
+            if (event.ctrlKey)
+                [sel0x, sel0y] = ui.getStoneCoords(event);
+        });
+
+        ui.addEventListener('mouseup', event => {
+            if (event.ctrlKey && sel0x >= 0 && sel0y >= 0) {
+                const [sel1x, sel1y] = ui.getStoneCoords(event);
+
+                for (let x = Math.min(sel0x, sel1x); x <= Math.max(sel0x, sel1x); x++)
+                    for (let y = Math.min(sel0y, sel1y); y <= Math.max(sel0y, sel1y); y++)
+                        selectedCells.add(stone(x, y, 0));
+
+                sel0x = undefined;
+                sel0y = undefined;
+                renderBoard();
+            }
         });
 
         ui.addEventListener('mousemove', event => {
             const [x, y] = ui.getStoneCoords(event);
-            document.querySelector('#coords').textContent = stone.toString(stone(x, y, board.get(x, y)));
+            const s = stone(x, y, 0);
+
+            document.title = document.title.replace(
+                /^(.+?)( - [a-z][a-z] - [A-Z]\d+)?$/,
+                `$1 - ${stone.toString(s)} - ${stone.cc.toString(s)}`);
         });
 
         ui.addEventListener('click', event => {
@@ -318,35 +386,24 @@ module testbench {
             } else switch (vm.tool) {
                 case 'MA':
                     // mark the target                    
-                    aim = c < 0 ? stone(x, y, 0) : 0;
+                    aim = stone(x, y, 0);
                     break;
 
                 case 'AB':
                     // add a black stone
-                    if (c) return;
+                    if (c) removeStone(x, y);
                     board.play(stone(x, y, +1));
                     break;
 
                 case 'AW':
                     // add a white stone
-                    if (c) return;
+                    if (c) removeStone(x, y);
                     board.play(stone(x, y, -1));
                     break;
 
-                case '--':
-                    // remove a stone
-                    const b = new Board(board.size);
-
-                    for (const s of board.stones()) {
-                        const [sx, sy] = stone.coords(s);
-                        const c = stone.color(s);
-
-                        if (sx != x || sy != y)
-                            b.play(stone(sx, sy, c));
-                    }
-
-                    board = b.fork(); // drop history
-                    break;
+                default:
+                    // clicking anywhere clears the selection
+                    selectedCells = new stone.SmallSet;
             }
 
             renderBoard();

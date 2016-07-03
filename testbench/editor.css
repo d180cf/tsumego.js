@@ -1,0 +1,20 @@
+.goban-editor {
+    width: 100%;
+}
+
+    .goban-editor .toolbox {
+        width: 15pt;
+        padding-right: 30pt;
+        vertical-align: top;
+        padding-top: 20pt;
+    }
+
+    .goban-editor .tool {
+        padding: 10pt;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+        .goban-editor .tool:hover {
+            background-color: palegoldenrod;
+        }

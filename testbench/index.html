@@ -3,25 +3,23 @@
 <head>
     <title>Tsumego.js</title>
     <link type="text/css" href="styles.css" rel="stylesheet" />
+    <link type="text/css" href="editor.css" rel="stylesheet" />
     <script src="app.js"></script>
 </head>
 <body>
     <div class="solver">
-        <div id="coords"></div>
         <div class="tsumego"></div>
         <textarea class="tsumego-sgf" id="sgf"></textarea>
 
         <div class="tsumego-options">
-            <span>Use Alt+B, Alt+W, etc.</span>
-            <span><input type="radio" name="tool" value="AB" accesskey="B" checked><label for="AB">Black stone.</label></span>
-            <span><input type="radio" name="tool" value="AW" accesskey="W"><label for="AW">White stone.</label></span>
-            <span><input type="radio" name="tool" value="MA" accesskey="T"><label for="MA">Target. It must be a white stone.</label></span>
-            <span><input type="radio" name="tool" value="--" accesskey="C"><label for="--">Remove a stone.</label></span>
+            <span><input type="radio" name="tool" value="AB"><label for="AB">a black stone: &#x25cf;</label></span>
+            <span><input type="radio" name="tool" value="AW"><label for="AW">a white stone: &#x25cb;</label></span>
+            <span><input type="radio" name="tool" value="MA"><label for="MA">the target: &#x274c;</label></span>
         </div>
 
         <div class="tsumego-options">
             <span>Solve for:</span>
-            <span><input type="radio" name="solve-for" value="B" checked><label for="B">Black</label></span>
+            <span><input type="radio" name="solve-for" value="B"><label for="B">Black</label></span>
             <span><input type="radio" name="solve-for" value="W"><label for="W">White</label></span>
         </div>
 
@@ -30,7 +28,7 @@
             <span><input name="debug" type="checkbox" /><label for="debug">Debug the solver.</label></span>
         </div>
 
-        <button id="reset" title="Clears the board">Reset</button>
+        <button id="flipc" title="Flips stone colors">Flip</button>
         <button id="solve">Solve</button>
 
         <div class="tsumego-comment" id="comment"></div>

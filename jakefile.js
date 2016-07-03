@@ -84,6 +84,8 @@ task('tb', { async: true }, () => {
     process.chdir('testbench');
 
     exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
+        return; // TODO: babel screws source maps
+
         return babel({
             blacklist: ['regenerator', 'es6.forOf', 'es6.blockScoping']
         });
