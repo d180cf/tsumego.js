@@ -167,26 +167,13 @@ module testbench {
         Promise.resolve().then(() => {
             const directory = document.querySelector('.directory');
 
-            function addSection(name: string) {
-                const header = document.createElement('div');
-                const section = document.createElement('div');
-
-                header.textContent = name;
-
-                header.className = 'header';
-                directory.appendChild(header);
-                directory.appendChild(section);
-
-                return section;
-            }
-
-            function addDirEntry(section: HTMLElement, path: string) {
+            function addDirEntry(path: string) {
                 const entry = document.createElement('a');
 
                 entry.className = 'entry';
                 entry.textContent = path;
                 entry.href = '#' + path;
-                section.appendChild(entry);
+                directory.appendChild(entry);
 
                 return entry;
             }
@@ -216,10 +203,15 @@ module testbench {
                 });
             }
 
-            const locals = addSection('Problems');
-
             ls.added.push(path => {
-                addDirEntry(locals, path);
+                for (const e of directory.querySelectorAll('.entry')) {
+                    const a = <HTMLAnchorElement>e;
+
+                    if (a.hash == '#' + path)
+                        return;
+                }
+
+                addDirEntry(path);
             });
 
             ls.removed.push(path => {
@@ -236,14 +228,12 @@ module testbench {
             const lsdata = ls.data;
 
             for (let path in lsdata)
-                addDirEntry(locals, path);
+                addDirEntry(path);
 
             send('GET', '/problems/manifest.json').then(data => {
                 const manifest = JSON.parse(data);
 
                 for (const dir of manifest.dirs) {
-                    const section = addSection(dir.description);
-
                     for (const path of dir.problems) {
                         send('GET', '/problems/' + path).then(sgf => {
                             const root = tsumego.SGF.parse(sgf);
@@ -255,7 +245,7 @@ module testbench {
                                 const name = path.replace('.sgf', '') + (nvar ? ':' + nvar : '');
 
                                 if (!lsdata[name])
-                                    addDirEntry(section, name);
+                                    addDirEntry(name);
                             }
                         }).catch(err => {
                             console.log(err.stack);
@@ -313,6 +303,14 @@ module testbench {
 
                 board = b.fork();
                 renderBoard();
+            });
+
+            document.querySelector('#download').addEventListener('click', e => {
+                const a = document.createElement('a');
+                const blob = new Blob([getProblemSGF()], { type: 'application/x-go-sgf' });
+                a.href = URL.createObjectURL(blob);
+                a['download'] = /[^\/]+$/.exec(lspath)[0] + '.sgf';
+                a.click();
             });
 
             const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
@@ -487,10 +485,7 @@ module testbench {
         wrapper.appendChild(ui);
 
         const editor = document.querySelector('.tsumego-sgf') as HTMLElement;
-
-        const sgf = board.toStringSGF('\n  ').replace(/\)$/,
-            (stone.hascoords(aim) ? '\n  MA[' + stone.toString(aim) + ']' : '') +
-            ')');
+        const sgf = getProblemSGF();
 
         editor.textContent = sgf;
 
@@ -498,6 +493,12 @@ module testbench {
 
         if (lspath)
             ls.set(lspath, sgf);
+    }
+
+    function getProblemSGF() {
+        return board.toStringSGF('\n  ').replace(/\)$/,
+            (stone.hascoords(aim) ? '\n  MA[' + stone.toString(aim) + ']' : '') +
+            ')');
     }
 
     function setComment(comment: string) {
