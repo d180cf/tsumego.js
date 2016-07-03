@@ -7,31 +7,38 @@
     <script src="app.js"></script>
 </head>
 <body>
-    <div class="solver">
-        <div class="tsumego"></div>
-        <textarea class="tsumego-sgf" id="sgf"></textarea>
+    <table cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="directory"></td>
+            <td class="workspace">
+                <div class="tsumego"></div>
+                <textarea class="tsumego-sgf" id="sgf"></textarea>
 
-        <div class="tsumego-options">
-            <span><input type="radio" name="tool" value="AB"><label for="AB">a black stone: &#x25cf;</label></span>
-            <span><input type="radio" name="tool" value="AW"><label for="AW">a white stone: &#x25cb;</label></span>
-            <span><input type="radio" name="tool" value="MA"><label for="MA">the target: &#x274c;</label></span>
-        </div>
+                <div class="tsumego-options">
+                    <span><input type="radio" name="tool" value="AB"><label for="AB">a black stone: &#x25cf;</label></span>
+                    <span><input type="radio" name="tool" value="AW"><label for="AW">a white stone: &#x25cb;</label></span>
+                    <span><input type="radio" name="tool" value="MA"><label for="MA">the target: &#x274c;</label></span>
+                </div>
 
-        <div class="tsumego-options">
-            <span>Solve for:</span>
-            <span><input type="radio" name="solve-for" value="B"><label for="B">Black</label></span>
-            <span><input type="radio" name="solve-for" value="W"><label for="W">White</label></span>
-        </div>
+                <div class="tsumego-options">
+                    <span>Solve for:</span>
+                    <span><input type="radio" name="solve-for" value="B"><label for="B">Black</label></span>
+                    <span><input type="radio" name="solve-for" value="W"><label for="W">White</label></span>
+                </div>
 
-        <div class="tsumego-options">
-            <span><input name="nkt" value="0" /><label for="nkt">The balance of external ko treats.</label></span>
-            <span><input name="debug" type="checkbox" /><label for="debug">Debug the solver.</label></span>
-        </div>
+                <div class="tsumego-options">
+                    <span><input name="nkt" value="0" /><label for="nkt">The balance of external ko treats.</label></span>
+                    <span><input name="debug" type="checkbox" /><label for="debug">Debug the solver.</label></span>
+                </div>
 
-        <button id="flipc" title="Flips stone colors">Flip</button>
-        <button id="solve">Solve</button>
+                <button id="flipc" title="Flips stone colors">Flip</button>
+                <button id="solve">Solve</button>
+                <button id="delete">Delete</button>
+                <button id="rename">Rename</button>
 
-        <div class="tsumego-comment" id="comment"></div>
-    </div>
+                <div class="tsumego-comment" id="comment"></div>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>

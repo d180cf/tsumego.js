@@ -7,6 +7,12 @@ namespace testbench {
     }
 
     export const ls = {
+        /** A callback that's invoked once an entry is removed. */
+        removed: <Array<(path: string) => void>>[],
+
+        /** A callback that's invoked once an entry is added. */
+        added: <Array<(path: string, sgf: string) => void>>[],
+
         get data(): Data {
             return JSON.parse(storage.getItem(name)) || {};
         },
@@ -17,8 +23,17 @@ namespace testbench {
 
         set(path: string, sgf: string) {
             const json = ls.data;
-            json[path] = sgf;
+            const wasthere = !!json[path];
+            json[path] = sgf || undefined;
             ls.data = json;
+
+            if (wasthere && !sgf)
+                for (const fn of this.removed)
+                    fn(path);
+
+            if (!wasthere && sgf)
+                for (const fn of this.added)
+                    fn(path, sgf);
         }
     }
 }

@@ -1,24 +1,59 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+table {
+    margin: 0;
+    padding: 0;
+}
+
+td {
+    vertical-align: top;
+    text-align: left;
+}
+
+body > table {
+    width: 100%;
+    height: 100%;
+}
+
+.directory {
+    width: 150pt;
+    padding-right: 10pt;
+    border-right: 1px solid black;
+}
+
+    .directory .header {
+        font-size: 1.5em;
+        font-weight: bold;
+    }
+
+    .directory a.entry {
+        display: block;
+        cursor: pointer;
+        text-decoration: inherit;
+        color: inherit;
+    }
+
+        .directory a.entry.selected {
+            background-color: lightgoldenrodyellow;
+        }
+
+        .directory a.entry:hover {
+            background-color: lightgreen;
+        }
+
+.workspace {
+    padding-left: 10pt;
+}
+
 .tsumego {
     cursor: pointer;
 }
 
 .tsumego, .tsumego-preview {
     display: inline-block;
-}
-
-.tsumego-preview {
-    width: 100pt;
-    margin: 4pt;
-    padding: 6pt;
-    vertical-align: top;
-}
-
-    .tsumego-preview:hover {
-        outline: 1px solid black;
-    }
-
-h3 {
-    font-family: "Segoe UI";
 }
 
 .tsumego-sgf {

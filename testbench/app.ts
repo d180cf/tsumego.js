@@ -165,129 +165,202 @@ module testbench {
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
-            if (!location.search) {
-                document.querySelector('.solver').remove();
+            const directory = document.querySelector('.directory');
 
-                function addSection(name = 'Unnamed') {
-                    const header = document.createElement('h3');
-                    const section = document.createElement('div');
+            function addSection(name: string) {
+                const header = document.createElement('div');
+                const section = document.createElement('div');
 
-                    header.textContent = name;
+                header.textContent = name;
 
-                    document.body.appendChild(header);
-                    document.body.appendChild(section);
+                header.className = 'header';
+                directory.appendChild(header);
+                directory.appendChild(section);
 
-                    return section;
-                }
+                return section;
+            }
 
-                function addPreview(section: HTMLElement, board: Board, href: string) {
-                    const preview = document.createElement('a');
+            function addDirEntry(section: HTMLElement, path: string) {
+                const entry = document.createElement('a');
 
-                    preview.className = 'tsumego-preview';
-                    preview.href = href;
-                    preview.appendChild(GobanElement.create(board));
-                    section.appendChild(preview);
+                entry.className = 'entry';
+                entry.textContent = path;
+                entry.href = '#' + path;
+                section.appendChild(entry);
 
-                    return preview;
-                }
+                return entry;
+            }
 
-                const locals = addSection('Problems from localStorage');
-                const newProblem = addPreview(locals, new Board(9), '?:' + Math.random().toString(16).slice(2) + ':9');
-                newProblem.title = 'Create a new problem.';
+            window.addEventListener('hashchange', () => {
+                const path = location.hash.slice(1); // #abc -> abc
 
-                const lsdata = ls.data;
-
-                for (let path in lsdata)
-                    addPreview(locals, new Board(lsdata[path]), '?' + path);
-
-                return send('GET', '/problems/manifest.json').then(data => {
-                    const manifest = JSON.parse(data);
-
-                    for (const dir of manifest.dirs) {
-                        const section = addSection(dir.description);
-
-                        for (const path of dir.problems) {
-                            send('GET', '/problems/' + path).then(sgf => {
-                                const root = tsumego.SGF.parse(sgf);
-
-                                if (!root)
-                                    throw SyntaxError('Invalid SGF from ' + path);
-
-                                for (let nvar = 0; nvar <= root.vars.length; nvar++)
-                                    addPreview(section, new Board(root, nvar), '?' + path.replace('.sgf', '') + ':' + nvar);
-                            }).catch(err => {
-                                console.log(err.stack);
-                            });
-                        }
-                    }
-                });
-            } else {
-                const [_, source, nvar] = /^\?([:]?[^:]+)(?::(\d+))?/.exec(location.search);
-
-                document.title = source;
-
-                if (source[0] == ':')
-                    lspath = source;
-
-                document.querySelector('#solve').addEventListener('click', e => {
-                    lspath = null;
-
-                    if (vm.debugSolver)
-                        dbgsolve(board, vm.solveFor, vm.nkt);
-                    else
-                        solveAndRender(vm.solveFor, vm.nkt);
-                });
-
-                document.querySelector('#flipc').addEventListener('click', e => {
-                    const b = new Board(board.size);
-
-                    for (const s of board.stones()) {
-                        const x = stone.x(s);
-                        const y = stone.y(s);
-                        const c = stone.color(s);
-
-                        b.play(stone(x, y, -c));
-                    }
-
-                    board = b.fork();
-                    renderBoard();
-                });
-
-                const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
-
-                sgfinput.addEventListener('input', e => {
-                    try {
-                        updateSGF(sgfinput.value);
-                    } catch (err) {
-                        // partial input is not valid SGF
-                        if (err instanceof SyntaxError)
-                            return;
-                        throw err;
-                    }
-                });
-
-                if (source[0] == ':' && !ls.data[source]) {
-                    board = new Board(+nvar);
-                    renderBoard('Add stones, mark possible moves and select target.');
-                } else {
-                    return Promise.resolve().then(() => {
-                        return source[0] == '(' ? source :
-                            source[0] == ':' ? ls.data[source] :
-                                send('GET', '/problems/' + source + '.sgf');
-                    }).then(sgfdata => {
-                        updateSGF(sgfdata, source[0] != ':' && nvar && +nvar);
-
-                        console.log(sgfdata);
-                        console.log(board + '');
-                        console.log(board.toStringSGF());
+                if (path.length > 0) {
+                    loadProblem(path).catch(e => {
+                        console.log(e.stack);
+                        document.querySelector('.tsumego').textContent = e;
                     });
                 }
+            });
+
+            if (!ls.data['blank'])
+                ls.set('blank', new Board(9).toStringSGF());
+
+            if (!location.hash)
+                location.hash = '#blank';
+            else {
+                const path = location.hash.slice(1); // #abc -> abc
+
+                loadProblem(path).catch(e => {
+                    console.log('cannot load', path, e.stack);
+                    location.hash = '#blank';
+                });
             }
+
+            const locals = addSection('Problems');
+
+            ls.added.push(path => {
+                addDirEntry(locals, path);
+            });
+
+            ls.removed.push(path => {
+                for (const e of directory.querySelectorAll('.entry')) {
+                    const a = <HTMLAnchorElement>e;
+
+                    if (a.hash == '#' + path) {
+                        a.parentNode.removeChild(a);
+                        break;
+                    }
+                }
+            });
+
+            const lsdata = ls.data;
+
+            for (let path in lsdata)
+                addDirEntry(locals, path);
+
+            send('GET', '/problems/manifest.json').then(data => {
+                const manifest = JSON.parse(data);
+
+                for (const dir of manifest.dirs) {
+                    const section = addSection(dir.description);
+
+                    for (const path of dir.problems) {
+                        send('GET', '/problems/' + path).then(sgf => {
+                            const root = tsumego.SGF.parse(sgf);
+
+                            if (!root)
+                                throw SyntaxError('Invalid SGF from ' + path);
+
+                            for (let nvar = 0; nvar <= root.vars.length; nvar++) {
+                                const name = path.replace('.sgf', '') + (nvar ? ':' + nvar : '');
+
+                                if (!lsdata[name])
+                                    addDirEntry(section, name);
+                            }
+                        }).catch(err => {
+                            console.log(err.stack);
+                        });
+                    }
+                }
+            }).catch(err => {
+                console.log(err.stack);
+            });
+
+            document.querySelector('#delete').addEventListener('click', e => {
+                if (lspath && lspath != 'blank' && confirm('Delete problem ' + lspath + '?')) {
+                    ls.set(lspath, null);
+                    location.hash = '#blank';
+                }
+            });
+
+            document.querySelector('#rename').addEventListener('click', e => {
+                if (!lspath) return;
+
+                const path2 = prompt('New name for ' + lspath);
+
+                if (!path2) return;
+
+                if (ls.data[path2])
+                    alert(path2 + ' already exists');
+
+                if (lspath != 'blank')
+                    ls.set(lspath, null);
+
+                lspath = path2;
+                renderBoard(); // it saves the sgf at the new location
+                location.hash = '#' + lspath;
+            });
+
+            document.querySelector('#solve').addEventListener('click', e => {
+                lspath = null;
+
+                if (vm.debugSolver)
+                    dbgsolve(board, vm.solveFor, vm.nkt);
+                else
+                    solveAndRender(vm.solveFor, vm.nkt);
+            });
+
+            document.querySelector('#flipc').addEventListener('click', e => {
+                const b = new Board(board.size);
+
+                for (const s of board.stones()) {
+                    const x = stone.x(s);
+                    const y = stone.y(s);
+                    const c = stone.color(s);
+
+                    b.play(stone(x, y, -c));
+                }
+
+                board = b.fork();
+                renderBoard();
+            });
+
+            const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
+
+            sgfinput.addEventListener('input', e => {
+                try {
+                    updateSGF(sgfinput.value);
+                } catch (err) {
+                    // partial input is not valid SGF
+                    if (err instanceof SyntaxError)
+                        return;
+                    throw err;
+                }
+            });
         }).catch(err => {
             console.error(err.stack);
             alert(err);
         });
     });
+
+    function loadProblem(path: string) {
+        return Promise.resolve().then(() => {
+            console.log('loading problem', path);
+            const [source, nvar] = path.split(':');
+
+            document.title = source;
+            lspath = source;
+
+            return Promise.resolve().then(() => {
+                return ls.data[source] || send('GET', '/problems/' + source + '.sgf');
+            }).then(sgfdata => {
+                updateSGF(sgfdata, nvar && +nvar);
+
+                console.log(sgfdata);
+                console.log(board + '');
+                console.log(board.toStringSGF());
+
+                for (const e of document.querySelectorAll('.directory .entry')) {
+                    const a = <HTMLAnchorElement>e;
+
+                    if (a.hash == '#' + path)
+                        a.classList.add('selected');
+                    else
+                        a.classList.remove('selected');
+                }
+            });
+        });
+    }
 
     function updateSGF(sgfdata: string, nvar = 0) {
         const sgf = tsumego.SGF.parse(sgfdata);
