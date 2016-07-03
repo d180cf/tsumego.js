@@ -49,6 +49,7 @@ body > table {
 
 .tsumego {
     cursor: pointer;
+    width: 200pt;
 }
 
 .tsumego, .tsumego-preview {

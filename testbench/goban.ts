@@ -122,8 +122,8 @@ namespace testbench {
                     const offsetX = event.clientX - r.left;
                     const offsetY = event.clientY - r.top;
 
-                    const x = offsetX / svg.clientWidth;
-                    const y = offsetY / svg.clientHeight;
+                    const x = offsetX / r.width;
+                    const y = offsetY / r.height;
 
                     return [
                         Math.round(x * n - 0.5),

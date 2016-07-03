@@ -452,7 +452,7 @@ module testbench {
 
             document.title = document.title.replace(
                 /^(.+?)( - [a-z][a-z] - [A-Z]\d+)?$/,
-                `$1 - ${stone.toString(s)} - ${stone.cc.toString(s)}`);
+                `$1 - ${stone.toString(s)} - ${stone.cc.toString(s, board.size)}`);
         });
 
         ui.addEventListener('click', event => {

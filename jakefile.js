@@ -79,16 +79,23 @@ task('test', { async: true }, filter => {
 });
 
 desc('Builds the testbench app.');
-task('tb', { async: true }, () => {
+task('tb', { async: true }, mode => {
     console.log('building the testbench app...');
     process.chdir('testbench');
 
     exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
-        return; // TODO: babel screws source maps
-
-        return babel({
-            blacklist: ['regenerator', 'es6.forOf', 'es6.blockScoping']
-        });
+        if (mode == 'dev') {
+            // TODO: babel screws source maps
+            console.log('skipping babel in the dev mode...');
+        } else {
+            return babel({
+                blacklist: [
+                    'regenerator', // doesn't work in IE/Edge
+                    'es6.forOf', // doesn't work in IE/Edge
+                    //'es6.blockScoping', // otheriwse const/let variables won't be bound in loops with callbacks
+                ]
+            });
+        }
     }).then(() => {
         console.log('rebuilding problems/manifest.json...');
         process.chdir('../problems');
@@ -121,7 +128,7 @@ task('release', ['lib'], () => {
     jake.cpR('libs/regenerator-runtime.js', 'bin/release/regenerator-runtime.js');
 
     var copy = path => jake.cpR(path, 'bin/release/' + path);
-    
+
     copy('tsumego.es5.js');
     copy('tsumego.es6.js');
 });
