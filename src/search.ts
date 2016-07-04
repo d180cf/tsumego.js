@@ -165,7 +165,7 @@ module tsumego {
             function* solve(color: number, nkt: number) {
                 remaining--;
 
-                if (!remaining) {
+                if (time && !remaining) {
                     yield;
                     const current = Date.now();
                     const speed = yieldin / (current - started);
