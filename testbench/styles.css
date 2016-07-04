@@ -1,6 +1,7 @@
-body {
+html, body {
     margin: 0;
     padding: 0;
+    height: 100%;
 }
 
 table {
@@ -21,12 +22,12 @@ body > table {
 .directory {
     padding-right: 10pt;
     border-right: 1px solid black;
+    height: auto;
+    max-height: 100%;
+    overflow: auto;
 }
 
-    .directory .header {
-        font-size: 1.5em;
-        font-weight: bold;
-    }
+
 
     .directory a.entry {
         display: block;
@@ -82,3 +83,9 @@ body > table {
     .tsumego-options span {
         display: block;
     }
+
+#tutorial-hint {
+    position: fixed;
+    right: 0;
+    top: 0;
+}
