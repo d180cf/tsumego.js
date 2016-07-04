@@ -282,6 +282,11 @@ module testbench {
             });
 
             document.querySelector('#solve').addEventListener('click', e => {
+                if (!vm.solveFor) {
+                    alert('Choose which side plays first');
+                    return;
+                }
+
                 lspath = null;
 
                 if (vm.debugSolver)
@@ -302,6 +307,18 @@ module testbench {
                 }
 
                 board = b.fork();
+                renderBoard();
+            });
+
+            document.querySelector('#undo').addEventListener('click', () => {
+                const move = board.undo();
+
+                if (move)
+                    console.log('undo ' + stone.toString(move));
+                else
+                    console.log('nothing to undo');
+
+                console.log(board + '');
                 renderBoard();
             });
 
@@ -539,64 +556,4 @@ module testbench {
             }
         });
     }
-
-    window['$'] = data => {
-        const cmd = data.toString().trim().split(' ');
-        const col = cmd[0].toLowerCase();
-
-        switch (col) {
-            case 'x':
-            case 'o':
-                const xy = cmd[1] && cmd[1].toUpperCase();
-                const c = cmd[0].toUpperCase() == 'O' ? -1 : +1;
-
-                if (/^[a-z]\d+$/i.test(xy)) {
-                    const p = parse(xy, board.size);
-
-                    if (!board.play(stone(stone.x(p), stone.y(p), c))) {
-                        console.log(col, 'cannot play at', xy);
-                    } else {
-                        console.log(board + '');
-                        renderBoard();
-                    }
-                } else {
-                    solveAndRender(c, !xy ? 0 : +xy);
-                }
-                break;
-
-            case 'undo':
-                let n = +(cmd[1] || 1);
-
-                while (n-- > 0) {
-                    const move = board.undo();
-
-                    if (move) {
-                        console.log('undo ' + stone.toString(move));
-                    } else {
-                        console.log('nothing to undo');
-                        break;
-                    }
-                }
-
-                console.log(board + '');
-                break;
-
-            case 'path':
-                let move: stone, moves: stone[] = [];
-
-                while (move = board.undo())
-                    moves.unshift(move);
-
-                for (move of moves) {
-                    console.log(board + '');
-                    board.play(move);
-                }
-
-                console.log(board + '');
-                break;
-
-            default:
-                console.log('unknown command');
-        }
-    };
 }
