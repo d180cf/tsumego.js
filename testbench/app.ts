@@ -38,24 +38,46 @@ module testbench {
     /** shared transposition table for black and white */
     export var tt = new tsumego.TT;
 
-    function solve(board: Board, color: number, nkotreats: number = 0, log = false) {
-        profile.reset();
+    interface AsyncOperation {
+        notify(): void;
+    }
 
-        const rs = tsumego.solve({
-            root: board,
-            color: color,
-            nkt: nkotreats,
-            tt: tt,
-            expand: tsumego.mgen.fixed(board, aim),
-            status: status
+    function solve(op: AsyncOperation, board: Board, color: number, nkotreats: number = 0, log = false): Promise<stone> {
+        return Promise.resolve().then(() => {
+            profile.reset();
+
+            const g = tsumego.solve.start({
+                root: board,
+                color: color,
+                nkt: nkotreats,
+                time: 1000,
+                tt: tt,
+                expand: tsumego.mgen.fixed(board, aim),
+                status: status
+            });
+
+            let s = g.next();
+
+            return new Promise<stone>(resolve => {
+                setTimeout(function fn() {
+                    op.notify();
+
+                    if (s.done)
+                        resolve(s.value);
+                    else {
+                        s = g.next();
+                        setTimeout(fn);
+                    }
+                });
+            }).then(rs => {
+                if (log) {
+                    profile.log();
+                    console.log(s2s(color, rs));
+                }
+
+                return rs;
+            });
         });
-
-        if (log) {
-            profile.log();
-            console.log(s2s(color, rs));
-        }
-
-        return rs;
     }
 
     class CancellationToken {
@@ -545,15 +567,30 @@ module testbench {
         setComment('Solving...');
 
         setTimeout(() => {
-            const move = solve(board, color, nkt, true);
+            const started = Date.now();
 
-            if (!stone.hascoords(move) || move * color < 0) {
-                setComment(c2s(color) + ' passes');
-            } else {
-                board.play(move);
-                console.log(board + '');
-                renderBoard();
-            }
+            const op = {
+                notify() {
+                    const duration = Date.now() - started;
+                    const comment = 'Solving... elapsed ' + (duration / 1000).toFixed(1) + 's; cached ' + tt.size + ' positions'
+                    setComment(comment);
+                }
+            };
+
+            solve(op, board, color, nkt, true).then(move => {
+                const duration = Date.now() - started;
+
+                if (!stone.hascoords(move) || move * color < 0) {
+                    setComment(c2s(color) + ' passes');
+                } else {
+                    board.play(move);
+                    console.log(board + '');
+                    const comment = stone.toString(move) + ' in ' + (duration / 1000).toFixed(1) + 's; cached ' + tt.size + ' positions';
+                    renderBoard(comment);
+                }
+            }).catch(err => {
+                setComment(err);
+            });
         });
     }
 }

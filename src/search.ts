@@ -68,6 +68,7 @@ module tsumego {
             status(node: Node): number;
             alive?(node: Node): boolean;
             debug?: boolean;
+            time?: number;
             log?: {
                 write(data): void;
             };
@@ -126,7 +127,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, log, expand, status, alive, stats, unodes, debug} =
+            let {root: board, color, nkt = 0, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
             if (log) {
@@ -147,6 +148,8 @@ module tsumego {
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
+            let started = Date.now(), yieldin = 100, remaining = yieldin;
+
             // tells who is being captured
             const target = status(board);
 
@@ -160,6 +163,17 @@ module tsumego {
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
             function* solve(color: number, nkt: number) {
+                remaining--;
+
+                if (!remaining) {
+                    yield;
+                    const current = Date.now();
+                    const speed = yieldin / (current - started);
+                    started = current;
+                    yieldin = max(speed * time | 0, 1);
+                    remaining = yieldin
+                }
+
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
