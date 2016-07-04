@@ -60,7 +60,7 @@ body > table {
     width: 300pt;
     height: 80pt;
     display: inline-block;
-    border: 1px solid black;
+    border: none;
     padding: 5pt;
     margin-left: 5pt;
     vertical-align: top;
