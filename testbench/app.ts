@@ -183,7 +183,7 @@ module testbench {
         return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
     }
 
-    var aim = 0, lspath = '', selectedCells = new stone.SmallSet;
+    var aim = 0, lspath = '', selectedCells = new stone.SmallSet, solvingFor;
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
@@ -303,18 +303,24 @@ module testbench {
                 location.hash = '#' + lspath;
             });
 
-            document.querySelector('#solve').addEventListener('click', e => {
-                if (!vm.solveFor) {
-                    alert('Choose which side plays first');
-                    return;
-                }
-
+            document.querySelector('#solve-b').addEventListener('click', e => {
                 lspath = null;
+                solvingFor = +1;
 
                 if (vm.debugSolver)
-                    dbgsolve(board, vm.solveFor, vm.nkt);
+                    dbgsolve(board, solvingFor, vm.nkt);
                 else
-                    solveAndRender(vm.solveFor, vm.nkt);
+                    solveAndRender(solvingFor, vm.nkt);
+            });
+
+            document.querySelector('#solve-w').addEventListener('click', e => {
+                lspath = null;
+                solvingFor = -1;
+
+                if (vm.debugSolver)
+                    dbgsolve(board, solvingFor, vm.nkt);
+                else
+                    solveAndRender(solvingFor, vm.nkt);
             });
 
             document.querySelector('#flipc').addEventListener('click', e => {
