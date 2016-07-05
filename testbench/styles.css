@@ -19,6 +19,10 @@ body > table {
     height: 100%;
 }
 
+#buttons > button {
+    margin: 5pt;
+}
+
 .directory {
     padding-right: 10pt;
     border-right: 1px solid black;
@@ -60,6 +64,7 @@ body > table {
 .tsumego-sgf {
     width: 300pt;
     height: 80pt;
+    font-family: "Lucida Console";
     display: inline-block;
     border: none;
     padding: 5pt;
@@ -84,8 +89,15 @@ body > table {
         display: block;
     }
 
+
 #tutorial-hint {
     position: fixed;
     right: 0;
     top: 0;
+}
+
+#semantic-ui-ref {
+    position: fixed;
+    right: 0;
+    bottom: 0;
 }

@@ -18,36 +18,33 @@ module testbench {
     export const vm = {
         /** The currently selected editor tool: MA, AB, AW, etc. */
         get tool(): string {
-            const rb = <HTMLInputElement>document.querySelector('input[name="tool"]:checked');
-            return rb && rb.value;
+            const button = document.querySelector('#tool > button.active');
+            return button && button.getAttribute('data-value');
         },
 
         set tool(value: string) {
-            const rbs = document.querySelectorAll('input[name="tool"]');
-
-            for (const rb of rbs) {
-                if (rb.getAttribute('value') == value)
-                    rb.setAttribute('checked', '');
+            for (const button of document.querySelectorAll('#tool > button')) {
+                if (button.getAttribute('data-value') == value)
+                    button.classList.add('active');
                 else
-                    rb.removeAttribute('checked');
+                    button.classList.remove('active');
             }
         },
 
         /** The color for which the problem needs to be solved: +1 or -1. */
         get solveFor(): number {
-            const rb = <HTMLInputElement>document.querySelector('input[name="solve-for"]:checked');
-            return { B: +1, W: -1 }[rb && rb.value] || 0;
+            const button = document.querySelector('#solve-for > button.active');
+            return button ? +button.getAttribute('data-value') : 0;
         },
 
         /** Tells to invoke the solver in the step-by-step mode. */
         get debugSolver() {
-            return !!document.querySelector('input[name="debug"]:checked');
+            return /\bdebug=1\b/.test(location.search);
         },
 
         /** The balance of ext ko treats. */
         get nkt() {
-            const input = <HTMLInputElement>document.querySelector('input[name="nkt"]');
-            return input && +input.value || 0;
+            return +document.querySelector('#nkt > button.active').getAttribute('data-value');
         }
     };
 }
