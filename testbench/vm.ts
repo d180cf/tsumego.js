@@ -31,12 +31,6 @@ module testbench {
             }
         },
 
-        /** The color for which the problem needs to be solved: +1 or -1. */
-        get solveFor(): number {
-            const button = document.querySelector('#solve-for > button.active');
-            return button ? +button.getAttribute('data-value') : 0;
-        },
-
         /** Tells to invoke the solver in the step-by-step mode. */
         get debugSolver() {
             return /\bdebug=1\b/.test(location.search);

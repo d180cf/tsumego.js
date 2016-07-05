@@ -11,68 +11,81 @@
     <script src="semantic-ui/semantic.js"></script>
 
     <script src="app.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('.menu .item').tab({ history: false });
+
+            $('.ui.buttons.toggle > .ui.button').click(function (event) {
+                $(this).addClass('active').siblings().removeClass('active');
+            });
+
+            $('.ui.accordion').click(function (event) {
+                var target = $(event.target);
+
+                if (target.is('.title')) {
+                    target.siblings().removeClass('active');
+                    target.addClass('active').next('.content').addClass('active');
+                }
+            });
+        });
+    </script>
 </head>
 <body>
     <div id="tutorial-hint">Consider reading this short <a href="../tutorial">tutorial</a>.</div>
     <div id="semantic-ui-ref">This site uses <a href="http://semantic-ui.com/">Semantic UI</a></div>
 
-    <table cellpadding="0" cellspacing="0">
-        <tr>
-            <td>
-                <div class="directory"></div>
-            </td>
-            <td class="workspace">
-
-                <div class="ui pointing secondary menu">
-                    <a class="active item" data-tab="board">Board</a>
-                    <a class="item" data-tab="sgf">SGF</a>
+    <div class="ui grid" style="height:100vh">
+        <div class="ui four wide column" style="height:100%">
+            <div class="ui inverted segment" style="height:100%">
+                <div class="ui inverted accordion directory">
+                    <div class="title active">Problems</div>
+                    <div class="content active">
+                        <div class="ui inverted selection list"></div>
+                    </div>
                 </div>
+            </div>
+        </div>
+        <div class="workspace ui column">
+            <div class="ui pointing secondary menu">
+                <a class="active item" data-tab="board">Board</a>
+                <a class="item" data-tab="sgf">SGF</a>
+            </div>
 
-                <div class="ui active tab" data-tab="board">
-                    <div class="tsumego"></div>
-                </div>
+            <div class="ui active tab" data-tab="board">
+                <div class="tsumego"></div>
+            </div>
 
-                <div class="ui tab" data-tab="sgf">
-                    <textarea class="tsumego-sgf" id="sgf"></textarea>
-                </div>
+            <div class="ui tab" data-tab="sgf">
+                <textarea class="tsumego-sgf" id="sgf"></textarea>
+            </div>
 
-                <div class="ui small icon buttons">
-                    <button class="ui icon button" id="solve-b"><i class="circle icon" title="Solve for black"></i></button>
-                    <button class="ui icon button" id="solve-w"><i class="thin circle icon" title="Solve for white"></i></button>
-                    <button class="ui icon button" id="undo" title="Undo the last move"><i class="right undo icon" title="Undo"></i></button>        <button class="ui icon button" id="flipc" title="Inverts stone colors"><i class="right adjust icon" title="Invert"></i></button>
-                    <button class="ui icon button" id="delete" title="Delete this tsumego"><i class="right delete icon" title="Delete this tsumego"></i></button>
-                    <button class="ui icon button" id="rename" title="Rename this tsumego"><i class="right arrow icon" title="Rename"></i></button>
-                    <button class="ui icon button" id="download" title="Download this tsumego as SGF"><i class="right download icon"></i></button>
-                    <button class="ui icon button" id="getsvg" title="Download this SVG picture"><i class="right download icon"></i></button>
-                </div>
+            <div class="ui small icon buttons">
+                <button class="ui icon button" id="solve-b"><i class="circle icon" title="Solve for black"></i></button>
+                <button class="ui icon button" id="solve-w"><i class="thin circle icon" title="Solve for white"></i></button>
+                <button class="ui icon button" id="undo" title="Undo the last move"><i class="right undo icon" title="Undo"></i></button>        <button class="ui icon button" id="flipc" title="Inverts stone colors"><i class="right adjust icon" title="Invert"></i></button>
+                <button class="ui icon button" id="delete" title="Delete this tsumego"><i class="right delete icon" title="Delete this tsumego"></i></button>
+                <button class="ui icon button" id="rename" title="Rename this tsumego"><i class="right arrow icon" title="Rename"></i></button>
+                <button class="ui icon button" id="download" title="Download this tsumego as SGF"><i class="right download icon"></i></button>
+                <button class="ui icon button" id="getsvg" title="Download this SVG picture"><i class="right download icon"></i></button>
+            </div>
 
-                <div id="tool" class="ui small icon buttons toggle">
-                    <button data-value="AB" class="ui icon button" title="add a black stone"><i class="ui circle icon"></i></button>
-                    <button data-value="AW" class="ui icon button" title="add a white stone"><i class="ui thin circle icon"></i></button>
-                    <button data-value="MA" class="ui icon button" title="select target"><i class="ui delete icon"></i></button>
-                </div>
+            <div id="tool" class="ui small icon buttons toggle">
+                <button data-value="AB" class="ui icon button" title="add a black stone"><i class="ui circle icon"></i></button>
+                <button data-value="AW" class="ui icon button" title="add a white stone"><i class="ui thin circle icon"></i></button>
+                <button data-value="MA" class="ui icon button" title="select target"><i class="ui delete icon"></i></button>
+            </div>
 
-                <div id="nkt" class="ui small buttons">
-                    <button data-value="-2" class="ui button" title="W has 2 more ko treats">&#x25cb;&#x25cb;</button>
-                    <button data-value="-1" class="ui button" title="W has 1 more ko treat">&#x25cb;</button>
-                    <button data-value="0" class="ui button active" title="both sides have same number of ko treats">&#x25d0;</button>
-                    <button data-value="+1" class="ui button" title="B has 1 more ko treat">&#x25cf;</button>
-                    <button data-value="+2" class="ui button" title="W has one more ko treat">&#x25cf;&#x25cf;</button>
-                </div>
+            <div id="nkt" class="ui small buttons">
+                <button data-value="-2" class="ui button" title="W has 2 more ko treats">&#x25cb;&#x25cb;</button>
+                <button data-value="-1" class="ui button" title="W has 1 more ko treat">&#x25cb;</button>
+                <button data-value="0" class="ui button active" title="both sides have same number of ko treats">&#x25d0;</button>
+                <button data-value="+1" class="ui button" title="B has 1 more ko treat">&#x25cf;</button>
+                <button data-value="+2" class="ui button" title="W has one more ko treat">&#x25cf;&#x25cf;</button>
+            </div>
 
-                <script>
-                    $(document).ready(function () {
-                        $('.menu .item').tab({ history: false });
-
-                        $('.ui.buttons.toggle .ui.button').click(function (event) {
-                            $(this).addClass('active').siblings().removeClass('active');
-                        });
-                    });
-                </script>
-
-                <div class="tsumego-comment" id="comment"></div>
-            </td>
-        </tr>
-    </table>
+            <div class="tsumego-comment" id="comment"></div>
+        </div>
+    </div>
 </body>
 </html>

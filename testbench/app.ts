@@ -4,7 +4,7 @@
 /// <reference path="../src/search.ts" />
 /// <reference path="editor.ts" />
 /// <reference path="vm.ts" />
-/// <reference path="jquery.d.ts" />
+/// <reference path="directory.ts" />
 
 window['board'] = null;
 
@@ -188,18 +188,7 @@ module testbench {
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
-            const directory = document.querySelector('.directory');
-
-            function addDirEntry(path: string) {
-                const entry = document.createElement('a');
-
-                entry.className = 'entry';
-                entry.textContent = path;
-                entry.href = '#' + path;
-                directory.appendChild(entry);
-
-                return entry;
-            }
+            const directory = new Directory(<HTMLElement>document.querySelector('.directory'));
 
             window.addEventListener('hashchange', () => {
                 const path = location.hash.slice(1); // #abc -> abc
@@ -227,31 +216,17 @@ module testbench {
             }
 
             ls.added.push(path => {
-                for (const e of directory.querySelectorAll('.entry')) {
-                    const a = <HTMLAnchorElement>e;
-
-                    if (a.hash == '#' + path)
-                        return;
-                }
-
-                addDirEntry(path);
+                directory.add(path);
             });
 
             ls.removed.push(path => {
-                for (const e of directory.querySelectorAll('.entry')) {
-                    const a = <HTMLAnchorElement>e;
-
-                    if (a.hash == '#' + path) {
-                        a.parentNode.removeChild(a);
-                        break;
-                    }
-                }
-            });
+                directory.remove(path);
+            });            
 
             const lsdata = ls.data;
 
             for (let path in lsdata)
-                addDirEntry(path);
+                directory.add(path);
 
             send('GET', '/problems/manifest.json').then(data => {
                 const manifest = JSON.parse(data);
@@ -268,7 +243,7 @@ module testbench {
                                 const name = path.replace('.sgf', '') + (nvar ? ':' + nvar : '');
 
                                 if (!lsdata[name])
-                                    addDirEntry(name);
+                                    directory.add(name);
                             }
                         }).catch(err => {
                             console.log(err.stack);
@@ -406,13 +381,13 @@ module testbench {
                 console.log(board + '');
                 console.log(board.toStringSGF());
 
-                for (const e of document.querySelectorAll('.directory .entry')) {
+                for (const e of document.querySelectorAll('.directory .item')) {
                     const a = <HTMLAnchorElement>e;
 
                     if (a.hash == '#' + path)
-                        a.classList.add('selected');
+                        a.classList.add('active');
                     else
-                        a.classList.remove('selected');
+                        a.classList.remove('active');
                 }
             });
         });
@@ -509,7 +484,7 @@ module testbench {
             const c = board.get(x, y);
 
             if (!lspath) {
-                const s = stone(x, y, -vm.solveFor);
+                const s = stone(x, y, -solvingFor);
                 const r = board.play(s);
                 if (!r) console.log(stone.toString(s) + ' cannot be played on this board:\n' + board);
             } else switch (vm.tool) {
