@@ -4,6 +4,7 @@
 /// <reference path="../src/search.ts" />
 /// <reference path="editor.ts" />
 /// <reference path="vm.ts" />
+/// <reference path="jquery.d.ts" />
 
 window['board'] = null;
 
