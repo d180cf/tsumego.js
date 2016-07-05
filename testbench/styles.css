@@ -17,13 +17,11 @@ html, body {
 }
 
 .tsumego-sgf {
-    width: 300pt;
-    height: 80pt;
+    width: 200pt;
+    height: 200pt;
     font-family: "Lucida Console";
     display: inline-block;
     border: none;
-    padding: 5pt;
-    margin-left: 5pt;
     vertical-align: top;
 }
 

@@ -193,8 +193,10 @@ module testbench {
             window.addEventListener('hashchange', () => {
                 const path = location.hash.slice(1); // #abc -> abc
 
-                if (path.length > 0) {
-                    loadProblem(path).catch(e => {
+                if (path.length > 0) {                    
+                    loadProblem(path).then(() => {
+                        directory.select(path);
+                    }).catch(e => {
                         console.log(e.stack);
                         document.querySelector('.tsumego').textContent = e;
                     });
@@ -209,7 +211,9 @@ module testbench {
             else {
                 const path = location.hash.slice(1); // #abc -> abc
 
-                loadProblem(path).catch(e => {
+                loadProblem(path).then(() => {
+                    directory.select(path);
+                }).catch(e => {
                     console.log('cannot load', path, e.stack);
                     location.hash = '#blank';
                 });
@@ -380,15 +384,6 @@ module testbench {
                 console.log(sgfdata);
                 console.log(board + '');
                 console.log(board.toStringSGF());
-
-                for (const e of document.querySelectorAll('.directory .item')) {
-                    const a = <HTMLAnchorElement>e;
-
-                    if (a.hash == '#' + path)
-                        a.classList.add('active');
-                    else
-                        a.classList.remove('active');
-                }
             });
         });
     }

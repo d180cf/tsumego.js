@@ -19,15 +19,6 @@
             $('.ui.buttons.toggle > .ui.button').click(function (event) {
                 $(this).addClass('active').siblings().removeClass('active');
             });
-
-            $('.ui.accordion').click(function (event) {
-                var target = $(event.target);
-
-                if (target.is('.title')) {
-                    target.siblings().removeClass('active');
-                    target.addClass('active').next('.content').addClass('active');
-                }
-            });
         });
     </script>
 </head>
@@ -46,7 +37,7 @@
                 </div>
             </div>
         </div>
-        <div class="workspace ui column">
+        <div class="workspace ui twelve wide column">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
@@ -76,7 +67,7 @@
                 <button data-value="MA" class="ui icon button" title="select target"><i class="ui delete icon"></i></button>
             </div>
 
-            <div id="nkt" class="ui small buttons">
+            <div id="nkt" class="ui small buttons toggle">
                 <button data-value="-2" class="ui button" title="W has 2 more ko treats">&#x25cb;&#x25cb;</button>
                 <button data-value="-1" class="ui button" title="W has 1 more ko treat">&#x25cb;</button>
                 <button data-value="0" class="ui button active" title="both sides have same number of ko treats">&#x25d0;</button>

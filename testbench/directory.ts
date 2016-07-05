@@ -7,7 +7,14 @@ module testbench {
      */
     export class Directory {
         constructor(private container: HTMLElement) {
+            $(container).click(event => {
+                const target = $(event.target);
 
+                if (target.is('.title')) {
+                    target.siblings().removeClass('active');
+                    target.addClass('active').next('.content').addClass('active');
+                }
+            });
         }
 
         /**
@@ -56,6 +63,27 @@ module testbench {
         remove(path: string) {
             const a = this.find(path);
             a && a.parentNode.removeChild(a);
+        }
+
+        /**
+         * Makes this item active. Expands folders as necessary.
+         */
+        select(path: string) {
+            $(this.container).find('.active').removeClass('active');
+
+            for (const e of this.container.querySelectorAll('.directory .item')) {
+                const a = <HTMLAnchorElement>e;
+
+                if (a.hash == '#' + path) {
+                    a.classList.add('active');
+                    const content = a.parentElement.parentElement;
+                    content.classList.add('active');
+                    const title = content.previousElementSibling;
+                    title.classList.add('active');
+                } else {
+                    a.classList.remove('active');
+                }
+            }
         }
     }
 }
