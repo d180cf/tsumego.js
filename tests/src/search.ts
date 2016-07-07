@@ -139,7 +139,7 @@ module tests {
 
             const aim = stone.fromString(setup['MA'][0]);
             const board = new Board(sgf);
-            const tt = new TT; // shared by all variations
+            var tt = new TT; // shared by all variations
 
             for (const variation of [null, ...sgf.vars]) {
                 const solutions = variation ? variation.steps[0]['C'] : setup['C'];
@@ -201,6 +201,8 @@ module tests {
                     }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
                 }
             }
+
+            tt = null;
         }
     });
 }
