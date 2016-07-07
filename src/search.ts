@@ -26,7 +26,6 @@ module tsumego {
      *        AB[aa][bb][cd][ef]
      *        AW[ab][df]
      *        MA[ab]
-     *        KM[B]
      *        PL[W])
      * 
      * There are a few tags in the SGF that must be present:
@@ -36,7 +35,6 @@ module tsumego {
      *      AW  The set of white stones.
      *      MA  The target that needs to be captured or secured.
      *      PL  Who plays first.
-     *      KM  Who is the ko master (optional).
      *
      * Returns the best move if there is such a move:
      *
@@ -62,7 +60,7 @@ module tsumego {
         export interface Args {
             root: Node;
             color: number;
-            nkt?: number;
+            km?: number;
             tt?: TT;
             expand(color: number): stone[];
             status(node: Node): number;
@@ -107,10 +105,6 @@ module tsumego {
                 () => stone.fromString(sgf.get('MA')[0]),
                 'MA[xy] must specify the target white stone.');
 
-            const komaster = exec(
-                () => sgf.get('KM') + '' == 'W' ? -2 : +2,
-                'KM[W] or KM[B] must tell who is the ko master. This tag is optional.');
-
             if (errors.length)
                 throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
 
@@ -119,7 +113,6 @@ module tsumego {
             return {
                 root: board,
                 color: color,
-                nkt: komaster,
                 expand: mgen.fixed(board, target),
                 status: (b: Board) => b.get(target) ? tb : -tb,
                 alive: (b: Board) => tsumego.benson.alive(b, target)
@@ -127,7 +120,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, nkt = 0, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
+            let {root: board, color, km, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
             if (log) {
@@ -162,7 +155,7 @@ module tsumego {
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
-            function* solve(color: number, nkt: number) {
+            function* solve(color: number, km: number) {
                 remaining--;
 
                 if (time && !remaining) {
@@ -177,7 +170,7 @@ module tsumego {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
-                const ttres = tt.get(hashb, color, nkt);
+                const ttres = tt.get(hashb, color, km);
 
                 stats && (stats.depth = depth, yield);
 
@@ -225,7 +218,7 @@ module tsumego {
                     // if the opponent is playing useless ko-like
                     // moves that do not help even if all these
                     // ko fights are won
-                    if (d <= depth && nkt * color <= 0)
+                    if (d <= depth && km * color <= 0)
                         continue;
 
                     sa.insert(repd.set(move, d), {
@@ -260,7 +253,7 @@ module tsumego {
                     // million powers of this element are unique
                     const h = gf32.mul(prevb != hashb ? prevb : 0, 0x87654321) ^ hashb;
 
-                    tags.push(h & ~15 | (nkt & 7) << 1 | (color < 0 ? 1 : 0));
+                    tags.push(h & ~15 | (km & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
                     stats && stats.nodes++;
 
@@ -275,8 +268,33 @@ module tsumego {
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
-                            // elsewhere resets the local history of moves
-                            s = yield* solve(-color, nkt);
+                            // elsewhere resets the local history of moves;
+                            //
+                            // There is a tricky side effect related to ko.
+                            // Consider two positions below:
+                            //
+                            //  ============|      =============  
+                            //  X O - O O O |      X O - X X X |
+                            //  X X O O - O |      X O O O O - |
+                            //  - X X O O O |      X X X X O O |
+                            //  - - X X X X |            X X X |
+                            //
+                            // In both cases if O has infinitely many ko treats
+                            // (this is the case when there is a large double ko
+                            // elsewhere on the board), then O lives. However if
+                            // O has finitely many ko treats, X can first remove
+                            // them all (locally, removing an external ko treat
+                            // means passing), recapture the stone and since O
+                            // doesn't have ko treats anymore, it dies.
+                            //
+                            // Modeling this is simple. If X passes and then O passes,
+                            // X can assume that it can repeat this as many times as
+                            // needed to remove all ko treats and then yield the turn
+                            // to O now in assumption that O has no ko treats. This is
+                            // what the (prevb == hashb) check below does: it checks
+                            // that if the two last moves were passes, the ko treats
+                            // can be voided and the search can be resumed without them.
+                            s = yield* solve(-color, prevb == hashb ? 0 : km);
                         }
                     } else {
                         board.play(move);
@@ -287,10 +305,7 @@ module tsumego {
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
-                                d > depth ? yield* solve(-color, nkt) :
-                                    // this move repeat a previously played position:
-                                    // spend a ko treat and yield the turn to the opponent
-                                    (debug && (yield 'spending a ko treat'), yield* solve(-color, nkt - color));
+                                yield* solve(-color, move && km);
 
                         board.undo();
                     }
@@ -338,7 +353,7 @@ module tsumego {
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
-                    tt.set(hashb, color, result, nkt);
+                    tt.set(hashb, color, result, km);
 
                 if (guess) {
                     log && log.write({
@@ -359,18 +374,30 @@ module tsumego {
                 return result;
             }
 
-            const moves: stone[] = [];
-            let move: stone;
+            // restore the path from the history of moves
+            {
+                const moves: stone[] = [];
+                let move: stone;
 
-            while (move = board.undo())
-                moves.unshift(move);
+                while (move = board.undo())
+                    moves.unshift(move);
 
-            for (move of moves) {
-                path.push(board.hash);
-                board.play(move);
+                for (move of moves) {
+                    path.push(board.hash);
+                    board.play(move);
+                }
             }
 
-            move = yield* solve(color, nkt);
+            let move = yield* solve(color, km || 0);
+
+            if (!Number.isFinite(km)) {
+                // if it's a loss, see what happens if there are ko treats;
+                // if it's a win, try to find a stronger move, when the opponent has ko treats
+                const move2 = yield* solve(color, move * color > 0 ? -color : color);
+
+                if (move2 * color > 0)
+                    move = move2;
+            }
 
             return typeof args === 'string' ?
                 stone.toString(move) :

@@ -164,14 +164,11 @@ module tests {
                             }
                         }
 
-                        const [c2p, nkt] = /(\w)([+-].+)?/.exec(lhs).slice(1);
+                        const [c2p] = /(\w)([+-].+)?/.exec(lhs).slice(1);
                         const [winner, moves] = rhs.split('+');
 
                         console.log(b + '');
                         console.log(c2p + ' plays first');
-
-                        if (nkt)
-                            console.log(`${+nkt > 0 ? 'B' : 'W'} has ${Math.abs(+nkt)} ko treats`);
 
                         const seed = Date.now() | 0;
                         console.log('rand seed:', hex(seed));
@@ -181,7 +178,6 @@ module tests {
                         const result = solve({
                             root: forked,
                             color: c2p == 'B' ? +1 : -1,
-                            nkt: +nkt | 0,
                             tt: tt,
                             log: log,
                             unodes: unodes,

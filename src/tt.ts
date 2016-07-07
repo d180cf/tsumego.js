@@ -8,15 +8,16 @@ module tsumego {
      *
      * The first 2 bytes tell the outcome if black can play first:
      *
-     *      b - if nkt >= b, then black wins; b = -3..+3
-     *      w - if nkt <= w, then white wins; w = -3..+3
-     *      m - if nkt >= b, m tells if black needs to play at (x, y) to win
+     *      b - if km >= b, then black wins; b = -3..+3
+     *      w - if km <= w, then white wins; w = -3..+3
+     *      m - if km >= b, m tells if black needs to play at (x, y) to win
      *      u - this bit isn't used at the moment
      *
-     * The next 2 bytes tell the outcome if white can play first.
+     * where km = +1 means that W is the ko master, km = -1 means
+     * that B is the ko master and km = 0 means neither B nor W has
+     * external ko treats.
      *
-     * The number of external ko treats (nkt) can be positive or negative.
-     * For instance, nkt = -2 means that white has two external ko treats.
+     * The next 2 bytes tell the outcome if white can play first.
      *
      * Obviously, w < b, as otherwise the status would be ambiguous.
      * This implies that the zero entry is not valid.
@@ -51,7 +52,7 @@ module tsumego {
 
         private data: { [hash: number]: entry } = {};
 
-        get(hash: number, color: number, nkt: number) {
+        get(hash: number, color: number, km: number) {
             const s = this.data[hash];
 
             if (!s) return 0;
@@ -59,8 +60,8 @@ module tsumego {
             const e = entry.get(s, color);
 
             const winner =
-                nkt >= entry.b(e) ? +1 : // enough ko treats for black
-                    nkt <= entry.w(s) ? -1 : // enough ko treats for white
+                km >= entry.b(e) ? +1 : // enough ko treats for black
+                    km <= entry.w(s) ? -1 : // enough ko treats for white
                         0; // not solved for this number of ko treats
 
             if (!winner) return 0;
@@ -74,10 +75,10 @@ module tsumego {
         /** 
          * @param color Who plays first.
          * @param move The outcome. Must have a color and may have coordinates.
-         * @param nkt Must be within -2..+2 range. 
+         * @param km Must be either-1, +1 or 0.
          */
-        set(hash: number, color: number, move: stone, nkt: number) {
-            if (nkt < -2 || nkt > +2 || !stone.color(move))
+        set(hash: number, color: number, move: stone, km: number) {
+            if (km != -1 && km != +1 && km != 0 || !stone.color(move))
                 throw Error('Invalid TT entry.');
 
             const s = this.data[hash] || ++this.size && entry.base;
@@ -91,10 +92,10 @@ module tsumego {
             const b = entry.b(e);
             const w = entry.w(e);
 
-            if (move > 0 && nkt < b)
-                e = entry(x, y, nkt, w, hc);
-            else if (move < 0 && nkt > w)
-                e = entry(x, y, b, nkt, hc);
+            if (move > 0 && km < b)
+                e = entry(x, y, km, w, hc);
+            else if (move < 0 && km > w)
+                e = entry(x, y, b, km, hc);
             else
                 return; // nothing to change in tt
 

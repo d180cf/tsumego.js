@@ -32,13 +32,14 @@ module testbench {
         },
 
         /** Tells to invoke the solver in the step-by-step mode. */
-        get debugSolver() {
+        get debugSolver(): boolean {
             return /\bdebug=1\b/.test(location.search);
         },
 
-        /** The balance of ext ko treats. */
-        get nkt() {
-            return +document.querySelector('#nkt > button.active').getAttribute('data-value');
+        /** ko master: +1, -1 or 0 */
+        get km(): number {
+            const b = document.querySelector('#km > button.active');
+            return b && +b.getAttribute('data-value');
         }
     };
 }

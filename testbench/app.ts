@@ -43,14 +43,14 @@ module testbench {
         notify(): void;
     }
 
-    function solve(op: AsyncOperation, board: Board, color: number, nkotreats: number = 0, log = false): Promise<stone> {
+    function solve(op: AsyncOperation, board: Board, color: number, km: number, log = false): Promise<stone> {
         return Promise.resolve().then(() => {
             profile.reset();
 
             const g = tsumego.solve.start({
                 root: board,
                 color: color,
-                nkt: nkotreats,
+                km: km,
                 time: 1000,
                 tt: tt,
                 expand: tsumego.mgen.fixed(board, aim),
@@ -94,7 +94,6 @@ module testbench {
             debug: true,
             root: board,
             color: color,
-            nkt: nkotreats,
             tt: tt,
             expand: tsumego.mgen.fixed(board, aim),
             status: status,
@@ -193,7 +192,7 @@ module testbench {
             window.addEventListener('hashchange', () => {
                 const path = location.hash.slice(1); // #abc -> abc
 
-                if (path.length > 0) {                    
+                if (path.length > 0) {
                     loadProblem(path).then(() => {
                         directory.select(path);
                     }).catch(e => {
@@ -225,7 +224,7 @@ module testbench {
 
             ls.removed.push(path => {
                 directory.remove(path);
-            });            
+            });
 
             const lsdata = ls.data;
 
@@ -288,9 +287,9 @@ module testbench {
                 solvingFor = +1;
 
                 if (vm.debugSolver)
-                    dbgsolve(board, solvingFor, vm.nkt);
+                    dbgsolve(board, solvingFor, vm.km);
                 else
-                    solveAndRender(solvingFor, vm.nkt);
+                    solveAndRender(solvingFor, vm.km);
             });
 
             document.querySelector('#solve-w').addEventListener('click', e => {
@@ -298,9 +297,9 @@ module testbench {
                 solvingFor = -1;
 
                 if (vm.debugSolver)
-                    dbgsolve(board, solvingFor, vm.nkt);
+                    dbgsolve(board, solvingFor, vm.km);
                 else
-                    solveAndRender(solvingFor, vm.nkt);
+                    solveAndRender(solvingFor, vm.km);
             });
 
             document.querySelector('#flipc').addEventListener('click', e => {
@@ -430,7 +429,7 @@ module testbench {
 
         const ui = GobanElement.create(board);
 
-        if (stone.hascoords(move))
+        if (stone.hascoords(move) && solvingFor)
             ui.TR.add(stone.x(move), stone.y(move));
 
         if (stone.hascoords(aim))
@@ -540,7 +539,7 @@ module testbench {
         return stone(x, y, 0);
     }
 
-    function solveAndRender(color: number, nkt = 0) {
+    function solveAndRender(color: number, km: number) {
         setComment('Solving...');
 
         setTimeout(() => {
@@ -554,7 +553,7 @@ module testbench {
                 }
             };
 
-            solve(op, board, color, nkt, true).then(move => {
+            solve(op, board, color, km, true).then(move => {
                 const duration = Date.now() - started;
 
                 if (!stone.hascoords(move) || move * color < 0) {

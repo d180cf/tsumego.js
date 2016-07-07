@@ -110,7 +110,6 @@ namespace tsumego {
         const move = await xsolve({
             root: board,
             color: color,
-            nkt: +nkt | 0,
             tt: tt,
             expand: mgen.fixed(board, target),
             status: (b: Board) => b.get(target) < 0 ? -1 : +1,
