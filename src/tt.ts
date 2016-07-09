@@ -1,3 +1,5 @@
+/// <reference path="i32ht.ts" />
+
 module tsumego {
     /**
      * 0               1               2               3
@@ -47,13 +49,11 @@ module tsumego {
     /** Transposition Table */
     export class TT {
         size = 0;
-
-        move: { [node: number]: stone } = {};
-
-        private data: { [hash: number]: entry } = {};
+        move = new Int32HashTable; // node -> stone
+        private data = new Int32HashTable; // node -> entry
 
         get(hash: number, color: number, km: number) {
-            const s = this.data[hash];
+            const s = this.data.get(hash);
 
             if (!s) return 0;
 
@@ -81,7 +81,7 @@ module tsumego {
             if (km != -1 && km != +1 && km != 0 || !stone.color(move))
                 throw Error('Invalid TT entry.');
 
-            const s = this.data[hash] || ++this.size && entry.base;
+            const s = this.data.get(hash) || ++this.size && entry.base;
             const e = entry.get(s, color);
 
             // The idea here is to not override the winning move.
@@ -98,9 +98,9 @@ module tsumego {
 
             const e2 = move > 0 && km < b ? entry(x, y, km, w, hc) :
                 move < 0 && km > w ? entry(x, y, b, km, hc) :
-                    e;            
+                    e;
 
-            this.data[hash] = entry.set(s, color, e2);
+            this.data.set(hash, entry.set(s, color, e2));
         }
     }
 }

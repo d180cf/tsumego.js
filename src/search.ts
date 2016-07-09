@@ -187,7 +187,7 @@ module tsumego {
                     }
                 }
 
-                const guess = tt.move[hashb ^ color] || 0;
+                const guess = tt.move.get(hashb ^ color);
 
                 let result: stone;
                 let mindepth = infdepth;
@@ -223,7 +223,7 @@ module tsumego {
                     sa.insert(repd.set(move, d), {
                         d: d,
                         // use previously found solution as a hint
-                        w: stone.color(tt.move[hash ^ -color] || 0) * color
+                        w: stone.color(tt.move.get(hash ^ -color)) * color
                     });
                 }
 
@@ -357,7 +357,7 @@ module tsumego {
                     });
                 }
 
-                tt.move[hashb ^ color] = result;
+                tt.move.set(hashb ^ color, result);
 
                 log && log.write({
                     result: color * stone.color(result),
