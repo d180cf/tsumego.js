@@ -46,7 +46,7 @@ module tsumego.mgen {
             if (!color)
                 return nocolor;
 
-            const ord = new MvsOrd(board);
+            const ord = new MvsOrd(board, target);
             const moves = ord.reset();
 
             for (const s of nocolor)

@@ -711,6 +711,11 @@ module tsumego {
             return null;
         }
 
+        /** Checks if (x, y) is a liberty of block b. */
+        isLibertyOf(x: number, y: number, b: block) {
+            return this.get(x - 1, y) == b || this.get(x + 1, y) == b || this.get(x, y - 1) == b || this.get(x, y + 1) == b;
+        }
+
         /**
          * for (const [x, y] of board.libs(block))
          *      console.log("a liberty of the block", x, y);

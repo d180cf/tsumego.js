@@ -9,7 +9,7 @@ module tsumego.mgen {
             a.q - b.q || // minimize the number of the opponent's liberties
             random() - 0.5);
 
-        constructor(private board: Board) {
+        constructor(private board: Board, private target: stone) {
 
         }
 
@@ -28,13 +28,19 @@ module tsumego.mgen {
 
             if (!r) return false;
 
-            this.sa.insert(s, {
-                r: r,
-                p: sumlibs(board, +color),
-                q: sumlibs(board, -color),
-                u: ninatari(board, +color),
-                v: ninatari(board, -color),
-            });
+            const t = board.get(this.target);
+
+            const isSelfAtari = t * color > 0 && block.libs(t) < 2;
+
+            if (!isSelfAtari) {
+                this.sa.insert(s, {
+                    r: r,
+                    p: sumlibs(board, +color),
+                    q: sumlibs(board, -color),
+                    u: ninatari(board, +color),
+                    v: ninatari(board, -color),
+                });
+            }
 
             board.undo();
             return true;

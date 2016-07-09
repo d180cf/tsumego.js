@@ -107,7 +107,7 @@ module tests {
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();
 
-            $(_b).equal([0x24, 0x04]);
+            $(_b).equal([0x24]);
             $(_w).equal([0x24, 0x04]);
         });
 
@@ -130,7 +130,7 @@ module tests {
 
             console.log(_b, _w);
 
-            $(_b).equal([0x02, 0x24]);
+            $(_b).equal([0x02]);
             $(_w).equal([0x02, 0x24]);
         });
 
