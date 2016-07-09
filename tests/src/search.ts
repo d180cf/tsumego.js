@@ -139,7 +139,8 @@ module tests {
 
             const aim = stone.fromString(setup['MA'][0]);
             const board = new Board(sgf);
-            var tt = new TT; // shared by all variations
+            const tblock = board.get(aim);
+            const tt = new TT; // shared by all variations
 
             for (const variation of [null, ...sgf.vars]) {
                 const solutions = variation ? variation.steps[0]['C'] : setup['C'];
@@ -170,9 +171,6 @@ module tests {
                         console.log(b + '');
                         console.log(c2p + ' plays first');
 
-                        const seed = Date.now() | 0;
-                        console.log('rand seed:', hex(seed));
-
                         const unodes = { total: 0, unique: 0 };
                         const forked = b.fork();
                         const result = solve({
@@ -182,7 +180,7 @@ module tests {
                             log: log,
                             unodes: unodes,
                             expand: BasicMoveGen(forked, aim),
-                            status: (b: Board) => b.get(aim) < 0 ? -1 : +1,
+                            status: (b: Board) => sign(b.get(aim) || -tblock),
                             alive: (b: Board) => tsumego.benson.alive(b, aim)
                         });
 
@@ -197,8 +195,6 @@ module tests {
                     }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
                 }
             }
-
-            tt = null;
         }
     });
 }

@@ -153,7 +153,6 @@ module tsumego {
                 b.w - a.w);  // first consider moves that lead to a winning position
 
             const path: number[] = []; // path[i] = hash of the i-th position
-            const tags: number[] = []; // tags[i] = hash of the path to the i-th position
 
             function* solve(color: number, km: number) {
                 remaining--;
@@ -235,10 +234,7 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                sa.insert(0, {
-                    d: infdepth,
-                    w: 0
-                });
+                nodes.push(0);
 
                 let trials = 0;
 
@@ -247,24 +243,22 @@ module tsumego {
                     const d = !move ? infdepth : repd.get(move);
                     let s: stone;
 
-                    // this is a hash of the path: reordering moves must change the hash;
-                    // 0x87654321 is meant to be a generator of the field, but I didn't
-                    // know how to find such a generator, so I just checked that first
-                    // million powers of this element are unique
-                    const h = gf32.mul(prevb != hashb ? prevb : 0, 0x87654321) ^ hashb;
-
-                    tags.push(h & ~15 | (km & 7) << 1 | (color < 0 ? 1 : 0));
                     path.push(hashb);
                     stats && stats.nodes++;
 
                     if (!move) {
-                        debug && (yield 'yielding the turn to the opponent');
-                        const i = tags.lastIndexOf(tags[depth], -2);
+                        debug && (yield stone.nocoords(color) + ' plays elsewhere');
+                        //const i = tags.lastIndexOf(tags[depth], -2);
 
-                        if (i >= 0) {
+                        let npasses = 1;
+
+                        while (npasses <= depth && path[depth - npasses] == hashb)
+                            npasses++;
+
+                        if (npasses == 3) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(status(board)), i + 1);
+                            s = repd.set(stone.nocoords(status(board)), depth - npasses + 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -312,7 +306,6 @@ module tsumego {
 
                     debug && (yield 'the outcome of this move: ' + stone.toString(s));
                     path.pop();
-                    tags.pop();
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
@@ -395,7 +388,7 @@ module tsumego {
                 // if it's a win, try to find a stronger move, when the opponent has ko treats
                 const move2 = yield* solve(color, move * color > 0 ? -color : color);
 
-                if (move2 * color > 0)
+                if (move2 * color > 0 && stone.hascoords(move2))
                     move = move2;
             }
 

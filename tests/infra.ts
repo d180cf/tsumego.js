@@ -17,6 +17,10 @@ namespace tests {
 
 // en.wikipedia.org/wiki/ANSI_escape_code#Colors
 namespace tests {
+    export const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
+
+    export const removeAnsiEscCodes = (s: string) => s.replace(/\x1b\[(\d+;)*\d+m/gm, '');
+
     Object.assign(String.prototype, {
         red() {
             return isNode ? '\x1b[31;1m' + this + '\x1b[0m' : this;
@@ -133,7 +137,7 @@ namespace tests.ut {
                     let comment;
 
                     if (isNode)
-                        process.title = tname + ' @ ' + started.toLocaleTimeString();
+                        process.title = removeAnsiEscCodes(tname + ' @ ' + started.toLocaleTimeString());
 
                     try {
                         comment = test(expect);

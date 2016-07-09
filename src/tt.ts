@@ -82,24 +82,25 @@ module tsumego {
                 throw Error('Invalid TT entry.');
 
             const s = this.data[hash] || ++this.size && entry.base;
-            let e = entry.get(s, color);
+            const e = entry.get(s, color);
 
-            const hc = stone.hascoords(move);
-
-            const x = stone.x(move);
-            const y = stone.y(move);
+            // The idea here is to not override the winning move.
+            // A typical case is the bent 4 shape: B wins if there are
+            // no ko treats and loses if W has ko treats. If the first
+            // solution is written first, then the second solution shouldn't
+            // override the winning move.
+            const [x, y, hc] = move * color > 0 ?
+                [stone.x(move), stone.y(move), stone.hascoords(move)] :
+                [entry.x(e), entry.y(e), entry.m(e)];
 
             const b = entry.b(e);
             const w = entry.w(e);
 
-            if (move > 0 && km < b)
-                e = entry(x, y, km, w, hc);
-            else if (move < 0 && km > w)
-                e = entry(x, y, b, km, hc);
-            else
-                return; // nothing to change in tt
+            const e2 = move > 0 && km < b ? entry(x, y, km, w, hc) :
+                move < 0 && km > w ? entry(x, y, b, km, hc) :
+                    e;            
 
-            this.data[hash] = entry.set(s, color, e);
+            this.data[hash] = entry.set(s, color, e2);
         }
     }
 }

@@ -43,6 +43,11 @@ module testbench {
         notify(): void;
     }
 
+    // ?rs=123 sets the rand seed
+    const rs = +(/\brs=([+-]?\d+)\b/.exec(location.search) || [])[1] || (Date.now() | 0);
+    console.log('rand seed:', rs);
+    tsumego.rand.seed(rs);
+
     function solve(op: AsyncOperation, board: Board, color: number, km: number, log = false): Promise<stone> {
         return Promise.resolve().then(() => {
             profile.reset();
@@ -109,10 +114,8 @@ module testbench {
             const comment: string = value;
             !done && tick++;
 
-            if (render) {
-                location.hash = '#hash=' + (0x100000000 + board.hash).toString(16).slice(-8) + '&step=' + tick;
+            if (render)
                 renderBoard(comment);
-            }
         };
 
         const stepOver = (ct: CancellationToken) => {
@@ -179,11 +182,10 @@ module testbench {
         });
     }
 
-    function status(b: Board) {
-        return b.get(stone.x(aim), stone.y(aim)) < 0 ? -1 : +1;
-    }
+    const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
+    const status = (b: Board) => sign(b.get(aim) || -tblock);
 
-    var aim = 0, lspath = '', selectedCells = new stone.SmallSet, solvingFor;
+    var aim = 0, lspath = '', selectedCells = new stone.SmallSet, solvingFor, tblock: number;
 
     window.addEventListener('load', () => {
         Promise.resolve().then(() => {
@@ -285,6 +287,7 @@ module testbench {
             document.querySelector('#solve-b').addEventListener('click', e => {
                 lspath = null;
                 solvingFor = +1;
+                tblock = board.get(aim);
 
                 if (vm.debugSolver)
                     dbgsolve(board, solvingFor, vm.km);
@@ -295,6 +298,7 @@ module testbench {
             document.querySelector('#solve-w').addEventListener('click', e => {
                 lspath = null;
                 solvingFor = -1;
+                tblock = board.get(aim);
 
                 if (vm.debugSolver)
                     dbgsolve(board, solvingFor, vm.km);
