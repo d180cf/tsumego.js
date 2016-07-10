@@ -72,6 +72,8 @@ task('test', { async: true }, filter => {
     exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         return babel();
     }).then(() => {
+        return exec('npm i');
+    }).then(() => {
         return exec('node tests ' + (filter || ''), { printStdout: true });
     }).then(() => {
         process.chdir('..');
