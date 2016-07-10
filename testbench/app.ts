@@ -44,7 +44,7 @@ module testbench {
     }
 
     // ?rs=123 sets the rand seed
-    const rs = +(/\brs=([+-]?\d+)\b/.exec(location.search) || [])[1] || (Date.now() | 0);
+    const rs = +qargs.rs || (Date.now() | 0);
     console.log('rand seed:', rs);
     tsumego.rand.seed(rs);
 
@@ -188,7 +188,7 @@ module testbench {
     var aim = 0, lspath = '', selectedCells = new stone.SmallSet, solvingFor, tblock: number;
 
     window.addEventListener('load', () => {
-        vm.kmVisible = /\bkm=1\b/.test(location.search);
+        vm.kmVisible = !!qargs.km;
 
         Promise.resolve().then(() => {
             const directory = new Directory(<HTMLElement>document.querySelector('.directory'));

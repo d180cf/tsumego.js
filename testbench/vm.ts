@@ -1,3 +1,5 @@
+/// <reference path="qargs.ts" />
+
 module testbench {
     function hookToolToKey(tool: string, key: string) {
         document.addEventListener('keydown', event => {
@@ -33,7 +35,7 @@ module testbench {
 
         /** Tells to invoke the solver in the step-by-step mode. */
         get debugSolver(): boolean {
-            return /\bdebug=1\b/.test(location.search);
+            return !!qargs.debug;
         },
 
         /** ko master: +1, -1 or 0 */
