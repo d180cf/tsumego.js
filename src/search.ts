@@ -247,7 +247,7 @@ module tsumego {
                     stats && stats.nodes++;
 
                     if (!move) {
-                        debug && (yield stone.nocoords(color) + ' plays elsewhere');
+                        debug && (yield stone.label.string(color) + ' plays elsewhere');
                         //const i = tags.lastIndexOf(tags[depth], -2);
 
                         let npasses = 1;

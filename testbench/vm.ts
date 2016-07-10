@@ -49,11 +49,23 @@ module testbench {
 
         /** e.g. "B3 bc" */
         set coords(text: string) {
-            $('#coords')[0].childNodes[1].textContent = text;
+            $('#coords').text(text);
         },
 
         set note(text: string) {
-            $('#comment')[0].childNodes[1].textContent = text;
+            $('#comment').text(text);
+        },
+
+        get sgf(): string {
+            return $('#sgf').text();
+        },
+
+        set sgf(text: string) {
+            $('#sgf').text(text);
+        },
+
+        set svg(text: string) {
+            $('#svg').text(text);
         }
     };
 }

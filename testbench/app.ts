@@ -56,7 +56,7 @@ module testbench {
                 root: board,
                 color: color,
                 km: km,
-                time: 1000,
+                time: 250,
                 tt: tt,
                 expand: tsumego.mgen.fixed(board, aim),
                 status: status
@@ -333,28 +333,12 @@ module testbench {
                 renderBoard();
             });
 
-            document.querySelector('#download').addEventListener('click', e => {
-                const a = document.createElement('a');
-                const blob = new Blob([getProblemSGF()], { type: 'application/x-go-sgf' });
-                a.href = URL.createObjectURL(blob);
-                a['download'] = /[^\/]+$/.exec(lspath)[0] + '.sgf';
-                a.click();
-            });
+            const input = <HTMLTextAreaElement>document.querySelector('#sgf');
 
-            document.querySelector('#getsvg').addEventListener('click', e => {
-                const div = <HTMLDivElement>document.querySelector('.tsumego');
-                const a = document.createElement('a');
-                const blob = new Blob([div.innerHTML], { type: 'image/svg+xml' });
-                a.href = URL.createObjectURL(blob);
-                a['download'] = /[^\/]+$/.exec(lspath)[0] + '.svg';
-                a.click();
-            });
-
-            const sgfinput = <HTMLTextAreaElement>document.querySelector('#sgf');
-
-            sgfinput.addEventListener('input', e => {
+            input.addEventListener('focusout', e => {
                 try {
-                    updateSGF(sgfinput.value);
+                    console.log('focusout');
+                    updateSGF(vm.sgf);
                 } catch (err) {
                     // partial input is not valid SGF
                     if (err instanceof SyntaxError)
@@ -418,7 +402,7 @@ module testbench {
     }
 
     document.addEventListener('keyup', event => {
-        if (event.keyCode == 46) { // del
+        if (event.keyCode == 46 && selectedCells.stones.length > 0) { // del
             for (const s of selectedCells)
                 removeStone(stone.x(s), stone.y(s));
 
@@ -469,7 +453,11 @@ module testbench {
             const [x, y] = ui.getStoneCoords(event);
             const s = stone(x, y, 0);
 
-            vm.coords = `${stone.toString(s)} - ${stone.cc.toString(s, board.size)}`;
+            vm.coords = `${stone.cc.toString(s, board.size)} [${stone.toString(s)}]`;
+        });
+
+        ui.addEventListener('mouseout', () => {
+            vm.coords = '';
         });
 
         ui.addEventListener('click', event => {
@@ -512,11 +500,10 @@ module testbench {
         wrapper.innerHTML = '';
         wrapper.appendChild(ui);
 
-        const editor = document.querySelector('.tsumego-sgf') as HTMLElement;
         const sgf = getProblemSGF();
 
-        editor.textContent = sgf;
-
+        vm.sgf = sgf;
+        vm.svg = wrapper.innerHTML;
         setComment(comment);
 
         if (lspath)
@@ -545,12 +532,11 @@ module testbench {
 
         setTimeout(() => {
             const started = Date.now();
+            const comment = () => ((Date.now() - started) / 1000 | 0) + 's; cached ' + (tt.size / 1000 | 0) + 'K positions'
 
             const op = {
                 notify() {
-                    const duration = Date.now() - started;
-                    const comment = 'Solving... elapsed ' + (duration / 1000).toFixed(1) + 's; cached ' + tt.size + ' positions'
-                    setComment(comment);
+                    setComment('Solving... elapsed ' + comment());
                 }
             };
 
@@ -562,8 +548,7 @@ module testbench {
                 } else {
                     board.play(move);
                     console.log(board + '');
-                    const comment = stone.toString(move) + ' in ' + (duration / 1000).toFixed(1) + 's; cached ' + tt.size + ' positions';
-                    renderBoard(comment);
+                    renderBoard(stone.toString(move) + ' in ' + comment());
                 }
             }).catch(err => {
                 setComment(err);

@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Tsumego.js</title>
-    <link type="text/css" href="styles.css" rel="stylesheet" />
     <link type="text/css" href="editor.css" rel="stylesheet" />
     <script src="../regenerator-runtime.js"></script>
 
@@ -10,6 +9,7 @@
     <script src="jquery-3.0.0.js"></script>
     <script src="semantic-ui/semantic.js"></script>
 
+    <link type="text/css" href="styles.css" rel="stylesheet" />
     <script src="app.js"></script>
 
     <script>
@@ -23,11 +23,13 @@
     </script>
 </head>
 <body>
+    <!--
     <div id="tutorial-hint">Consider reading this short <a href="../tutorial">tutorial</a>.</div>
     <div id="semantic-ui-ref">This site uses <a href="http://semantic-ui.com/">Semantic UI</a></div>
+        -->
 
-    <div class="ui grid" style="height:100vh">
-        <div class="ui four wide column" style="height:100%">
+    <div id="grid" class="ui grid">
+        <div class="ui column" style="height:calc(100% - 2em);width:12em">
             <div class="ui inverted segment" style="height:100%">
                 <div class="ui inverted accordion directory">
                     <div class="title active">Problems</div>
@@ -37,10 +39,11 @@
                 </div>
             </div>
         </div>
-        <div class="workspace ui twelve wide column">
+        <div class="workspace ui column" style="width:calc(100% - 15.5em);padding:0 2pt">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
+                <a class="item" data-tab="svg">SVG</a>
             </div>
 
             <div class="ui active tab" data-tab="board">
@@ -48,33 +51,42 @@
             </div>
 
             <div class="ui tab" data-tab="sgf">
-                <textarea class="tsumego-sgf" id="sgf"></textarea>
+                <pre contenteditable="true" id="sgf"></pre>
             </div>
 
-            <div class="ui large icon buttons">
-                <button class="ui icon button" id="solve-b"><i class="circle icon" title="Solve for black"></i></button>
-                <button class="ui icon button" id="solve-w"><i class="thin circle icon" title="Solve for white"></i></button>
+            <div class="ui tab" data-tab="svg">
+                <pre contenteditable="true" id="svg"></pre>
+            </div>
+        </div>
+        <div class="ui column" style="background:rgb(224, 225, 226);width:3.5em">
+            <div class="ui big icon vertical buttons">
+                <button class="ui icon button" id="solve-b"><i class="circle icon" title="Best move for black"></i></button>
+                <button class="ui icon button" id="solve-w"><i class="thin circle icon" title="Best move for white"></i></button>
                 <button class="ui icon button" id="undo" title="Undo the last move"><i class="right undo icon" title="Undo"></i></button>        <button class="ui icon button" id="flipc" title="Inverts stone colors"><i class="right adjust icon" title="Invert"></i></button>
                 <button class="ui icon button" id="delete" title="Delete this tsumego"><i class="right delete icon" title="Delete this tsumego"></i></button>
                 <button class="ui icon button" id="rename" title="Rename this tsumego"><i class="right arrow icon" title="Rename"></i></button>
-                <button class="ui icon button" id="download" title="Download this tsumego as SGF"><i class="right download icon"></i></button>
-                <button class="ui icon button" id="getsvg" title="Download this SVG picture"><i class="right download icon"></i></button>
             </div>
 
-            <div id="tool" class="ui large icon buttons toggle">
+            <div class="ui divider"></div>
+
+            <div id="tool" class="ui big icon vertical buttons toggle">
                 <button data-value="AB" class="ui icon button" title="add a black stone"><i class="ui circle icon"></i></button>
                 <button data-value="AW" class="ui icon button" title="add a white stone"><i class="ui thin circle icon"></i></button>
                 <button data-value="MA" class="ui icon button" title="select target"><i class="ui delete icon"></i></button>
             </div>
 
-            <div id="km" class="ui large buttons toggle">
+            <div class="ui divider"></div>
+
+            <div id="km" class="ui big vertical buttons toggle">
                 <button data-value="-1" class="ui button" title="white is the ko master">&#x25cb;</button>
                 <button data-value="0" class="ui button" title="neither side has ko treats">&#x25d0;</button>
                 <button data-value="+1" class="ui button" title="black is the ko master">&#x25cf;</button>
             </div>
+        </div>
 
-            <div id="coords" class="ui large blue label"><i class="compass icon"></i>xx - XX</div>
-            <div id="comment" class="ui large brown label"><i class="sticky note icon"></i> </div>
+        <div class="row" id="footer">
+            <div class="ui column" id="comment"></div>
+            <div class="ui column" id="coords"></div>
         </div>
     </div>
 </body>

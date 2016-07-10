@@ -3,22 +3,51 @@ html, body {
     padding: 0;
 }
 
+#grid {
+    margin: 0;
+    height: 100vh;
+}
+
+    #grid > * {
+        padding: 0;
+    }
+
+#footer {
+    height: 2em;
+    background: #59166f;
+    color: white;
+    vertical-align: middle;
+    line-height: 2em;
+}
+
+#comment {
+    width: calc(100% - 10em);
+}
+
+#coords {
+    width: 10em;
+}
+
 .workspace {
     padding-left: 10pt;
 }
 
 .tsumego {
     cursor: pointer;
-    width: 200pt;
+    width: 100%;
 }
 
 .tsumego, .tsumego-preview {
     display: inline-block;
 }
 
-.tsumego-sgf {
-    width: 200pt;
+.workspace pre {
     height: 200pt;
+    width: 100%;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    overflow-x: hidden;
+    word-wrap: normal;
     font-family: "Lucida Console";
     display: inline-block;
     border: none;
