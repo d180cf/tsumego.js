@@ -139,12 +139,11 @@ task('site', ['tb'], () => {
     jake.rmRf('bin/site');
     jake.mkdirP('bin');
     jake.cpR('site', 'bin');
-    jake.cpR('problems', 'bin/site/problems');
-    jake.cpR('libs/regenerator-runtime.js', 'bin/site/regenerator-runtime.js');
+    jake.cpR('libs', 'bin/site/libs');
     jake.mkdirP('bin/site/testbench');
-    jake.cpR('testbench/app.js', 'bin/site/testbench/app.js');
-    jake.cpR('testbench/index.html', 'bin/site/testbench/index.html');
-    jake.cpR('testbench/styles.css', 'bin/site/testbench/styles.css');
+    jake.cpR('testbench/app.js', 'bin/site/testbench');
+    jake.cpR('testbench/index.html', 'bin/site/testbench');
+    jake.cpR('testbench/styles', 'bin/site/testbench/styles');
 });
 
 desc('Builds everything and runs the tests.');
