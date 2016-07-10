@@ -137,7 +137,7 @@ namespace tests.ut {
         try {
             return require('md5');
         } catch (err) {
-            console.log('couldnt load md5');
+            console.log('couldnt load md5: ' + err);
             return text => 'xxxxxx';
         }
     })();
