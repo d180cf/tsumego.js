@@ -133,14 +133,7 @@ namespace tests.ut {
     if (filter)
         console.warn('tests filtered by: ' + JSON.stringify(filter));
 
-    const md5: (text: string) => string = (() => {
-        try {
-            return require('md5');
-        } catch (err) {
-            console.log('couldnt load md5: ' + err);
-            return text => 'xxxxxx';
-        }
-    })();
+    const md5: (text: string) => string = require('md5');
 
     export function group(init: ($: GroupContext) => void, gname = fname(init)) {
         const _indent = indent;
