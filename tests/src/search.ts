@@ -146,43 +146,86 @@ module tests {
             if (sgf.vars.length < 1)
                 throw 'No variations set';
 
-            // moves marked as possible solutions in the problem
-            const moves: { [move: string]: boolean } = {};
-
-            for (const variation of sgf.vars) {
-                const step = variation.steps[0];
-
-                // e.g. B[ab] or W[ef]
-                const move = step['B'] ? 'B[' + step['B'][0] + ']' :
-                    step['W'] ? 'W[' + step['W'][0] + ']' :
-                        null;
-
-                moves[move] = true;
-            }
-
-            const color = stone.fromString(setup['PL'][0]); // who plays first
+            const color = stone.label.color(setup['PL'][0]); // who plays first
             const target = stone.fromString(setup['MA'][0]); // what to capture/save
             const board = new Board(sgf);
             const tblock = board.get(target);
             const tt = new TT; // shared by all variations
 
             $.test($ => {
-                const b = board.fork();
+                // moves marked as possible solutions in the problem
+                interface MTree { [move: string]: MTree }
+                const tree: MTree = {};
 
-                const result = solve({
-                    root: b,
-                    color: color,
-                    tt: tt,
-                    log: log,
-                    expand: mgen.fixed(b, target),
-                    status: (b: Board) => sign(b.get(target) || -tblock),
-                    alive: (b: Board) => tsumego.benson.alive(b, target)
-                });
+                (function read(tree: MTree, root: SGF.Node) {
+                    for (const node of root.vars) {
+                        let leaf = tree;
 
-                const move = stone.toString(result);
+                        for (const step of node.steps) {
+                            // e.g. B[ab] or W[ef]
+                            const move = step['B'] ? 'B[' + step['B'][0] + ']' :
+                                step['W'] ? 'W[' + step['W'][0] + ']' :
+                                    null;
 
-                if (!moves[move])
-                    throw Error('Wrong move: ' + move);
+                            if (leaf[move])
+                                throw Error('Conflicting move: ' + move);
+
+                            leaf = leaf[move] = {};
+                        }
+
+                        read(leaf, node);
+                    }
+                })(tree, sgf); 
+
+                //console.log('mtree:');
+                //console.tree(tree);
+
+                const b = board.fork(); // not necessary, but doesn't harm either
+                const seq: string[] = []; // e.g. [W[ef], B[ab], W[cc]]
+
+                (function playout(root) {
+                    const moves = Object.keys(root); // e.g. [W[ef], W[cc]]
+
+                    if (moves.length < 1)
+                        return;
+
+                    // there is an assumption here that all the moves at one level
+                    // are either B[..] or W[..]
+                    if (stone.fromString(moves[0]) * color < 0) {                        
+                        for (const move of moves) {
+                            if (!b.play(stone.fromString(move)))
+                                throw Error('Illegal move: ;' + seq.join(';') + ';' + move);
+
+                            seq.push(move);
+                            playout(root[move]);
+                            b.undo();
+                            seq.pop();
+                        }
+                    } else {
+                        const r = solve({
+                            root: b,
+                            color: color,
+                            tt: tt,
+                            log: log,
+                            expand: mgen.fixed(b, target),
+                            status: (b: Board) => sign(b.get(target) || -tblock),
+                            alive: (b: Board) => tsumego.benson.alive(b, target)
+                        });
+
+                        const move = stone.toString(r);
+
+                        if (!root[move])
+                            throw Error('Wrong move: ;' + seq.join(';') + ';' + move.white() + '. Expected: ' + moves);
+
+                        if (!b.play(r))
+                            throw Error('Illegal move: ;' + seq.join(';') + ';' + move);
+
+                        seq.push(move);
+                        playout(root[move]);
+                        b.undo();
+                        seq.pop();
+                    }
+                })(tree);
             }, /\/problems\/(.+)\.sgf$/.exec(path)[1]);
         } catch (message) {
             console.log(path, message);

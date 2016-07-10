@@ -1,5 +1,6 @@
 /// <reference path="../src/search.ts" />
 
+/// <reference path="console.tree.ts" />
 /// <reference path="infra.ts" />
 /// <reference path="stats.ts" />
 /// <reference path="es6aiter.ts" />

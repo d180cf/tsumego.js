@@ -2,4 +2,6 @@
   AB[ea][cb][fb][fc][ad][dd][ed][fd][be][ce][bf][bg][ag][de][gb][hb][ha]
   AW[ca][bb][eb][ac][cc][ec][cd]
   MA[bb]
-  (;B[db]))
+  (;B[db]
+    (;W[dc];B[bc];W[da];B[ab])
+    (;W[bd];B[ae])))

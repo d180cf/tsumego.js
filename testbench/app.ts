@@ -244,12 +244,10 @@ module testbench {
                             if (!root)
                                 throw SyntaxError('Invalid SGF from ' + path);
 
-                            for (let nvar = 0; nvar <= root.vars.length; nvar++) {
-                                const name = path.replace('.sgf', '') + (nvar ? ':' + nvar : '');
+                            const name = path.replace('.sgf', '');
 
-                                if (!lsdata[name])
-                                    directory.add(name);
-                            }
+                            if (!lsdata[name])
+                                directory.add(name);
                         }).catch(err => {
                             console.log(err.stack);
                         });
@@ -469,9 +467,7 @@ module testbench {
             const [x, y] = ui.getStoneCoords(event);
             const s = stone(x, y, 0);
 
-            document.title = document.title.replace(
-                /^(.+?)( - [a-z][a-z] - [A-Z]\d+)?$/,
-                `$1 - ${stone.toString(s)} - ${stone.cc.toString(s, board.size)}`);
+            vm.coords = `${stone.toString(s)} - ${stone.cc.toString(s, board.size)}`;
         });
 
         ui.addEventListener('click', event => {
@@ -481,25 +477,24 @@ module testbench {
             const [x, y] = ui.getStoneCoords(event);
             const c = board.get(x, y);
 
-            if (!lspath) {
-                const s = stone(x, y, -solvingFor);
-                const r = board.play(s);
-                if (!r) console.log(stone.toString(s) + ' cannot be played on this board:\n' + board);
-            } else switch (vm.tool) {
+            switch (vm.tool) {
                 case 'MA':
-                    // mark the target                    
-                    aim = stone(x, y, 0);
+                    // mark the target
+                    if (!solvingFor)
+                        aim = stone(x, y, 0);
                     break;
 
                 case 'AB':
                     // add a black stone
-                    if (c) removeStone(x, y);
+                    if (c && !solvingFor)
+                        removeStone(x, y);
                     board.play(stone(x, y, +1));
                     break;
 
                 case 'AW':
                     // add a white stone
-                    if (c) removeStone(x, y);
+                    if (c && !solvingFor)
+                        removeStone(x, y);
                     board.play(stone(x, y, -1));
                     break;
 
@@ -508,7 +503,7 @@ module testbench {
                     selectedCells = new stone.SmallSet;
             }
 
-            renderBoard();
+            renderBoard(stone.toString(stone(x, y, board.get(x, y))));
         });
 
         const wrapper = document.querySelector('.tsumego') as HTMLElement;
@@ -533,7 +528,7 @@ module testbench {
     }
 
     function setComment(comment: string) {
-        document.querySelector('#comment').textContent = comment;
+        vm.note = comment;
     }
 
     function parse(si: string, size: number): stone {

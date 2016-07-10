@@ -1,4 +1,6 @@
 ﻿declare const process;
+declare const global;
+declare const require: Function;
 
 interface Error {
     stack: string;
@@ -7,8 +9,15 @@ interface Error {
 
 interface String {
     red(): string;
+    green(): string;
+    yellow(): string;
+    blue(): string;
+    magenta(): string;
     cyan(): string;
     white(): string;
+
+    /** Removes ANSI escape codes. */
+    clean(): string;
 }
 
 namespace tests {
@@ -19,11 +28,25 @@ namespace tests {
 namespace tests {
     export const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
 
-    export const removeAnsiEscCodes = (s: string) => s.replace(/\x1b\[(\d+;)*\d+m/gm, '');
-
     Object.assign(String.prototype, {
         red() {
             return isNode ? '\x1b[31;1m' + this + '\x1b[0m' : this;
+        },
+
+        green() {
+            return isNode ? '\x1b[32;1m' + this + '\x1b[0m' : this;
+        },
+
+        yellow() {
+            return isNode ? '\x1b[33;1m' + this + '\x1b[0m' : this;
+        },
+
+        blue() {
+            return isNode ? '\x1b[34;1m' + this + '\x1b[0m' : this;
+        },
+
+        magenta() {
+            return isNode ? '\x1b[35;1m' + this + '\x1b[0m' : this;
         },
 
         cyan() {
@@ -32,6 +55,10 @@ namespace tests {
 
         white() {
             return isNode ? '\x1b[37;1m' + this + '\x1b[0m' : this;
+        },
+
+        clean() {
+            return this.replace(/\x1b\[(\d+;)*\d+m/gm, '');
         },
     });
 
@@ -49,13 +76,10 @@ namespace tests {
         process.argv.slice(2) :
         location.search.slice(1).split('&');
 
-    console.log(args);
-
     for (const a of args) {
         if (!a) continue;
 
         const i = a.indexOf('=');
-        console.log(a);
 
         if (i < 0)
             vals.push(a);
@@ -75,8 +99,6 @@ namespace tests {
 }
 
 namespace tests {
-    declare const require;
-
     const fs = require('fs');
 
     const path = argv.log || 'logs.json';
@@ -100,7 +122,6 @@ namespace tests.ut {
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
-    let testid = 0;
     let indent = '';
     export let failed = false;
 
@@ -112,6 +133,8 @@ namespace tests.ut {
     if (filter)
         console.warn('tests filtered by: ' + JSON.stringify(filter));
 
+    const md5: (text: string) => string = require('md5');
+
     export function group(init: ($: GroupContext) => void, gname = fname(init)) {
         const _indent = indent;
         console.log(indent + gname.cyan());
@@ -119,7 +142,7 @@ namespace tests.ut {
 
         init({
             test: (test, tname = fname(test)) => {
-                tname = (('   `' + ++testid).slice(-4) + '` ').white() + tname;
+                tname = md5(tname).slice(0, 6) + ' ' + tname;
 
                 if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
                     return;
@@ -137,7 +160,7 @@ namespace tests.ut {
                     let comment;
 
                     if (isNode)
-                        process.title = removeAnsiEscCodes(tname + ' @ ' + started.toLocaleTimeString());
+                        process.title = tname + ' @ ' + started.toLocaleTimeString();
 
                     try {
                         comment = test(expect);
@@ -145,11 +168,17 @@ namespace tests.ut {
                         console.log = _console_log;
                     }
 
-                    const duration = +new Date - +started;
-                    console.log(indent + tname, (duration / 1000).toFixed(1).white() + 's', comment || '');
+                    const duration = (Date.now() - +started) / 1000;
+
+                    const note = duration < 1 ? '' :
+                        duration < 3 ? duration.toFixed(1).white() + 's' :
+                            duration < 10 ? duration.toFixed(1).yellow() + 's' :
+                                duration.toFixed(1).magenta() + 's';
+
+                    console.log(indent + tname, note, comment || '');
                 } catch (err) {
                     failed = true;
-                    console.log(indent + tname, 'failed'.red());
+                    console.log(indent + tname.red());
 
                     for (const args of logs)
                         console.log.apply(console, args.map(JSON.parse));
@@ -324,9 +353,6 @@ namespace tests.ut {
     }
 }
 
-declare const require: Function;
-declare const global;
-
 try {
     require('source-map-support').install();
 
@@ -349,4 +375,3 @@ const _dt0 = Date.now();
 
 tsumego.rand.seed(_dt0 | 0);
 console.log('rand seed:', _dt0 | 0);
-

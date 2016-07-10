@@ -33,11 +33,15 @@ module testbench {
             return $(this.container).find('.content:last')[0];
         }
 
-        find(path: string): HTMLElement {
-            for (const e of this.container.querySelectorAll('a.item')) {
+        find(path: string | ((path: string) => boolean), list = this.container): HTMLElement {
+            for (const e of list.querySelectorAll('a.item')) {
                 const a = <HTMLAnchorElement>e;
 
-                if (a.hash == '#' + path)
+                const matches = typeof path === 'string' ?
+                    a.hash == '#' + path :
+                    path(a.hash.slice(1));
+
+                if (matches)
                     return a;
             }
         }
@@ -53,8 +57,15 @@ module testbench {
             const name = folder ? path.slice(folder.length + 1) : path;
             const content = this.getFolder(folder);
             const list = <HTMLElement>content.querySelector('.ui.list');
+            const next = this.find(s => s > path, list);
 
-            list.innerHTML += `<a class="item" href="#${path}">${name}</a>`;
+            const a = document.createElement('a');
+
+            a.setAttribute('class', 'item');
+            a.setAttribute('href', '#' + path);
+            a.textContent = name;
+
+            list.insertBefore(a, next);
         }
 
         /**
@@ -76,10 +87,14 @@ module testbench {
 
                 if (a.hash == '#' + path) {
                     a.classList.add('active');
+
                     const content = a.parentElement.parentElement;
                     content.classList.add('active');
+
                     const title = content.previousElementSibling;
                     title.classList.add('active');
+
+                    a.scrollIntoView();
                 } else {
                     a.classList.remove('active');
                 }

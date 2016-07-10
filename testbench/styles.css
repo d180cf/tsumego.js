@@ -25,12 +25,6 @@ html, body {
     vertical-align: top;
 }
 
-.tsumego-comment {
-    display: inline-block;
-    margin: 5pt;
-    padding: 5pt;
-}
-
 .tsumego-options {
     display: inline-block;
     border: 1px solid black;
@@ -53,4 +47,10 @@ html, body {
     position: fixed;
     right: 0;
     bottom: 0;
+}
+
+.directory .list {
+    max-height: 20em;
+    overflow-y: auto;
+    overflow-x: hidden;
 }

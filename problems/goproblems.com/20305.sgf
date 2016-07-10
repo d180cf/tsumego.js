@@ -2,4 +2,13 @@
   AB[bd][cd][dd][ed][fd][be][fe][ge][bf][gf][ag][bg][dg][gg][hg][ah][hh][ih][ai][ii]
   AW[ce][de][ee][cf][ef][ff][cg][fg][ch][gh][gi]
   MA[ef]
-  (;B[ei]))
+  (;B[ei]
+    (;W[di];B[dh]
+      (;W[ci];B[fh]
+        (;W[eg];B[hi])
+        (;W[eh];B[eg];W[df];B[eh];W[fi];B[eh]))
+      (;W[bi];B[bh];W[ci];B[fh];W[eh];B[eg]))
+    (;W[eh];B[ci])
+    (;W[fh];B[ci])
+    (;W[ci];B[fh])
+    (;W[dh];B[fh];W[eh];B[hi];W[fi];B[fh])))

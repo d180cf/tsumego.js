@@ -114,6 +114,22 @@ module tsumego {
         }
     }
 
+    export module stone.label {
+        /** W -> -1, B -> +1 */
+        export function color(label: string) {
+            if (label == 'B') return +1;
+            if (label == 'W') return -1;
+
+            return 0;
+        }
+
+        /** -1 -> W, +1 -> B */
+        export function string(color: number) {
+            if (color > 0) return 'B';
+            if (color < 0) return 'W';
+        }
+    }
+
     export module stone {
         const n2s = (n: number) => String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
         const s2n = (s: string) => s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
@@ -128,8 +144,8 @@ module tsumego {
         }
 
         export function fromString(s: string) {
-            if (s == 'B') return +1;
-            if (s == 'W') return -1;
+            if (s == 'B' || s == 'B[]') return stone.nocoords(+1);
+            if (s == 'W' || s == 'W[]') return stone.nocoords(-1);
 
             if (!/^[BW]\[[a-z]{2}\]|[a-z]{2}$/.test(s))
                 throw SyntaxError('Invalid move: ' + s);

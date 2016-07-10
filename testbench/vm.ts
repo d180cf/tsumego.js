@@ -40,6 +40,15 @@ module testbench {
         get km(): number {
             const b = document.querySelector('#km > button.active');
             return b && +b.getAttribute('data-value');
+        },
+
+        /** e.g. "B3 bc" */
+        set coords(text: string) {
+            $('#coords')[0].childNodes[1].textContent = text;
+        },
+
+        set note(text: string) {
+            $('#comment')[0].childNodes[1].textContent = text;
         }
     };
 }

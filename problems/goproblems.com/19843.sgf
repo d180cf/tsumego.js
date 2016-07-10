@@ -2,4 +2,7 @@
   AB[ae][be][ce][cf][cg][dg][eg][fg][fh][gh][hh][hi]
   AW[bf][bg][ah][ch][dh][eh]
   MA[ch]
-  (;B[bi]))
+  (;B[bi]
+    (;W[ci];B[bh];W[ai];B[af];W[ei];B[bh];W[bi];B[ag])
+    (;W[bh];B[af];W[ei];B[ci])
+    (;W[af];B[bh])))
