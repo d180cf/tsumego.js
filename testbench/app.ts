@@ -188,6 +188,8 @@ module testbench {
     var aim = 0, lspath = '', selectedCells = new stone.SmallSet, solvingFor, tblock: number;
 
     window.addEventListener('load', () => {
+        vm.kmVisible = /\bkm=1\b/.test(location.search);
+
         Promise.resolve().then(() => {
             const directory = new Directory(<HTMLElement>document.querySelector('.directory'));
 

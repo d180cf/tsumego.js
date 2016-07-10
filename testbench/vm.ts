@@ -42,6 +42,11 @@ module testbench {
             return b && +b.getAttribute('data-value');
         },
 
+        /** Hides/shows the km selector. */
+        set kmVisible(viisble: boolean) {
+            $('#km').css('display', viisble ? '' : 'none');
+        },
+
         /** e.g. "B3 bc" */
         set coords(text: string) {
             $('#coords')[0].childNodes[1].textContent = text;
