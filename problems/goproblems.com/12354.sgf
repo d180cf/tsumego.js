@@ -3,5 +3,7 @@
   AW[ff][if][fg][ig][fh][ei]
   MA[fh]
   (;W[hh]
-    (;B[gf];W[hi];B[hg];W[ih];B[gh];W[gg])
+    (;B[gf]
+      (;W[hg];B[hi];W[ii];B[ih];W[gh];B[ii];W[fi];B[hi];W[ii];B[ih];W[gi])
+      (;W[hi];B[hg];W[ih];B[gh];W[gg]))
     (;B[hi];W[gf];B[gh];W[hg];B[ii];W[ih])))
