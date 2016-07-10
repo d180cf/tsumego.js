@@ -9,7 +9,9 @@
     tree(json): void;
 }
 
-{
+try {
     const treeify = require('treeify');
     console.tree = json => console.log(treeify.asTree(json, true));
+} catch (err) {
+    console.log('couldnt set console.tree');
 }
