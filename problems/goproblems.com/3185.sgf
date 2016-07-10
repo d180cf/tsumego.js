@@ -1,5 +1,5 @@
-(;FF[4]SZ[9]
-  C[B => B+id]
+(;FF[4]SZ[9]PL[B]
   AB[ha][fb][gb][hb][ec][fc][hc][ed][de][ge][he][df][dg][gg][dh][eh][hh][ih][fi][gi][hi][dd][ei][ia]
   AW[gc][fd][gd][hd][fe][ff][if][fg][hg][fh][gh]
-  MA[ff])
+  MA[ff]
+  (;B[id]))

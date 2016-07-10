@@ -28,6 +28,7 @@ module tsumego.SGF {
     })();
 
     export interface Step {
+        // e.g. ;AB[ac][ef] becomes steps[0]["AB"] = ["ac", "ef"]
         [tag: string]: string[];
     }
 

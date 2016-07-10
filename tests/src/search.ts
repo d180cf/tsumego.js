@@ -4,7 +4,8 @@ module tests {
     import stone = tsumego.stone;
     import hex = tsumego.hex;
     import TT = tsumego.TT;
-    import BasicMoveGen = tsumego.mgen.fixed;
+    import SGF = tsumego.SGF;
+    import mgen = tsumego.mgen;
     import rand = tsumego.rand;
 
     ut.group($ => {
@@ -123,78 +124,68 @@ module tests {
         const ls = require('glob').sync;
         const cat = require('fs').readFileSync;
 
-        for (const path of ls('../problems/**/*.sgf')) {
+        for (const path of ls('../problems/**/*.sgf')) try {
             const data = cat(path, 'utf8');
-            const sgf = tsumego.SGF.parse(data);
+            const sgf = SGF.parse(data);
 
-            if (!sgf) {
-                console.log('Invalid SGF: ' + path);
-                continue;
-            }
+            if (!sgf)
+                throw 'Invalid SGF';
 
             const setup = sgf.steps[0];
 
-            if (!setup['MA'])
+            // PL[] is used to disable/skip problems
+            if (setup['PL'] && setup['PL'][0] == '')
                 continue;
 
-            const aim = stone.fromString(setup['MA'][0]);
+            if (!setup['MA'])
+                throw 'MA[..] must tell what to capture';
+
+            if (!setup['PL'])
+                throw 'PL[..] must tell who plays first';
+
+            if (sgf.vars.length < 1)
+                throw 'No variations set';
+
+            // moves marked as possible solutions in the problem
+            const moves: { [move: string]: boolean } = {};
+
+            for (const variation of sgf.vars) {
+                const step = variation.steps[0];
+
+                // e.g. B[ab] or W[ef]
+                const move = step['B'] ? 'B[' + step['B'][0] + ']' :
+                    step['W'] ? 'W[' + step['W'][0] + ']' :
+                        null;
+
+                moves[move] = true;
+            }
+
+            const color = stone.fromString(setup['PL'][0]); // who plays first
+            const target = stone.fromString(setup['MA'][0]); // what to capture/save
             const board = new Board(sgf);
-            const tblock = board.get(aim);
+            const tblock = board.get(target);
             const tt = new TT; // shared by all variations
 
-            for (const variation of [null, ...sgf.vars]) {
-                const solutions = variation ? variation.steps[0]['C'] : setup['C'];
+            $.test($ => {
+                const b = board.fork();
 
-                for (const config of solutions || []) {
-                    const [lhs, rhs] = config.split(' => ');
+                const result = solve({
+                    root: b,
+                    color: color,
+                    tt: tt,
+                    log: log,
+                    expand: mgen.fixed(b, target),
+                    status: (b: Board) => sign(b.get(target) || -tblock),
+                    alive: (b: Board) => tsumego.benson.alive(b, target)
+                });
 
-                    if (!lhs || !rhs)
-                        continue;
+                const move = stone.toString(result);
 
-                    $.test($ => {
-                        const b = board.fork();
-
-                        if (variation) {
-                            for (const tag of ['AB', 'AW']) {
-                                for (const xy of variation.steps[0][tag]) {
-                                    const s = tag[1] + '[' + xy + ']';
-
-                                    if (!b.play(stone.fromString(s)))
-                                        throw Error('Cannot play ' + s);
-                                }
-                            }
-                        }
-
-                        const [c2p] = /(\w)([+-].+)?/.exec(lhs).slice(1);
-                        const [winner, moves] = rhs.split('+');
-
-                        console.log(b + '');
-                        console.log(c2p + ' plays first');
-
-                        const unodes = { total: 0, unique: 0 };
-                        const forked = b.fork();
-                        const result = solve({
-                            root: forked,
-                            color: c2p == 'B' ? +1 : -1,
-                            tt: tt,
-                            log: log,
-                            unodes: unodes,
-                            expand: BasicMoveGen(forked, aim),
-                            status: (b: Board) => sign(b.get(aim) || -tblock),
-                            alive: (b: Board) => tsumego.benson.alive(b, aim)
-                        });
-
-                        console.log(hex(b.hash) + ' => ' + stone.toString(result) + ' (found solution)');
-
-                        $(stone.color(result)).equal(winner == 'B' ? +1 : -1);
-                        const [x, y] = stone.coords(result);
-                        const move = !stone.hascoords(result) ? 0 : stone(x, y, 0);
-                        $(stone.toString(move)).belong(moves ? moves.split(',') : [null]);
-
-                        return unodes.unique + '/' + unodes.total + ' = ' + (100 * unodes.unique / unodes.total | 0) + '%';
-                    }, /\/problems\/(.+)\.sgf$/.exec(path)[1] + ' [' + config + ']');
-                }
-            }
+                if (!moves[move])
+                    throw Error('Wrong move: ' + move);
+            }, /\/problems\/(.+)\.sgf$/.exec(path)[1]);
+        } catch (message) {
+            console.log(path, message);
         }
     });
 }

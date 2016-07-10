@@ -1,4 +1,4 @@
-(;FF[4]SZ[7]MA[ad]
-  C[B => B+bb,bc,cb,cc][W => W+bb,ba,ab,bc,cb,cc]
-  AB[ea][eb][ec][dd][ed][ae][be][ce][de][ee]
-  AW[da][db][dc][ad][bd][cd])
+(;FF[4]SZ[7]MA[ad]PL[W]
+  AB[ea][eb][ec][dd][ed][ae][be][ce][de][ee][ba]
+  AW[da][db][dc][ad][bd][cd]
+  (;W[bb];B[ab];W[cb];B[bb];W[cc]))

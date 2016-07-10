@@ -1,5 +1,5 @@
-(;FF[4]SZ[9]
-  C[W => W+fd]
+(;FF[4]SZ[9]PL[W]
   AB[ba][ca][da][ea][fa][bb][gb][ac][hc][ad][ed][hd][be][ce][he][df][ef][ff][gf][ab][ae][cf][hf][hb][ga]
   AW[cb][db][eb][fb][bc][dc][gc][cd][gd][de][ee][fe]
-  MA[db])
+  MA[db]
+  (;W[fd]))

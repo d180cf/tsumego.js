@@ -128,6 +128,9 @@ module tsumego {
         }
 
         export function fromString(s: string) {
+            if (s == 'B') return +1;
+            if (s == 'W') return -1;
+
             if (!/^[BW]\[[a-z]{2}\]|[a-z]{2}$/.test(s))
                 throw SyntaxError('Invalid move: ' + s);
 

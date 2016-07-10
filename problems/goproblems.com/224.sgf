@@ -1,5 +1,8 @@
-(;FF[4]SZ[9]
-
+(;FF[4]SZ[9]PL[]
   AB[ac][bc][bd][cd][dd][be][de][ee][fe][df][ff][fg][fh][fi]
   AW[ae][bf][bg][dg][eg][ah][bh]
-  MA[bh])
+  MA[bh]
+  (;B[di]
+    (;W[ci];B[bi];W[ch];B[af];W[cf];B[dh]))
+    (;W[ch];B[bi])
+    (;W[bi];B[af]))

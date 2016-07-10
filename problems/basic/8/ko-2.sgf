@@ -1,5 +1,6 @@
-(;FF[4]SZ[7]
-  XC[B => B+da,db][W => W+ba]
+(;FF[4]SZ[7]PL[B]
   AB[aa][ca][fa][bb][cb][fb][fc][ad][bd][cd][dd][ed][fd]
   AW[ea][ab][eb][ac][bc][cc][dc][ec]
-  MA[ac])
+  MA[ac]
+  (;B[da])
+  (;B[db]))

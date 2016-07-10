@@ -47,6 +47,16 @@ namespace testbench {
             this.svg.removeChild(ref);
             this.svg.onupdated(x, y);
         }
+
+        clear() {
+            for (const ref of this.nodes()) {
+                const x = +ref.getAttribute('x');
+                const y = +ref.getAttribute('y');
+
+                this.svg.removeChild(ref);
+                this.svg.onupdated(x, y);
+            }
+        }
     }
 
     export interface GobanElement extends HTMLElement {
