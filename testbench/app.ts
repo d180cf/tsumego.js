@@ -467,30 +467,21 @@ module testbench {
             const [x, y] = ui.getStoneCoords(event);
             const c = board.get(x, y);
 
-            switch (vm.tool) {
-                case 'MA':
-                    // mark the target
-                    if (!solvingFor)
-                        aim = stone(x, y, 0);
-                    break;
+            if (vm.tool == 'MA') {
+                if (!solvingFor)
+                    aim = stone(x, y, 0);
+            } else if (/AB|AW/.test(vm.tool) || solvingFor) {
+                if (c && !solvingFor)
+                    removeStone(x, y);
 
-                case 'AB':
-                    // add a black stone
-                    if (c && !solvingFor)
-                        removeStone(x, y);
-                    board.play(stone(x, y, +1));
-                    break;
+                const color = vm.tool == 'AB' ? + 1 :
+                    vm.tool == 'AW' ? -1 :
+                        -solvingFor;
 
-                case 'AW':
-                    // add a white stone
-                    if (c && !solvingFor)
-                        removeStone(x, y);
-                    board.play(stone(x, y, -1));
-                    break;
-
-                default:
-                    // clicking anywhere clears the selection
-                    selectedCells = new stone.SmallSet;
+                board.play(stone(x, y, color));
+            } else {
+                // clicking anywhere clears the selection
+                selectedCells = new stone.SmallSet;
             }
 
             renderBoard(stone.toString(stone(x, y, board.get(x, y))));
