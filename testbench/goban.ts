@@ -69,7 +69,14 @@ namespace testbench {
         SL: Marks; // selection
 
         onupdated(x: number, y: number): void;
-        getStoneCoords(event: MouseEvent): [number, number];
+    }
+
+    export interface GobanMouseEvent extends MouseEvent {
+        /** 0-based column index, counted from the left side */
+        cellX: number;
+
+        /** 0-based row index, counted from the top side */
+        cellY: number;
     }
 
     export module GobanElement {
@@ -122,23 +129,6 @@ namespace testbench {
                             }
                         }
                     }
-                },
-
-                getStoneCoords(event: MouseEvent) {
-                    // Chrome had a bug which made offsetX/offsetY coords wrong
-                    // this workaround computes the offset using client coords
-                    const r = svg.getBoundingClientRect();
-
-                    const offsetX = event.clientX - r.left;
-                    const offsetY = event.clientY - r.top;
-
-                    const x = offsetX / r.width;
-                    const y = offsetY / r.height;
-
-                    return [
-                        Math.round(x * n - 0.5),
-                        Math.round(y * n - 0.5)
-                    ];
                 }
             });
 
@@ -150,6 +140,32 @@ namespace testbench {
                     if (c < 0) svg.AW.add(x, y);
                 }
             }
+
+            function getStoneCoords(event: MouseEvent) {
+                // Chrome had a bug which made offsetX/offsetY coords wrong
+                // this workaround computes the offset using client coords
+                const r = svg.getBoundingClientRect();
+
+                const offsetX = event.clientX - r.left;
+                const offsetY = event.clientY - r.top;
+
+                const x = offsetX / r.width;
+                const y = offsetY / r.height;
+
+                return [
+                    Math.round(x * n - 0.5),
+                    Math.round(y * n - 0.5)
+                ];
+            }
+
+            function attachCellCoords(event: GobanMouseEvent) {
+                [event.cellX, event.cellY] = getStoneCoords(event);
+            }
+
+            svg.addEventListener('click', attachCellCoords);
+            svg.addEventListener('mousedown', attachCellCoords);
+            svg.addEventListener('mousemove', attachCellCoords);
+            svg.addEventListener('mouseup', attachCellCoords);
 
             return svg;
         }

@@ -14,7 +14,7 @@ module tsumego.mgen {
         // find blocks of the same color adjacent to rzone
         const adjacent: block[] = [];
 
-        for (const rs of rzone.stones) {
+        for (const rs of rzone) {
             for (const ns of stone.neighbors(rs)) {
                 const b = board.get(ns);
 
@@ -42,13 +42,13 @@ module tsumego.mgen {
         // remove the target block from the rzone
         rzone.remove(s => board.get(s) == ts);
 
-        if (rzone.stones.length > maxsize)
-            throw new Error(`The number of possible moves ${rzone.stones.length} is more than ${maxsize}`);
+        if (rzone.size > maxsize)
+            throw new Error(`The number of possible moves ${rzone.size} is more than ${maxsize}`);
 
         return (color: number) => {
             const moves = sa.reset();
 
-            for (const move of rzone.stones) {
+            for (const move of rzone) {
                 const x = stone.x(move);
                 const y = stone.y(move);
 

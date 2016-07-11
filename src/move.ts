@@ -63,7 +63,7 @@ module tsumego {
         }
 
         export class SmallSet {
-            public stones: stone[] = [];
+            private stones: stone[] = [];
 
             constructor(private test = same) {
 
@@ -105,6 +105,10 @@ module tsumego {
 
             empty() {
                 this.stones = [];
+            }
+
+            get size() {
+                return this.stones.length;
             }
 
             *[Symbol.iterator]() {
