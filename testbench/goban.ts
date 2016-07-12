@@ -69,6 +69,12 @@ namespace testbench {
         SL: Marks; // selection
 
         onupdated(x: number, y: number): void;
+
+        addEventListener(type: "click", listener: (ev: GobanMouseEvent) => any, useCapture?: boolean): void;
+        addEventListener(type: "mousedown", listener: (ev: GobanMouseEvent) => any, useCapture?: boolean): void;
+        addEventListener(type: "mousemove", listener: (ev: GobanMouseEvent) => any, useCapture?: boolean): void;
+        addEventListener(type: "mouseup", listener: (ev: GobanMouseEvent) => any, useCapture?: boolean): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, useCapture?: boolean): void;
     }
 
     export interface GobanMouseEvent extends MouseEvent {
@@ -111,7 +117,7 @@ namespace testbench {
                 TR: new Marks(svg, '<path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none"></path>'),
                 MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none"></path>'),
                 SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none"></path>'),
-                SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></path>'),
+                SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>'),
 
                 // invoked after a marker has been added or removed
                 onupdated(x: number, y: number) {

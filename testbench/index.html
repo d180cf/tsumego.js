@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>tsumego.js</title>
-    
+
     <!-- Facebook's polyfill for ES 6 generators. -->
     <script src="../libs/regenerator-runtime.js"></script>
 
@@ -10,7 +10,7 @@
     <script src="../libs/jquery-3.0.0.js"></script>
 
     <!-- Semantic UI -->
-    <link type="text/css" href="../libs/semantic-ui/semantic.css" rel="stylesheet" />    
+    <link type="text/css" href="../libs/semantic-ui/semantic.css" rel="stylesheet" />
     <script src="../libs/semantic-ui/semantic.js"></script>
 
     <!-- Stuff for this app. -->
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="workspace ui column" style="width:calc(100% - 15.5em);padding:0 2pt">
+        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 15.5em);padding:0 2pt">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
@@ -64,29 +64,68 @@
                 <pre contenteditable="true" id="svg"></pre>
             </div>
         </div>
-        <div class="ui column" style="background:rgb(224, 225, 226);width:3.5em">
+        <div class="ui column" style="background:rgb(224, 225, 226);height:calc(100% - 2em);width:3.5em">
             <div class="ui big icon vertical buttons">
-                <button class="ui icon button" id="solve-b"><i class="circle icon" title="Best move for black"></i></button>
-                <button class="ui icon button" id="solve-w"><i class="thin circle icon" title="Best move for white"></i></button>
-                <button class="ui icon button" id="undo" title="Undo the last move"><i class="right undo icon" title="Undo"></i></button>        <button class="ui icon button" id="flipc" title="Inverts stone colors"><i class="right adjust icon" title="Invert"></i></button>
-                <button class="ui icon button" id="delete" title="Delete this tsumego"><i class="right delete icon" title="Delete this tsumego"></i></button>
-                <button class="ui icon button" id="rename" title="Rename this tsumego"><i class="right arrow icon" title="Rename"></i></button>
+                <button class="ui icon button" id="solve-b" title="Find the best move for black">
+                    <i class="play icon"></i>
+                </button>
+
+                <button class="ui icon button" id="solve-w" title="Find the best move for white">
+                    <i class="play video icon"></i>
+                </button>
+
+                <button class="ui icon button" id="undo" title="Undo the last move">
+                    <i class="right undo icon"></i>
+                </button>
+
+                <button class="ui icon button" id="flipc" title="Invert stone colors">
+                    <i class="right adjust icon"></i>
+                </button>
+
+            </div>
+
+            <div class="ui divider"></div>
+
+            <div class="ui big icon vertical buttons">
+                <button class="ui icon button" id="delete" title="Delete this tsumego">
+                    <i class="right delete icon"></i>
+                </button>
+
+                <button class="ui icon button" id="rename" title="Rename this tsumego">
+                    <i class="right arrow icon"></i>
+                </button>
             </div>
 
             <div class="ui divider"></div>
 
             <div id="tool" class="ui big icon vertical buttons toggle">
-                <button data-value="AB" class="ui icon button" title="add a black stone"><i class="ui circle icon"></i></button>
-                <button data-value="AW" class="ui icon button" title="add a white stone"><i class="ui thin circle icon"></i></button>
-                <button data-value="MA" class="ui icon button" title="select target"><i class="ui delete icon"></i></button>
+                <button data-value="AB" class="ui icon button" title="Add a black stone (B+click)">
+                    <i class="ui circle icon"></i>
+                </button>
+
+                <button data-value="AW" class="ui icon button" title="Add a white stone (W+click)">
+                    <i class="ui thin circle icon"></i>
+                </button>
+
+                <button data-value="MA" class="ui icon button" title="Select the target to capture or save (T+click)">
+                    <i class="ui delete icon"></i>
+                </button>
             </div>
 
             <div class="ui divider"></div>
 
             <div id="km" class="ui big vertical buttons toggle">
-                <button data-value="-1" class="ui icon button" title="white is the ko master"><i class="ui thin circle icon"></i></button>
-                <button data-value="0" class="ui icon button" title="neither side has ko treats"><i class="ui adjust icon"></i></button>
-                <button data-value="+1" class="ui icon button" title="black is the ko master"><i class="ui circle icon"></i></button>
+                <button data-value="-1" class="ui icon button" title="W is the ko master">
+                    <i class="ui thin circle icon"></i>
+                </button>
+
+                <button data-value="0" class="ui icon button" title="Neither W nor B has ko treats">
+                    <i class="ui adjust icon"></i>
+                </button>
+
+                <button data-value="+1" class="ui icon button" title="B is the ko master">
+                    <i class="ui circle icon"></i>
+                </button>
             </div>
         </div>
 

@@ -68,6 +68,13 @@ module testbench {
 
         set svg(text: string) {
             $('#svg').text(text);
+        },
+
+        set canUndo(value: boolean) {
+            if (value)
+                $('#undo').removeClass('disabled');
+            else
+                $('#undo').addClass('disabled');
         }
     };
 }

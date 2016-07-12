@@ -434,23 +434,45 @@ module testbench {
     }
 
     document.addEventListener('keyup', event => {
-        if (event.keyCode == 46 && selection) { // del
-            for (const s of board.stones()) {
-                const x = stone.x(s);
-                const y = stone.y(s);
+        if (!selection)
+            return;
 
-                if (isSelected(x, y))
-                    removeStone(x, y);
-            }
+        const enum KeyCode {
+            Left = 37,
+            Top = 38,
+            Right = 39,
+            Bottom = 40,
 
-            selection = null;
-            renderBoard();
+            Delete = 46,
+        }
+
+        switch (event.keyCode) {
+            case KeyCode.Delete:
+                for (const s of board.stones()) {
+                    const x = stone.x(s);
+                    const y = stone.y(s);
+
+                    if (isSelected(x, y))
+                        removeStone(x, y);
+                }
+
+                selection = null;
+                renderBoard();
+                break;
+
+            case KeyCode.Left:
+            case KeyCode.Top:
+            case KeyCode.Right:
+            case KeyCode.Bottom:
+                
         }
     });
 
     function renderBoard(comment = '') {
         const move = board.undo();
         board.play(move);
+
+        vm.canUndo = !!move;
 
         const ui = GobanElement.create(board);
 
@@ -472,7 +494,7 @@ module testbench {
         let dragged = false;
         let dragx = 0, dragy = 0;
 
-        ui.addEventListener('mousedown', (event: GobanMouseEvent) => {
+        ui.addEventListener('mousedown', event => {
             if (!solvingFor && !vm.tool) {
                 const cx = event.cellX;
                 const cy = event.cellY;
@@ -494,7 +516,7 @@ module testbench {
             }
         });
 
-        ui.addEventListener('mousemove', (event: GobanMouseEvent) => {
+        ui.addEventListener('mousemove', event => {
             const cx = event.cellX;
             const cy = event.cellY;
 
@@ -531,7 +553,7 @@ module testbench {
             }
         });
 
-        ui.addEventListener('mouseup', (event: GobanMouseEvent) => {
+        ui.addEventListener('mouseup', event => {
             if (dragging && !dragged) {
                 selection = null;
                 ui.SL.clear();
@@ -545,7 +567,7 @@ module testbench {
         // displays the current coordinates in the lower right corner
         //
 
-        ui.addEventListener('mousemove', (event: GobanMouseEvent) => {
+        ui.addEventListener('mousemove', event => {
             const [x, y] = [event.cellX, event.cellY];
             const s = stone(x, y, 0);
 
@@ -560,7 +582,7 @@ module testbench {
         // the main click handler
         //
 
-        ui.addEventListener('click', (event: GobanMouseEvent) => {
+        ui.addEventListener('click', event => {
             const [x, y] = [event.cellX, event.cellY];
             const c = board.get(x, y);
 

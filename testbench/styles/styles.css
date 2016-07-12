@@ -21,11 +21,11 @@ html, body {
 }
 
 #comment {
-    width: calc(100% - 10em);
+    width: calc(100% - 6em);
 }
 
 #coords {
-    width: 10em;
+    width: 6em;
 }
 
 .workspace {
@@ -34,11 +34,10 @@ html, body {
 
 .tsumego {
     cursor: pointer;
-    width: 100%;
 }
 
-.tsumego, .tsumego-preview {
-    display: inline-block;
+.tsumego svg {
+    max-height: calc(100vh - 8em);
 }
 
 .workspace pre {
@@ -53,18 +52,6 @@ html, body {
     border: none;
     vertical-align: top;
 }
-
-.tsumego-options {
-    display: inline-block;
-    border: 1px solid black;
-    margin: 5pt;
-    padding: 3pt;
-}
-
-    .tsumego-options span {
-        display: block;
-    }
-
 
 #tutorial-hint {
     position: fixed;
