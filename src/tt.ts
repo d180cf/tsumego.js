@@ -61,7 +61,7 @@ module tsumego {
 
             const winner =
                 km >= entry.b(e) ? +1 : // enough ko treats for black
-                    km <= entry.w(s) ? -1 : // enough ko treats for white
+                    km <= entry.w(e) ? -1 : // enough ko treats for white
                         0; // not solved for this number of ko treats
 
             if (!winner) return 0;
