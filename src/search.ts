@@ -178,6 +178,9 @@ module tsumego {
                     return repd.set(ttres, infdepth);
                 }
 
+                if (depth > infdepth / 2)
+                    return repd.set(stone.nocoords(-color), 0);
+
                 if (unodes) {
                     unodes.total++;
 
