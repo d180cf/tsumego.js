@@ -25,14 +25,18 @@ module tsumego.mgen {
 
             const s = stone(x, y, color);
             const r = board.play(s);
-
             if (!r) return false;
 
-            const t = board.get(this.target);
+            try {
+                const t = board.get(this.target);
 
-            const isSelfAtari = t * color > 0 && block.libs(t) < 2;
+                // there is no point to play self atari moves
+                if (t * color > 0 && block.libs(t) < 2)
+                    return false;
 
-            if (!isSelfAtari) {
+                // it's surprising, that with this dumb moves ordering
+                // and with the cached tt results, the 1-st move appears
+                // to be correct in 98% of cases
                 this.sa.insert(s, {
                     r: r,
                     p: sumlibs(board, +color),
@@ -40,9 +44,10 @@ module tsumego.mgen {
                     u: ninatari(board, +color),
                     v: ninatari(board, -color),
                 });
+            } finally {
+                board.undo();
             }
 
-            board.undo();
             return true;
         }
     }
