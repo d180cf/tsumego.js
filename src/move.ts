@@ -27,6 +27,10 @@ module tsumego {
     }
 
     export module stone {
+        export const data = (s: stone, data?: number) => data >= 0 ?
+            s & ~0xFFFF00 | data << 8 : // writing data
+            s >> 8 & 0xFFFF; // reading data
+
         export const nocoords = (color: number) => kColor | color & kWhite;
         export const color = (m: stone) => (m & kColor) && (m & kWhite ? -1 : +1);
         export const setcolor = (m: stone, c: number) => m & ~kColor & ~kWhite | (c && kColor) | c & kWhite;
@@ -119,6 +123,7 @@ module tsumego {
     }
 
     export const infdepth = 255; // only 8 bits available for storing the depth
+    export const inflevel = 255; // only 8 bits available for storing the level
 
     /**
      * If b(1), b(2), ... is the sequence of positions leading
@@ -129,6 +134,18 @@ module tsumego {
     export module repd {
         export const get = move => move >> 8 & 255;
         export const set = (move, repd) => move & ~0xFF00 | repd << 8;
+    }
+
+    /**
+     * A solution applies only if maxlevel <= rlvl.get(solution)
+     * For higher values of maxlevel, a new search is needed.
+     * This applies only to solutions where the defender wins,
+     * because if an attack of level 1 (a ladder) works,
+     * then a higher level attack works too.
+     */
+    export module rlvl {
+        export const get = move => move >> 16 & 255;
+        export const set = (move, level) => move & ~0xFF0000 | level << 16;
     }
 
     export module stone.label {
@@ -158,9 +175,11 @@ module tsumego {
             const s = !hascoords(m) ? '' : n2s(x) + n2s(y);
             const t = label.string(c) || '';
             const _nr = repd.get(m);
+            const _nl = rlvl.get(m);
 
             return t + '[' + s + ']'
-                + (_nr ? ' depth=' + _nr : '');
+                + (_nr ? ' depth=' + _nr : '')
+                + (_nl ? ' level=' + _nl : '');
         }
 
         export function fromString(s: string) {

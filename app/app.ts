@@ -67,6 +67,7 @@ module testbench {
                 tt: tt,
                 target: aim,
                 expand: tsumego.mgen.fixed(board, aim),
+                estimate: estimate,
                 alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
             });
 
@@ -225,85 +226,85 @@ module testbench {
             });
 
             if (!qargs.debug) {
-                document.querySelector('#delete').addEventListener('click', e => {
-                    if (lspath && lspath != 'blank' && confirm('Delete problem ' + lspath + '?')) {
-                        ls.set(lspath, null);
-                        location.hash = '#blank';
-                    }
-                });
+            document.querySelector('#delete').addEventListener('click', e => {
+                if (lspath && lspath != 'blank' && confirm('Delete problem ' + lspath + '?')) {
+                    ls.set(lspath, null);
+                    location.hash = '#blank';
+                }
+            });
 
-                document.querySelector('#rename').addEventListener('click', e => {
-                    if (!lspath) return;
+            document.querySelector('#rename').addEventListener('click', e => {
+                if (!lspath) return;
 
-                    const path2 = prompt('New name for ' + lspath);
+                const path2 = prompt('New name for ' + lspath);
 
-                    if (!path2) return;
+                if (!path2) return;
 
-                    if (ls.data[path2])
-                        alert(path2 + ' already exists');
+                if (ls.data[path2])
+                    alert(path2 + ' already exists');
 
-                    if (lspath != 'blank')
-                        ls.set(lspath, null);
+                if (lspath != 'blank')
+                    ls.set(lspath, null);
 
-                    lspath = path2;
-                    renderBoard(); // it saves the sgf at the new location
-                    location.hash = '#' + lspath;
-                });
+                lspath = path2;
+                renderBoard(); // it saves the sgf at the new location
+                location.hash = '#' + lspath;
+            });
 
-                document.querySelector('#solve-b').addEventListener('click', e => {
-                    lspath = null;
-                    solvingFor = +1;
-                    tblock = board.get(aim);
+            document.querySelector('#solve-b').addEventListener('click', e => {
+                lspath = null;
+                solvingFor = +1;
+                tblock = board.get(aim);
                     solveAndRender(solvingFor, vm.km);
-                });
+            });
 
-                document.querySelector('#solve-w').addEventListener('click', e => {
-                    lspath = null;
-                    solvingFor = -1;
-                    tblock = board.get(aim);
+            document.querySelector('#solve-w').addEventListener('click', e => {
+                lspath = null;
+                solvingFor = -1;
+                tblock = board.get(aim);
                     solveAndRender(solvingFor, vm.km);
-                });
+            });
 
-                document.querySelector('#flipc').addEventListener('click', e => {
-                    const b = new Board(board.size);
+            document.querySelector('#flipc').addEventListener('click', e => {
+                const b = new Board(board.size);
 
-                    for (const s of board.stones()) {
-                        const x = stone.x(s);
-                        const y = stone.y(s);
-                        const c = stone.color(s);
+                for (const s of board.stones()) {
+                    const x = stone.x(s);
+                    const y = stone.y(s);
+                    const c = stone.color(s);
 
-                        b.play(stone(x, y, -c));
-                    }
+                    b.play(stone(x, y, -c));
+                }
 
-                    board = b.fork();
-                    renderBoard();
-                });
+                board = b.fork();
+                renderBoard();
+            });
 
-                document.querySelector('#undo').addEventListener('click', () => {
-                    const move = board.undo();
+            document.querySelector('#undo').addEventListener('click', () => {
+                const move = board.undo();
 
-                    if (move)
-                        console.log('undo ' + stone.toString(move));
-                    else
-                        console.log('nothing to undo');
+                if (move)
+                    console.log('undo ' + stone.toString(move));
+                else
+                    console.log('nothing to undo');
 
-                    console.log(board + '');
-                    renderBoard();
-                });
+                console.log(board + '');
+                renderBoard();
+            });
 
-                const input = <HTMLTextAreaElement>document.querySelector('#sgf');
+            const input = <HTMLTextAreaElement>document.querySelector('#sgf');
 
-                input.addEventListener('focusout', e => {
-                    try {
-                        console.log('focusout');
-                        updateSGF(vm.sgf);
-                    } catch (err) {
-                        // partial input is not valid SGF
-                        if (err instanceof SyntaxError)
-                            return;
-                        throw err;
-                    }
-                });
+            input.addEventListener('focusout', e => {
+                try {
+                    console.log('focusout');
+                    updateSGF(vm.sgf);
+                } catch (err) {
+                    // partial input is not valid SGF
+                    if (err instanceof SyntaxError)
+                        return;
+                    throw err;
+                }
+            });
             }
         }).catch(err => {
             console.error(err.stack);
@@ -462,79 +463,79 @@ module testbench {
         //
 
         if (!qargs.debug) {
-            let selecting = false;
-            let dragging = false;
-            let dragged = false;
-            let dragx = 0, dragy = 0;
+        let selecting = false;
+        let dragging = false;
+        let dragged = false;
+        let dragx = 0, dragy = 0;
 
-            ui.addEventListener('mousedown', event => {
+        ui.addEventListener('mousedown', event => {
                 const cx = event.cellX;
                 const cy = event.cellY;
 
                 if (!solvingFor && !vm.tool && cx >= 0 && cy >= 0) {
-                    if (!isSelected(cx, cy)) {
-                        // start selection
-                        if (selection)
-                            ui.SL.clear();
+                if (!isSelected(cx, cy)) {
+                    // start selection
+                    if (selection)
+                        ui.SL.clear();
 
-                        selecting = true;
-                        selection = { x1: cx, y1: cy, x2: cx, y2: cy, };
-                    } else {
-                        // start drag'n'drop
-                        dragging = true;
-                        dragged = false;
-                        dragx = cx;
-                        dragy = cy;
-                    }
+                    selecting = true;
+                    selection = { x1: cx, y1: cy, x2: cx, y2: cy, };
+                } else {
+                    // start drag'n'drop
+                    dragging = true;
+                    dragged = false;
+                    dragx = cx;
+                    dragy = cy;
                 }
-            });
+            }
+        });
 
-            ui.addEventListener('mousemove', event => {
-                const cx = event.cellX;
-                const cy = event.cellY;
+        ui.addEventListener('mousemove', event => {
+            const cx = event.cellX;
+            const cy = event.cellY;
 
-                if (selecting) {
-                    selection.x2 = cx;
-                    selection.y2 = cy;
+            if (selecting) {
+                selection.x2 = cx;
+                selection.y2 = cy;
+
+                ui.SL.clear();
+
+                for (const [x, y] of listSelectedCoords())
+                    ui.SL.add(x, y);
+            }
+
+            if (dragging) {
+                const dx = cx - dragx;
+                const dy = cy - dragy;
+
+                if (dx || dy) {
+                    selection.x1 += dx;
+                    selection.x2 += dx;
+                    selection.y1 += dy;
+                    selection.y2 += dy;
+
+                    dragx = cx;
+                    dragy = cy;
 
                     ui.SL.clear();
 
                     for (const [x, y] of listSelectedCoords())
                         ui.SL.add(x, y);
+
+                    dragged = true;
                 }
+            }
+        });
 
-                if (dragging) {
-                    const dx = cx - dragx;
-                    const dy = cy - dragy;
+        ui.addEventListener('mouseup', event => {
+            if (dragging && !dragged) {
+                selection = null;
+                ui.SL.clear();
+            }
 
-                    if (dx || dy) {
-                        selection.x1 += dx;
-                        selection.x2 += dx;
-                        selection.y1 += dy;
-                        selection.y2 += dy;
-
-                        dragx = cx;
-                        dragy = cy;
-
-                        ui.SL.clear();
-
-                        for (const [x, y] of listSelectedCoords())
-                            ui.SL.add(x, y);
-
-                        dragged = true;
-                    }
-                }
-            });
-
-            ui.addEventListener('mouseup', event => {
-                if (dragging && !dragged) {
-                    selection = null;
-                    ui.SL.clear();
-                }
-
-                selecting = false;
-                dragging = false;
-            });
+            selecting = false;
+            dragging = false;
+        });
         }
 
         //
@@ -557,29 +558,29 @@ module testbench {
         //
 
         if (!qargs.debug) {
-            ui.addEventListener('click', event => {
-                const [x, y] = [event.cellX, event.cellY];
-                const c = board.get(x, y);
+        ui.addEventListener('click', event => {
+            const [x, y] = [event.cellX, event.cellY];
+            const c = board.get(x, y);
 
-                if (vm.tool == 'MA') {
-                    if (!solvingFor)
-                        aim = stone(x, y, 0);
-                } else if (/AB|AW/.test(vm.tool) || solvingFor) {
-                    if (c && !solvingFor)
-                        removeStone(x, y);
+            if (vm.tool == 'MA') {
+                if (!solvingFor)
+                    aim = stone(x, y, 0);
+            } else if (/AB|AW/.test(vm.tool) || solvingFor) {
+                if (c && !solvingFor)
+                    removeStone(x, y);
 
-                    const color = vm.tool == 'AB' ? + 1 :
-                        vm.tool == 'AW' ? -1 :
-                            -solvingFor;
+                const color = vm.tool == 'AB' ? + 1 :
+                    vm.tool == 'AW' ? -1 :
+                        -solvingFor;
 
-                    board.play(stone(x, y, color));
-                } else {
-                    return;
-                }
+                board.play(stone(x, y, color));
+            } else {
+                return;
+            }
 
-                renderBoard();
-                vm.note = stone.toString(stone(x, y, board.get(x, y)));
-            });
+            renderBoard();
+            vm.note = stone.toString(stone(x, y, board.get(x, y)));
+        });
         }
 
         const wrapper = document.querySelector('.tsumego') as HTMLElement;

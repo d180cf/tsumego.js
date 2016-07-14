@@ -121,6 +121,7 @@ module testbench {
                 'tt.size = ' + tt.size,
                 'color = ' + stone.label.string(debug.color),
                 'km = ' + (debug.km && stone.label.string(debug.km)),
+                'level = ' + debug.level,
                 'depth = ' + debug.depth,
             ].join('; ');
         }

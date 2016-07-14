@@ -11,10 +11,17 @@ module tsumego.mgen {
             return this.sa.reset();
         }
 
-        insert(x: number, y: number, color: number) {
+        insert(x: number, y: number, color: number, maxlevel?: number) {
             const board = this.board;
 
             if (Pattern.isEye(board, x, y, color))
+                return false;
+
+            const t0 = board.get(this.target);
+
+            // maxlevel is the number of libs that the target can have after the attacker plays a move;
+            // hence if the target has more libs than maxlevel, then the attacker must remove one liberty
+            if (maxlevel >= 0 && color * t0 < 0 && maxlevel < block.libs(t0) && !board.isLibertyOf(x, y, t0))
                 return false;
 
             const s = stone(x, y, color);

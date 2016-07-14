@@ -175,7 +175,7 @@ module tests {
 
                         read(leaf, node);
                     }
-                })(tree, sgf);
+                })(tree, sgf); 
 
                 //console.log('mtree:');
                 //console.tree(tree);
@@ -191,7 +191,7 @@ module tests {
 
                     // there is an assumption here that all the moves at one level
                     // are either B[..] or W[..]
-                    if (stone.fromString(moves[0]) * color < 0) {
+                    if (stone.fromString(moves[0]) * color < 0) {                        
                         for (const move of moves) {
                             if (!b.play(stone.fromString(move)))
                                 throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move);
@@ -211,6 +211,7 @@ module tests {
                             expand: mgen.fixed(b, target),
                             target: target,
                             //alive: (b: Board) => tsumego.benson.alive(b, target)
+                            estimate: (b: Board) => tsumego.block.libs(b.get(target)),
                         });
 
                         const t = Date.now();

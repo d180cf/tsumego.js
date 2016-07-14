@@ -32,6 +32,28 @@ module tsumego {
     export function solve(sgf: string): string;
     export function solve(args: solve.Args): stone;
 
+    /**
+     * The idea of the solver is iterative deepening by
+     * the number of liberties of the target block. For
+     * instance, if the target has 3 libs initially, it
+     * first tries to find a solution in which after each
+     * move of the attacker, the target has at most 2 libs.
+     * Then, if this doesn't work, it lets the target have
+     * at most 3 libs and so on. This max number of libs
+     * is also known as the lambda order.
+     *
+     * In the T. Thomsen's paper a search of lambda order N
+     * covers an area that serves as the relevancy zone for
+     * the next search of order N + 1. Here the relevancy
+     * zone is always the same: the entire area inside the fully
+     * enclosed region. The attacker only takes into account
+     * that in some cases it must play on a liberty of the target.
+     *
+     * This is pretty much a simplified version of the lambda search.
+     *
+     * Thomas Thomsen. "Lambda-search in game trees - with application to Go"
+     * www.t-t.dk/publications/lambda_lncs.pdf
+     */
     export function solve(args) {
         const g = solve.start(args);
 
@@ -49,6 +71,7 @@ module tsumego {
             path?: number[];
             moves?: stone[];
             color?: number;
+            level?: number;
             depth?: number;
         }
 
@@ -142,7 +165,12 @@ module tsumego {
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
             const hist: stone[] = []; // the sequence of moves that leads to the current position
 
-            function* solve(color: number, km: number) {
+            // the max level (aka the lambda order) is the max number of libs
+            // that the target can have after the attacker plays a move; if
+            // the target gets to make two extra libs (maxlevel + 2), then
+            // the target escapes because after the next attacker's move
+            // the target will have at least maxlevel + 1 libs
+            function* solve(color: number, km: number, maxlevel?: number) {
                 remaining--;
                 ntcalls++;
 
@@ -158,8 +186,9 @@ module tsumego {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
-                const ttres = tt.get(hashb, color, km);
+                const ttres = tt.get(hashb, color, km, maxlevel);
 
+                debug && (debug.level = maxlevel);
                 debug && (debug.color = color);
                 debug && (debug.depth = depth);
                 debug && (debug.moves = hist);
@@ -175,10 +204,30 @@ module tsumego {
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
 
+                // in the first call the max level isn't determined, so the search
+                // starts with the level corresponding to the number of libs of the target
+                // and if it doesn't work, it starts incrementing the max level until
+                // a solution is found
+                if (maxlevel === undefined) {
+                    const minlevel = estimate(board) - (color * target < 0 ? 1 : 0);
+
+                    for (let level = minlevel; level < inflevel; level++) {
+                        //debug && (yield `searching for ${stone.label.string(color)} with level = ${level}`);
+                        const move = yield* solve(color, km, level);
+
+                        if (rlvl.get(move) == inflevel)
+                            return move;
+                    }
+
+                    debugger; // no unconditional solution found
+                    return tt.get(board.hash, color, km, 0); // tt is correct in about 90% of cases
+                }
+
                 const guess = tt.move.get(hashb ^ color);
 
                 let result: stone;
                 let mindepth = infdepth;
+                let minlevel = inflevel;
 
                 const nodes = sa.reset();
 
@@ -186,10 +235,6 @@ module tsumego {
                     board.play(move);
                     const hash = board.hash;
                     board.undo();
-
-                    // skip moves that are known to be losing
-                    if (tt.get(hash, -color, km) * color < 0)
-                        continue;
 
                     let d = depth - 1;
 
@@ -245,16 +290,43 @@ module tsumego {
                     move && board.play(move);
                     debug && (yield move ? stone.toString(move) : stone.label.string(color) + '[]');
 
-
                     if (!move) {
                         const nextkm = prevb == hashb && color * km < 0 ? 0 : km;
                         const tag = hashb & ~15 | (-color & 3) << 2 | nextkm & 3; // tells which position, who plays and who is the km
                         const isloop = tags.lastIndexOf(tag) >= 0;
 
                         if (isloop) {
-                            // yielding the turn again means that both sides agreed on
-                            // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(target), depth - 1);
+                            // the opponent already had a chance to play in the same exact situation,
+                            // so it's a loop and the target isn't going to be captured; in this case:
+                            //
+                            //  |============
+                            //  | X X X - O X
+                            //  | - X O O O X
+                            //  | O O O X X X
+                            //  | X X X X
+                            //
+                            // O has a one-eye shape, however it cannot be solved within level = 2, so
+                            // if O was to move first, O passes, then X passes (level = 2 is too strict),
+                            // O passes again and the result shouldn't have the inf level just because O
+                            // doesn't have other moves; the returned level should be 2 in this case because
+                            // O can be captured within level = 3
+                            //
+                            // yet another tricky situation is a "dynamic seki" when there are no ko treats:
+                            //
+                            //  =============
+                            //  | W B B - W B
+                            //  | - W - W W B
+                            //  | W W W W B B
+                            //  | B B B B B
+                            //
+                            // if black captures the white stone, the only followup would be to connect
+                            // and make a seki; if white plays first, it cannot connect, but it cannot
+                            // approach black either because then black will capture the stone and white
+                            // doesn't have ko treats to recapture it back
+                            //
+                            // the trouble with such shape is that white is first proven to be safe within level 3,
+                            // then within level 4, then within level 5 and so on, until it reaches the max level
+                            s = rlvl.set(repd.set(stone.nocoords(target), depth - 1), inflevel /* target * color < 0 ? minlevel : maxlevel */);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -285,16 +357,43 @@ module tsumego {
                             // that if the two last moves were passes, the ko treats
                             // can be voided and the search can be resumed without them.
                             tags.push(tag);
-                            s = yield* solve(-color, nextkm);
+                            s = yield* solve(-color, nextkm, maxlevel);
                             tags.pop();
                         }
                     } else {
-                        s = !board.get(target) ? repd.set(stone.nocoords(-target), infdepth) :
-                            // white has secured the group: black cannot
-                            // capture it no matter how well it plays
-                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
-                                // let the opponent play the best move
-                                yield* solve(-color, move && km);
+                        // if it's now the attacker's turn, then it can reduce the number of
+                        // libs by one at most, so the min level will be the number of libs
+                        // minus one; if it's now the defender's turn, then the min level
+                        // is the number of libs by definition of the max level
+                        const minlevel = estimate(board) - (target * color > 0 ? 1 : 0);
+
+                        if (status(board) * target < 0) {
+                            s = rlvl.set(repd.set(stone.nocoords(-target), infdepth), inflevel); // the target is captured
+                        } else if (color * target > 0 && alive && alive(board)) {
+                            s = rlvl.set(repd.set(stone.nocoords(target), infdepth), inflevel); // the target is sure alive now
+                        } else if (maxlevel && minlevel > maxlevel) {
+                            s = rlvl.set(repd.set(stone.nocoords(target), infdepth), minlevel - 1);
+                        } else if (maxlevel && color * target > 0 && minlevel < maxlevel) {
+                            // if it's now the attacker's turn and the target has
+                            // too few liberties, try to split the search into a
+                            // few sub searches: first try to keep the target from
+                            // getting more libs, then increment the max level and
+                            // so on until a solutiuon is found
+                            for (let level = minlevel; level <= maxlevel; level++) {
+                                //debug && (yield 'starting sub search with level = ' + level);
+                                s = yield* solve(-color, km, level);
+                                //debug && (yield 'sub search with level = ' + level + ' ended with ' + stone.toString(s));
+
+                                // reducing the max level is only good for the defender
+                                // because in addition to making life it can also escape,
+                                // hence if the defender loses with a lower max level, it
+                                // will surely lose with all higher max levels
+                                if (s * target < 0)
+                                    break;
+                            }
+                        } else {
+                            s = yield* solve(-color, km, maxlevel); // let the opponent play the best move
+                        }
                     }
 
                     path.pop();
@@ -310,29 +409,49 @@ module tsumego {
                     if (s * color < 0 && move)
                         mindepth = min(mindepth, d > depth ? repd.get(s) : d);
 
+                    // If all moves result in a loss, the attacker must pick
+                    // the one with the lowest maxlevel. For instance, if it
+                    // has two moves:
+                    //
+                    //  move #1 - the target extends and gets 3 libs
+                    //  move #2 - the target connects and gets 7 libs
+                    //
+                    // it loses if maxlevel=2, but maybe wins if maxlevel=3.
+                    // However if all moves of the defender result in a loss,
+                    // it's an unconditional loss: e.g. if the target cannot
+                    // escape a ladder (maxlevel=1), it will not escape a
+                    // higher level attack.
+                    if (s * color < 0 && color * target < 0)
+                        minlevel = min(minlevel, rlvl.get(s));
+
                     // the winning move may depend on a repetition, while
                     // there can be another move that gives the same result
                     // uncondtiionally, so it might make sense to continue
                     // searching in such cases
                     if (s * color > 0) {
+                        result = move || stone.nocoords(color);
+                        result = rlvl.set(result, rlvl.get(s));
                         // if the board b was reached via path p has a winning
                         // move m that required to spend a ko treat and now b
                         // is reached via path q with at least one ko treat left,
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = repd.set(
-                            move || stone.nocoords(color),
-                            d > depth && move ?
-                                repd.get(s) :
-                                d);
+                        result = repd.set(result, d > depth && move ? repd.get(s) : d);
                         break;
                     }
                 }
 
                 // if there is no winning move, record a loss
                 if (!result)
-                    result = repd.set(stone.nocoords(-color), mindepth);
+                    result = rlvl.set(repd.set(stone.nocoords(-color), mindepth), minlevel);
+
+                // the level field in the solution tells when it's applicable:
+                // only if max level is not greater than this field; so it would
+                // be strange to ask for a solution for maxlevel = 5 and get
+                // an answer that applies only to maxlevel = 1..4
+                if (rlvl.get(result) < maxlevel)
+                    debugger;
 
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
@@ -340,8 +459,8 @@ module tsumego {
                 // such solutions are stored and never removed from the table; this
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
-                if (repd.get(result) > depth + 1)
-                    tt.set(hashb, color, result, km);
+                if (repd.get(result) > depth + 1 && (stone.hascoords(result) || result * color < 0))
+                    tt.set(hashb, color, result, km, rlvl.get(result));
 
                 if (guess) {
                     log && log.write({
@@ -379,6 +498,7 @@ module tsumego {
             let move = yield* solve(color, km || 0);
 
             if (!Number.isFinite(km)) {
+                //debug && (yield 'km not specified, starting another search to find the best move');
                 // if it's a loss, see what happens if there are ko treats;
                 // if it's a win, try to find a stronger move, when the opponent has ko treats
                 const move2 = yield* solve(color, move * color > 0 ? -color : color);
@@ -387,7 +507,7 @@ module tsumego {
                     move = move2;
             }
 
-            move = repd.set(move, 0);
+            move = rlvl.set(repd.set(move, 0), 0);
 
             return typeof args === 'string' ?
                 stone.toString(move) :
