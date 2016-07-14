@@ -3,5 +3,7 @@
   AW[dd][ce][de][ee][fe][bf][df][gf][bg][fg][gg][bh][gh][bi][fi]
   MA[de]
   (;W[ef];B[eh];W[dh]
-    (;B[di];W[ci];B[fh];W[cg];B[ff];W[dg])
+    (;B[di]
+      (;W[ci];B[fh];W[cg];B[ff];W[dg])
+      (;W[dg];B[ei];W[ci];B[fh];W[fi]))
     (;B[dg];W[ei];B[cg];W[cf];B[ch];W[di])))
