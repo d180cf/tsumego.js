@@ -114,8 +114,10 @@ module testbench {
             const comment: string = value;
             !done && tick++;
 
-            if (render)
-                renderBoard(comment);
+            if (render) {
+                renderBoard();
+                vm.note = comment;
+            }
         };
 
         const stepOver = (ct: CancellationToken) => {
@@ -464,11 +466,11 @@ module testbench {
             case KeyCode.Top:
             case KeyCode.Right:
             case KeyCode.Bottom:
-                
+
         }
     });
 
-    function renderBoard(comment = '') {
+    function renderBoard() {
         const move = board.undo();
         board.play(move);
 
@@ -602,7 +604,8 @@ module testbench {
                 return;
             }
 
-            renderBoard(stone.toString(stone(x, y, board.get(x, y))));
+            renderBoard();
+            vm.note = stone.toString(stone(x, y, board.get(x, y)));
         });
 
         const wrapper = document.querySelector('.tsumego') as HTMLElement;
@@ -613,7 +616,6 @@ module testbench {
 
         vm.sgf = sgf;
         vm.svg = wrapper.innerHTML;
-        setComment(comment);
 
         if (lspath)
             ls.set(lspath, sgf);
@@ -625,10 +627,6 @@ module testbench {
             ')');
     }
 
-    function setComment(comment: string) {
-        vm.note = comment;
-    }
-
     function parse(si: string, size: number): stone {
         const x = si.charCodeAt(0) - 65;
         const y = size - +/\d+/.exec(si)[0];
@@ -637,7 +635,7 @@ module testbench {
     }
 
     function solveAndRender(color: number, km: number) {
-        setComment('Solving...');
+        vm.note = 'Solving...';
 
         setTimeout(() => {
             const started = Date.now();
@@ -645,7 +643,7 @@ module testbench {
 
             const op = {
                 notify() {
-                    setComment('Solving... elapsed ' + comment());
+                    vm.note = 'Solving... elapsed ' + comment();
                 }
             };
 
@@ -653,14 +651,15 @@ module testbench {
                 const duration = Date.now() - started;
 
                 if (!stone.hascoords(move) || move * color < 0) {
-                    setComment(c2s(color) + ' passes');
+                    vm.note = c2s(color) + ' passes';
                 } else {
                     board.play(move);
                     console.log(board + '');
-                    renderBoard(stone.toString(move) + ' in ' + comment());
+                    renderBoard();
+                    vm.note = stone.toString(move) + ' in ' + comment()
                 }
             }).catch(err => {
-                setComment(err);
+                vm.note = err;
             });
         });
     }
