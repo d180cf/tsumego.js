@@ -40,6 +40,7 @@ module testbench {
     export var tt = new tsumego.TT;
 
     interface AsyncOperation {
+        ntcalls: number;
         notify(): void;
     }
 
@@ -69,9 +70,10 @@ module testbench {
                 setTimeout(function fn() {
                     op.notify();
 
-                    if (s.done)
+                    if (s.done) {
                         resolve(s.value);
-                    else {
+                    } else {
+                        op.ntcalls = s.value;
                         s = g.next();
                         setTimeout(fn);
                     }
@@ -640,9 +642,13 @@ module testbench {
 
         setTimeout(() => {
             const started = Date.now();
-            const comment = () => ((Date.now() - started) / 1000 | 0) + 's; cached ' + (tt.size / 1000 | 0) + 'K positions'
+
+            const comment = () => ((Date.now() - started) / 1000 | 0) + 's'
+                + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
+                + '; solved positions = ' + (op.ntcalls / 1000 | 0) + 'K';
 
             const op = {
+                ntcalls: 0,
                 notify() {
                     vm.note = 'Solving... elapsed ' + comment();
                 }

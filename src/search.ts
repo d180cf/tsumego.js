@@ -141,7 +141,7 @@ module tsumego {
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
-            let started = Date.now(), yieldin = 100, remaining = yieldin;
+            let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
 
             // tells who is being captured
             const target = status(board);
@@ -156,9 +156,10 @@ module tsumego {
 
             function* solve(color: number, km: number) {
                 remaining--;
+                ntcalls++;
 
                 if (time && !remaining) {
-                    yield;
+                    yield ntcalls;
                     const current = Date.now();
                     const speed = yieldin / (current - started);
                     started = current;

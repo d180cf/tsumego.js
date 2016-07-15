@@ -5,7 +5,7 @@ module tsumego {
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |   x   |   y   |  b  |  w  |u|m|        same for white         |
+     * |   x   |   y   |  b  |  w  |u|m|                               |
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      *
      * The first 2 bytes tell the outcome if black can play first:
@@ -19,8 +19,6 @@ module tsumego {
      * that B is the ko master and km = 0 means neither B nor W has
      * external ko treats.
      *
-     * The next 2 bytes tell the outcome if white can play first.
-     *
      * Obviously, w < b, as otherwise the status would be ambiguous.
      * This implies that the zero entry is not valid.
      */
@@ -31,33 +29,30 @@ module tsumego {
     }
 
     module entry {
-        export const get = (s: entry, color: number) => (color > 0 ? s : s >> 16) & 0xFFFF;
-        export const set = (s: entry, color: number, e: entry) => color > 0 ? s & ~0xFFFF | e : s & 0xFFFF | e << 16;
-
         export const x = (e: entry) => e & 15;
         export const y = (e: entry) => e >> 4 & 15;
         export const b = (e: entry) => (e >> 8 & 7) << 29 >> 29;
         export const w = (e: entry) => (e >> 11 & 7) << 29 >> 29;
         export const m = (e: entry) => !!(e & 0x8000);
-    }
 
-    module entry {
-        const e = entry(0, 0, +3, -3, false);
-        export const base = e | e << 16;
+        export const base = entry(0, 0, +3, -3, false);
     }
 
     /** Transposition Table */
     export class TT {
         size = 0;
         move = new Int32HashTable; // node -> stone
-        private data = new Int32HashTable; // node -> entry
+
+        private data = [
+            new Int32HashTable, // node -> entry, if b plays first
+            null,
+            new Int32HashTable, // node -> entry, if w plays first
+        ];
 
         get(hash: number, color: number, km: number) {
-            const s = this.data.get(hash);
+            const e = this.data[color & 2].get(hash);
 
-            if (!s) return 0;
-
-            const e = entry.get(s, color);
+            if (!e) return 0;
 
             const winner =
                 km >= entry.b(e) ? +1 : // enough ko treats for black
@@ -78,11 +73,7 @@ module tsumego {
          * @param km Must be either-1, +1 or 0.
          */
         set(hash: number, color: number, move: stone, km: number) {
-            if (km != -1 && km != +1 && km != 0 || !stone.color(move))
-                throw Error('Invalid TT entry.');
-
-            const s = this.data.get(hash) || ++this.size && entry.base;
-            const e = entry.get(s, color);
+            const e = this.data[color & 2].get(hash) || ++this.size && entry.base;
 
             // The idea here is to not override the winning move.
             // A typical case is the bent 4 shape: B wins if there are
@@ -100,7 +91,7 @@ module tsumego {
                 move < 0 && km > w ? entry(x, y, b, km, hc) :
                     e;
 
-            this.data.set(hash, entry.set(s, color, e2));
+            this.data[color & 2].set(hash, e2);
         }
     }
 }
