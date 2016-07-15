@@ -123,7 +123,7 @@ module tsumego {
             let {root: board, color, km, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
-            if (log) {
+            if (log && alive) {
                 const test = alive;
 
                 alive = node => {

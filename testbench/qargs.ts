@@ -8,6 +8,9 @@ module testbench {
 
         /** Displays the ko-master toggle. Normally the solver doesn't need this help. */
         km: boolean;
+
+        /** Enables the Benson's test. */
+        benson: boolean;
     }
 
     export const qargs: QArgs = <any>{};

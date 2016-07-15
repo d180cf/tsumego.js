@@ -21,6 +21,12 @@ module tsumego.benson {
      *
      * If the two requirements are met, the opponent cannot approach the chain from inside
      * the region and thus cannot capture the chain since there are two such regions.
+     *
+     * This implementation is not incremental: it evaluates every position
+     * from sctratch, even if the position differs from the previously evaluated
+     * one by just one move. Since only about 10% of positions pass the test,
+     * this makes this implementation unacceptably slow: when it's enabled,
+     * it makes the search 1.5x slower.
      */
     export function alive(b: Board, root: stone, path: number[] = []) {
         const chainId = b.get(root);

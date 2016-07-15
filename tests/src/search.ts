@@ -175,7 +175,7 @@ module tests {
 
                         read(leaf, node);
                     }
-                })(tree, sgf); 
+                })(tree, sgf);
 
                 //console.log('mtree:');
                 //console.tree(tree);
@@ -191,10 +191,10 @@ module tests {
 
                     // there is an assumption here that all the moves at one level
                     // are either B[..] or W[..]
-                    if (stone.fromString(moves[0]) * color < 0) {                        
+                    if (stone.fromString(moves[0]) * color < 0) {
                         for (const move of moves) {
                             if (!b.play(stone.fromString(move)))
-                                throw Error('Illegal move: ;' + seq.join(';') + ';' + move);
+                                throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move);
 
                             seq.push(move);
                             playout(root[move]);
@@ -209,16 +209,16 @@ module tests {
                             log: log,
                             expand: mgen.fixed(b, target),
                             status: (b: Board) => sign(b.get(target) || -tblock),
-                            alive: (b: Board) => tsumego.benson.alive(b, target)
+                            //alive: (b: Board) => tsumego.benson.alive(b, target)
                         });
 
                         const move = stone.toString(r);
 
                         if (!root[move])
-                            throw Error('Wrong move: ;' + seq.join(';') + ';' + move.white() + '. Expected: ' + moves);
+                            throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves);
 
                         if (!b.play(r))
-                            throw Error('Illegal move: ;' + seq.join(';') + ';' + move);
+                            throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move);
 
                         seq.push(move);
                         playout(root[move]);

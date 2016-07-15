@@ -94,7 +94,7 @@ module testbench {
                     const title = content.previousElementSibling;
                     title.classList.add('active');
 
-                    a.scrollIntoView();
+                    //a.scrollIntoView();
                 } else {
                     a.classList.remove('active');
                 }
