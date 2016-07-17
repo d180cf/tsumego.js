@@ -1,5 +1,4 @@
-Repetitions
-===========
+# Repetitions
 
 Many complications come from repetitions. In the simplest case it's a basic ko. More complicated cases may produce very long cycles. This position is known as the 10,000-year ko:
 
@@ -26,4 +25,33 @@ At `W1` the search discovers that white cannot recapture the stone right now and
 
 At `B1` if black plays either of the two moves on the right (which would be the right thing to do if there were ko treats), white can recapture the stone and then capture black, so black has to pass: `B1` → `W1`.
 
-At `W1` white can now recapture the stone, finishing the long loop: `W1` → `B2` → `W2` → `B2` → `W1` → `B1` → `W1`. At this point the search needs to admit that white lives if there are no external ko treats. 
+At `W1` white can now recapture the stone, finishing the long loop: `W1` → `B2` → `W2` → `B2` → `W1` → `B1` → `W1`. At this point the search needs to admit that white lives if there are no external ko treats.
+
+# Passing
+
+The second most annoying problem is passing because it never appears when solving tsumegos manually, but appears pretty much always in the search.
+
+## Passing once
+
+In the simplest case when black passes, white has a chance to start the search from sctratch, without the need to look back at the history of moves. Normally, when considering the next move, there is a sequence of moves that leaded to the current  position and repeating any of the previous positions is not allowed unless the current player is the ko master. However when black passes locally, it can actually play a move elsewhere on the board: this changes the whole-board history of moves, but locally the position isn't affected. This is why when black passes, the local history of moves is reset and white might have more possible moves. In the search, once black passes, the solver adds a record to remind itself that here white started the search with no history and the ko master was black, for example. These records look like this:
+
+```
+    hash=1bcedf player=W km=B
+    hash=b4c609 player=B km=B
+    ...
+```
+
+Once the solver is about to add a new such record, it checks if the same record was already added before: this would mean that white already started the search in the same exact situation and now it's about to start it again. This is how the solver detects long loops, such as the one in the 10,000-year ko position.
+
+## Passing twice
+
+Passing one more time has an additional meaning. If black passed and then white passed too, black can in theory repeat these two passes as many times as needed. This can be useful if white is the ko master: every time black passes, it actually removes a ko treat elsewhere on the board, and once all ko treats are removed, black can play a move, now in assumption that neither side has ko treats.  
+
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/1-step-ko.svg#1" height="200pt" />
+
+In this example if white is the ko master and it has just captured the black stone, black cannot recapture it back. However black can pass and then white will pass too. Now black can remove all ko treats and recapture the white stone because after passing the local history of moves is reset. However white won't be able to recapture the stone back because it doesn't have ko treats anymore, so black wins.
+
+This won't be the case if white had infinitely many ko treats. This is the case when there is a double ko elsewhere on the board and black cannot remove that double ko:
+
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/double-ko.svg#1" height="200pt" />
+
