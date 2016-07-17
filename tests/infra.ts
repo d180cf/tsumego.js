@@ -95,6 +95,7 @@ namespace tests {
         [index: number]: string;
         unodes?: boolean;
         log?: string;
+        benson?: boolean;
     } = vals;
 }
 

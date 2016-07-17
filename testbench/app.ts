@@ -60,7 +60,7 @@ module testbench {
                 time: 250,
                 tt: tt,
                 expand: tsumego.mgen.fixed(board, aim),
-                alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
+                alive: qargs.benson && tsumego.benson(board, aim),
                 status: status
             });
 
@@ -105,7 +105,7 @@ module testbench {
             tt: tt,
             expand: tsumego.mgen.fixed(board, aim),
             status: status,
-            alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim))
+            alive: qargs.benson && tsumego.benson(board, aim)
         });
 
         window['solver'] = solver;

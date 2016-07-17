@@ -41,7 +41,23 @@ namespace stats {
 
         console.log('\nbenson test:\n' + src
             .filter(x => 'benson' in x)
-            .countBy(x => +x.benson)
+            .countBy(x => +x.benson.result)
+            .toSparseArray(0)
+            .barChart()
+            .value()
+            .join('\n'));
+
+        console.log('\nbenson area size:\n' + src
+            .filter(x => x.benson)
+            .countBy(x => x.benson.area)
+            .toSparseArray(0)
+            .barChart()
+            .value()
+            .join('\n'));
+
+        console.log('\nbenson diff rate:\n' + src
+            .filter(x => x.benson)
+            .countBy(x => x.benson.diff)
             .toSparseArray(0)
             .barChart()
             .value()

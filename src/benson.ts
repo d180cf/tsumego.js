@@ -1,87 +1,154 @@
-/**
- * Implements the Benson's algorithm.
- *
- * Benson's Definition of Unconditional Life
- * senseis.xmp.net/?BensonsAlgorithm
- *
- * David B. Benson. "Life in the Game of Go"
- * webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
- */
-module tsumego.benson {
-    /** 
-     * A chain of stones is said to be pass-alive or unconditionally alive
-     * if the opponent cannot capture the chain even if the chain is not defended.
+module tsumego {
+    /**
+     * Implements the Benson's algorithm.
      *
-     * In this implementation a chain is considered to be pass-alive if it has two eyes.
-     * An eye is an adjacent region of either empty intersections or the opponent's
-     * stones in which:
+     * Benson's Definition of Unconditional Life
+     * senseis.xmp.net/?BensonsAlgorithm
      *
-     *  1. All empty intersections are adjacent to the chain.
-     *  2. All chains adjacent to the region are also pass-alive.
-     *
-     * If the two requirements are met, the opponent cannot approach the chain from inside
-     * the region and thus cannot capture the chain since there are two such regions.
-     *
-     * This implementation is not incremental: it evaluates every position
-     * from sctratch, even if the position differs from the previously evaluated
-     * one by just one move. Since only about 10% of positions pass the test,
-     * this makes this implementation unacceptably slow: when it's enabled,
-     * it makes the search 1.5x slower.
+     * David B. Benson. "Life in the Game of Go"
+     * webdocs.cs.ualberta.ca/~games/go/seminar/2002/020717/benson.pdf
      */
-    export function alive(b: Board, root: stone, path: number[] = []) {
-        const chainId = b.get(root);
-        const sameColor = (s: stone) => b.get(s) * chainId > 0;
-        const visited: { [move: number]: boolean } = [];
+    export function benson(b: Board, target: stone, log?: { write(data): void }) {
+        const cache: boolean[] = [];
+        const board = b;
+        const area: number[] & { size?: number } = [];
 
-        let nEyes = 0;
+        b = Object.create(board);
 
-        // enumerate all liberties of the chain to find two eyes among those liberties
-        search: for (const lib of region(root, (t, s) => sameColor(s) && b.inBounds(t))) {
-            // the region(...) above enumerates stones in the chain and the liberties
-            if (b.get(lib))
-                continue;
+        b.get = (x: number, y?: number) => {
+            const xy = y >= 0 ? stone(x, y, 0) : x;
+            const bid = board.get(xy);
 
-            // chains adjacent to the region
-            const adjacent: number[] = [];
-            const adjacentXY: stone[] = [];
-
-            for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t))) {
-                // has this region been already marked as non vital to this chain?
-                if (visited[p])
-                    continue search;
-
-                visited[p] = true;
-
-                let isAdjacent = false;
-
-                for (const q of stone.neighbors(p)) {
-                    const ch = b.get(q);
-
-                    if (ch == chainId) {
-                        isAdjacent = true;
-                    } else if (ch * chainId > 0 && adjacent.indexOf(ch) < 0) {
-                        adjacent.push(ch);
-                        adjacentXY.push(q);
-                    }
-                }
-
-                // is it an empty intersection that is not adjacent to the chain?
-                if (!b.get(p) && !isAdjacent)
-                    continue search;
+            if (area.size >= 0 && area[xy] === undefined && b.inBounds(xy)) {
+                area[xy] = sgn(bid);
+                area.size++;
             }
 
-            // check that all adjacent chains are also alive
-            for (let i = 0; i < adjacent.length; i++) {
-                const ch = adjacent[i];
-                // if a sequence of chains form a loop, they are all alive
-                if (path.indexOf(ch) < 0 && !alive(b, adjacentXY[i], [...path, ch]))
-                    continue search;
+            return bid;
+        };
+
+        function diff() {
+            let n = 0;
+
+            for (const key in area) {
+                const xy = +key;
+
+                if (!Number.isFinite(xy))
+                    continue;
+
+                const _old = area[xy];
+
+                if (_old === undefined)
+                    continue;
+
+                const _new = sgn(b.get(xy));
+
+                if (_old != _new)
+                    n++;
             }
 
-            if (++nEyes > 1)
-                return true;
+            return n;
         }
 
-        return false;
+        return () => {
+            if (cache[b.hash] === undefined) {
+                const n = diff();
+
+                area.length = 0;
+                area.size = 0;
+
+                cache[b.hash] = alive(target, []);
+
+                log && log.write({
+                    benson: {
+                        board: b.hash,
+                        result: cache[b.hash],
+                        area: area.size,
+                        diff: n
+                    }
+                });
+
+                delete area.size;
+            }
+
+            return cache[b.hash];
+        };
+
+        /** 
+         * A chain of stones is said to be pass-alive or unconditionally alive
+         * if the opponent cannot capture the chain even if the chain is not defended.
+         *
+         * In this implementation a chain is considered to be pass-alive if it has two eyes.
+         * An eye is an adjacent region of either empty intersections or the opponent's
+         * stones in which:
+         *
+         *  1. All empty intersections are adjacent to the chain.
+         *  2. All chains adjacent to the region are also pass-alive.
+         *
+         * If the two requirements are met, the opponent cannot approach the chain from inside
+         * the region and thus cannot capture the chain since there are two such regions.
+         *
+         * This implementation is not incremental: it evaluates every position
+         * from sctratch, even if the position differs from the previously evaluated
+         * one by just one move. Since only about 10% of positions pass the test,
+         * this makes this implementation unacceptably slow: when it's enabled,
+         * it makes the search 1.5x slower.
+         */
+        function alive(root: stone, path: number[]) {
+            const chainId = b.get(root);
+            const sameColor = (s: stone) => b.get(s) * chainId > 0;
+            const visited: { [move: number]: boolean } = [];
+
+            let nEyes = 0;
+
+            // enumerate all liberties of the chain to find two eyes among those liberties
+            search: for (const lib of region(root, (t, s) => sameColor(s) && b.inBounds(t))) {
+                // the region(...) above enumerates stones in the chain and the liberties
+                if (b.get(lib))
+                    continue;
+
+                // chains adjacent to the region
+                const adjacent: number[] = [];
+                const adjacentXY: stone[] = [];
+
+                for (const p of region(lib, (t, s) => !sameColor(t) && b.inBounds(t))) {
+                    // has this region been already marked as non vital to this chain?
+                    if (visited[p])
+                        continue search;
+
+                    visited[p] = true;
+
+                    let isAdjacent = false;
+
+                    for (const q of stone.neighbors(p)) {
+                        const ch = b.get(q);
+
+                        if (ch == chainId) {
+                            isAdjacent = true;
+                        } else if (ch * chainId > 0 && adjacent.indexOf(ch) < 0) {
+                            adjacent.push(ch);
+                            adjacentXY.push(q);
+                        }
+                    }
+
+                    // is it an empty intersection that is not adjacent to the chain?
+                    if (!b.get(p) && !isAdjacent)
+                        continue search;
+                }
+
+                // check that all adjacent chains are also alive
+                for (let i = 0; i < adjacent.length; i++) {
+                    const ch = adjacent[i];
+                    // if a sequence of chains form a loop, they are all alive
+                    if (path.indexOf(ch) < 0 && !alive(adjacentXY[i], [...path, ch]))
+                        continue search;
+                }
+
+                if (++nEyes > 1)
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

@@ -113,7 +113,7 @@ namespace tsumego {
             tt: tt,
             expand: mgen.fixed(board, target),
             status: (b: Board) => b.get(target) < 0 ? -1 : +1,
-            alive: (b: Board) => benson.alive(b, target)
+            alive: benson(board, target)
         });
 
         const dt = Date.now() - started;

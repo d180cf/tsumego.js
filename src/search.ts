@@ -64,7 +64,7 @@ module tsumego {
             tt?: TT;
             expand(color: number): stone[];
             status(node: Node): number;
-            alive?(node: Node): boolean;
+            alive?(): boolean;
             debug?: boolean;
             time?: number;
             log?: {
@@ -115,31 +115,13 @@ module tsumego {
                 color: color,
                 expand: mgen.fixed(board, target),
                 status: (b: Board) => b.get(target) ? tb : -tb,
-                alive: (b: Board) => tsumego.benson.alive(b, target)
+                alive: benson(board, target)
             };
         }
 
         export function* start(args: Args | string) {
             let {root: board, color, km, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
-
-            if (log && alive) {
-                const test = alive;
-
-                alive = node => {
-                    const res = test(node);
-
-                    log && log.write({
-                        board: node.hash,
-                        benson: res
-                    });
-
-                    return res;
-                };
-            }
-
-            // cache results from static analysis as it's quite slow
-            alive = memoized(alive, board => board.hash);
 
             let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
 
@@ -301,7 +283,7 @@ module tsumego {
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
-                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
+                            color * target > 0 && alive && alive() ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
                                 yield* solve(-color, move && km);
 

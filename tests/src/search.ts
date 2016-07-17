@@ -209,7 +209,7 @@ module tests {
                             log: log,
                             expand: mgen.fixed(b, target),
                             status: (b: Board) => sign(b.get(target) || -tblock),
-                            //alive: (b: Board) => tsumego.benson.alive(b, target)
+                            alive: /*argv.benson && */tsumego.benson(b, target, log)
                         });
 
                         const move = stone.toString(r);
