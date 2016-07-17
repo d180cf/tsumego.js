@@ -203,6 +203,10 @@ module tsumego {
                     const hash = board.hash;
                     board.undo();
 
+                    // skip moves that are known to be losing
+                    if (tt.get(hash, -color, km) * color < 0)
+                        continue;
+
                     let d = depth - 1;
 
                     while (d >= 0 && path[d] != hash)
