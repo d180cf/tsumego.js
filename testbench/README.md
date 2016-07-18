@@ -16,21 +16,21 @@ jake tb
 
 Usually in the URL there is just the problem id: `http://.../#basic/5`. To enter the debug mode add the `debug` parameter in the URL query: `?debug=B&km=W&rs=123#basic/7` (this one tells that black plays first, white is the ko master and the RNG should be initialized with `123` to make things reproducible). This should display this screen:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/debugger.png#1" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/debugger.png#1" />
 
-The solver is a recursive function that implements a variation of deep-first search. That function is also a es6 generator - a feature that has appeared in JS just recently. Generators can be paused and resumed at arbitrary points and this is why this debugger can work: the search starts, suspends itself once the first move is made and the UI resumes the search when necessary.
+The solver is a recursive function that implements a variation of depth-first search. That function is also a es6 generator - a feature that has appeared in JS just recently. Generators can be paused and resumed at arbitrary points and this is why this debugger can work: the search starts, suspends itself once the first move is made and the UI resumes the search when necessary.
 
 A few buttons on the top right control that generator:
 
-- it can be told to proceed to the next move and stop (aka F11 or "step into")
-- it can be told to solve the current move and say the result (aka Shift-F11 or "step out")
-- it can be told to solve the current move and display the next one (aka F10 or "step over")
+- proceed to the next move and stop (aka F11 or "step into")
+- solve the current move and say the result (aka Shift-F11 or "step out")
+- solve the current move and display the next one (aka F10 or "step over")
 
 The search simply does a `yield` after every move is made and after it's undone, so the UI can inspect the sequence of moves at all these points and make a decision wheteher to keep resuming the generator or let it stop.
 
 This allows to stop the search at an interesting point and then start source level debugging.
 
-Generators are quite successfully transpiled to es5 JS with Babel and the FB's Regenerator library, but unfortunately this screws source maps and source level debugging has to be done at the JS level, which looks nasty after all these `yield`s are transpiled to es5.
+Generators are quite successfully transpiled to es5 JS with Babel and the Regenerator library, but unfortunately this screws source maps and source level debugging has to be done at the JS level, which looks nasty after all these `yield`s are transpiled to es5.
 
 # Notes
 
