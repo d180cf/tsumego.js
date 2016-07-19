@@ -145,6 +145,7 @@ task('site', ['tb'], () => {
     jake.mkdirP('bin/site/testbench');
     jake.cpR('testbench/app.js', 'bin/site/testbench');
     jake.cpR('testbench/index.html', 'bin/site/testbench');
+    jake.cpR('testbench/favicon.ico', 'bin/site/testbench');
     jake.cpR('testbench/styles', 'bin/site/testbench/styles');
 });
 
