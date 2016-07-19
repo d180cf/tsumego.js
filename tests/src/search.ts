@@ -202,15 +202,32 @@ module tests {
                             seq.pop();
                         }
                     } else {
-                        const r = solve({
+                        const g = solve.start({
                             root: b,
                             color: color,
                             tt: tt,
+                            time: 1000,
                             log: log,
                             expand: mgen.fixed(b, target),
                             status: (b: Board) => sign(b.get(target) || -tblock),
                             //alive: (b: Board) => tsumego.benson.alive(b, target)
                         });
+
+                        const t = Date.now();
+
+                        let r: stone;
+
+                        while (true) {
+                            const {done, value} = g.next();
+
+                            if (done) {
+                                r = value;
+                                break;
+                            }
+
+                            if (Date.now() > t + 60 * 1000)
+                                throw Error('Timed out');
+                        }
 
                         const move = stone.toString(r);
 
