@@ -1,6 +1,6 @@
 module tsumego.mgen {
     /** Basic moves generator. Tries to maximize libs. */
-    export function fixed(board: Board, target: stone, maxsize = 30): Generator {
+    export function fixed(board: Board, target: stone): Generator {
         const sa = new MvsOrd(board, target);
         const ts = board.get(target);
         const rzone = new stone.SmallSet;
@@ -41,9 +41,6 @@ module tsumego.mgen {
 
         // remove the target block from the rzone
         rzone.remove(s => board.get(s) == ts);
-
-        if (rzone.size > maxsize)
-            throw new Error(`The number of possible moves ${rzone.size} is more than ${maxsize}`);
 
         return (color: number) => {
             const moves = sa.reset();
