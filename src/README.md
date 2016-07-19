@@ -2,9 +2,7 @@
 
 The core of the solver is the plain depth-first search. It took quite a bit of effort to make it work with repetitions (aka "ko") and identical positions (aka "transpositions"). Currently it explores ~10k/s nodes, which is not hopelessly far from Java/C++ solvers that do ~40k/s. Despite this solver uses neither static analysis (e.g. the benson's test) nor advaced search strategies (e.g. lambda depth-first proof-number search), it can quickly solve most of tsumegos on goproblems.com (once they are properly enclosed):
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/12354.svg#1" height="200pt" />
-
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg#1" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/12354.svg#1" height="200pt" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg#1" height="200pt" />
 
 The 1-st problem (white to live) is solved in 4s (125k nodes) and is [rated](http://www.goproblems.com/12354) as 6 dan. The 2-nd one (white to live) needs 77s and (1525k nodes) and is [rated](http://www.goproblems.com/21185) as 8 dan. This is a surprisingly good result for such a dumb solver that doesn't even bother to resolve collisions in the transposition table and just blindly reuses results that are not even playable (e.g. the TT suggests to play at an occupied point).
 
@@ -20,9 +18,7 @@ The TT is just a hash table where the key is the hash of the position (one posit
 
 Many complications come from repetitions. In the simplest case it's a basic ko. More complicated cases may produce very long cycles. This position is known as the 10,000-year ko:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/10k-year-ko/1.svg#1" height="200pt" />
-
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/10k-year-ko/2.svg#1" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/10k-year-ko/1.svg#1" height="200pt" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/10k-year-ko/2.svg#1" height="200pt" />
 
 These two positions correspond to 4 nodes in the search:
 
@@ -69,7 +65,8 @@ Passing one more time has an additional meaning. If black passed and then white 
 
 In this example if white is the ko master and it has just captured the black stone, black cannot recapture it back. However black can pass and then white will pass too. Now black can remove all ko treats and recapture the white stone because after passing the local history of moves is reset. However white won't be able to recapture the stone back because it doesn't have ko treats anymore, so black wins.
 
-This won't be the case if white had infinitely many ko treats. This is the case when there is a double ko elsewhere on the board and black cannot remove that double ko:
+This won't be the case if white had infinitely many ko treats, e.g. when there is a double ko elsewhere on the board:
 
 <img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/double-ko.svg#1" height="200pt" />
+
 
