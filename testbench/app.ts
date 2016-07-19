@@ -645,7 +645,7 @@ module testbench {
 
             const comment = () => ((Date.now() - started) / 1000 | 0) + 's'
                 + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-                + '; solved positions = ' + (op.ntcalls / 1000 | 0) + 'K';
+                + '; playouts = ' + (op.ntcalls / 1000 | 0) + 'K';
 
             const op = {
                 ntcalls: 0,

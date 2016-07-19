@@ -1,3 +1,15 @@
+# Search
+
+The core of the solver is the plain depth-first search. It took quite a bit of effort to make it work with repetitions (aka "ko") and identical positions (aka "transpositions"). Currently it explores ~10k/s nodes, which is not hopelessly far from Java/C++ solvers that do ~40k/s. Despite this solver uses neither static analysis (e.g. the benson's test) nor advaced search strategies (e.g. lambda depth-first proof-number search), it can quickly solve most of tsumegos on goproblems.com (once they are properly enclosed):
+
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/12354.svg#1" height="200pt" />
+
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg#1" height="200pt" />
+
+The 1-st problem (white to live) is solved in 4s (125k nodes) and is [rated](http://www.goproblems.com/12354) as 6 dan. The 2-nd one (white to live) needs 77s and (1525k nodes) and is [rated](http://www.goproblems.com/21185) as 8 dan. This is a surprisingly good result for such a dumb solver that doesn't even bother to resolve collisions in the transposition table and just blindly reuses results that are not even playable (e.g. the TT suggests to play at an occupied point).
+
+There are a few known ways to make the solver more intelligent: [static](https://github.com/d180cf/tsumego.js/tree/incremental-benson-test) analysis, [df-pn](https://github.com/d180cf/tsumego.js/tree/dfpn) search, [lambda](https://github.com/d180cf/tsumego.js/tree/wls) search and so on. So far I have found that it's surprisingly hard to make it faster. For instance, the benson's test that recognizes some of the alive groups reduces the number of nodes that need to be explored by quite a bit, but it comes with a price because the analyser needs to be invoked frequently and it slows down search, so the net result is: when the analyser is on, the searchis 1.5x slower. Same for df-pn and lambda search.
+
 # Transpositions
 
 The transposition table is just a fancy name for the cache of solved positions. In a typical tsumego the solver creates about 200k TT entires and these are just unconditional results, i.e. those that don't depend on the sequence of moves that lead to them. Solved intermediate positions have to be cached because otherwise the search will become ~100x slower.

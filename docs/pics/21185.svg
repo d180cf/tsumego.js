@@ -1,0 +1,42 @@
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" viewBox="-0.5 -0.5 9 9">
+  <style>
+    * { stroke-width: 0.05 }
+  </style>
+  <defs>
+    <pattern id="grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
+      <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black"></path>
+    </pattern>
+    <circle id="AB" r="0.475" fill="black" stroke="black"></circle>
+    <circle id="AW" r="0.475" fill="white" stroke="black"></circle>
+    <circle id="CR" r="0.25" fill="none"></circle>
+    <path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none"></path>
+    <path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none"></path>
+    <path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none"></path>
+    <rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>
+  </defs>
+
+  <rect x="0" y="0" width="8" height="8" fill="url(#grid)" stroke="black" stroke-width="0.1"></rect>
+  <use x="0" y="0" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="0" y="1" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="0" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="1" y="1" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="1" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="1" y="3" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="1" y="4" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="2" y="3" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="2" y="4" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="3" y="4" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="4" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="4" y="3" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="4" y="4" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="5" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="5" y="3" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="6" y="1" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="6" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="6" y="3" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="7" y="0" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AW"></use>
+  <use x="7" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="8" y="0" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="8" y="1" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+  <use x="8" y="2" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#AB"></use>
+</svg>
