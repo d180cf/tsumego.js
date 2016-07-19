@@ -141,10 +141,10 @@ module tests {
                 throw 'MA[..] must tell what to capture';
 
             if (!setup['PL'])
-                throw 'PL[..] must tell who plays first';
+                continue;
 
             if (sgf.vars.length < 1)
-                throw 'No variations set';
+                continue;
 
             const color = stone.label.color(setup['PL'][0]); // who plays first
             const target = stone.fromString(setup['MA'][0]); // what to capture/save
