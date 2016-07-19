@@ -6,14 +6,16 @@
 /// <reference path="vm.ts" />
 /// <reference path="directory.ts" />
 
-window['board'] = null;
-
 module testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
 
     declare var board: tsumego.Board;
+    declare var ui: GobanElement;
+
+    window['board'] = null;
+    window['ui'] = null;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -439,20 +441,20 @@ module testbench {
     }
 
     document.addEventListener('keyup', event => {
-        if (!selection)
-            return;
-
         const enum KeyCode {
-            Left = 37,
-            Top = 38,
-            Right = 39,
-            Bottom = 40,
+            ArrowL = 37,
+            ArrorT = 38,
+            ArrowR = 39,
+            ArrorB = 40,
 
             Delete = 46,
         }
 
         switch (event.keyCode) {
             case KeyCode.Delete:
+                if (!selection)
+                    return;
+
                 for (const s of board.stones()) {
                     const x = stone.x(s);
                     const y = stone.y(s);
@@ -463,13 +465,51 @@ module testbench {
 
                 selection = null;
                 renderBoard();
-                break;
+                return;
 
-            case KeyCode.Left:
-            case KeyCode.Top:
-            case KeyCode.Right:
-            case KeyCode.Bottom:
+            case KeyCode.ArrowL:
+            case KeyCode.ArrorT:
+            case KeyCode.ArrowR:
+            case KeyCode.ArrorB:
+                if (!event.ctrlKey || selection)
+                    return;
 
+                const [dx, dy] = {
+                    [KeyCode.ArrowL]: [-1, 0],
+                    [KeyCode.ArrowR]: [+1, 0],
+                    [KeyCode.ArrorT]: [0, -1],
+                    [KeyCode.ArrorB]: [0, +1],
+                }[event.keyCode];
+
+                const b = new Board(board.size);
+                const t = stone(stone.x(aim) + dx, stone.y(aim) + dy, 0);
+
+                try {
+                    if (!b.inBounds(t))
+                        throw aim;
+
+                    for (const s1 of board.stones()) {
+                        const [x1, y1] = stone.coords(s1);
+                        const [x2, y2] = [x1 + dx, y1 + dy];
+                        const s2 = stone(x2, y2, stone.color(s1));
+
+                        if (!b.inBounds(x2, y2) || !b.play(s2))
+                            throw s1;
+                    }
+                } catch (err) {
+                    if (typeof err === 'number' && board.inBounds(err)) {
+                        ui.SL.add(stone.x(err), stone.y(err));
+                        vm.note = 'Cannot move ' + stone.toString(err);
+                        return;
+                    }
+
+                    throw err;
+                }
+
+                aim = t;
+                board = b;
+                renderBoard();
+                return;
         }
     });
 
@@ -479,7 +519,7 @@ module testbench {
 
         vm.canUndo = !!move;
 
-        const ui = GobanElement.create(board);
+        ui = GobanElement.create(board);
 
         if (stone.hascoords(move) && solvingFor)
             ui.TR.add(stone.x(move), stone.y(move));
