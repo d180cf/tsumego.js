@@ -1,27 +1,27 @@
 [![Build Status](https://travis-ci.org/d180cf/tsumego.js.svg?branch=master)](https://travis-ci.org/d180cf/tsumego.js)
 
-It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which the target is surrounded by a wall with no holes and the area being surrounded is up to 20 intersections. Some of these basic problems are rated as 7 dan on goproblems, though. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
+It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which the target is surrounded by a wall with no holes and the area being surrounded is up to 20 intersections. Some of these basic problems are rated as 9 dan on goproblems, though. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
-Here is an example of a [problem](http://www.goproblems.com/9210) that this solver can handle in a second. It can discover that there are a couple ways for black to capture the group, but if white is the ko master, then the marked intersection is the only way to go:
+Here is an example of a [problem](http://www.goproblems.com/15197) (rated as 9 dan) that this solver can handle in a few seconds:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/9210.sgf.svg#234252343242" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/15197.svg" height="200pt" />
 
 To get this solution first take a [release](https://github.com/d180cf/tsumego.js/releases) of the solver and then invoke `tsumego.solve`:
 
 ```ts
 var sgf4 = '(;FF[4]'
-    // up to 16x16 boards are supported
+    // board size
     + 'SZ[9]'
     // black stones
-    + 'AB[ga][ab][bb][hb][cc][hc][cd][gd][hd][de][ee][fe]'
+    + 'AB[ae][be][ce][de][ee][ef][cg][eg][fg][fh][gh][hh][ai][ei][hi]'
     // white stones
-    + 'AW[ba][cb][fb][gb][dc][ec][gc][ed][fd]'
-    // the target white stone
-    + 'MA[ec]'
-    // black plays first
-    + 'PL[B])';
+    + 'AW[dg][ah][bh][ch][eh][di]'
+    // what needs to be saved
+    + 'MA[ch]'
+    // white plays first
+    + 'PL[W])';
 
-var move = tsumego.solve(sgf4); // "B[ea]"
+var move = tsumego.solve(sgf4); // "W[bf]"
 ```
 
 The current implementation has a few limitations:
