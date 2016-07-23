@@ -100,12 +100,12 @@ namespace testbench {
                 * { stroke-width: 0.05 }
               </style>
               <defs>
-                <pattern id="grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
+                <pattern id="svg-goban-grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
                   <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black"></path>
                 </pattern>
               </defs>
 
-              <rect x="0" y="0" width="${n - 1}" height="${n - 1}" fill="url(#grid)" stroke="black" stroke-width="0.1"></rect>
+              <rect x="0" y="0" width="${n - 1}" height="${n - 1}" fill="url(#svg-goban-grid)" stroke="black" stroke-width="0.1"></rect>
             </svg>`;
 
             const svg = <GobanElement>div.querySelector('svg');
