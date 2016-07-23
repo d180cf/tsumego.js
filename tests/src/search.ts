@@ -38,7 +38,7 @@ module tests {
                 AW[ab][bb][cb][db][da]\
                 AB[ac][bc][cc][dc][ec][eb][ea][ba])');
 
-            $(move).equal('B');
+            $(move).equal('B[]');
         });
 
         $.test($ => {
@@ -48,7 +48,7 @@ module tests {
                 AW[ab][bb][cb][db][da][ba]\
                 AB[ac][bc][cc][dc][ec][eb][ea])');
 
-            $(move).equal('W');
+            $(move).equal('W[]');
         });
 
         $.test($ => {
@@ -78,7 +78,7 @@ module tests {
                 AB[ab][bb][cb][db][da][ba]\
                 AW[ac][bc][cc][dc][ec][eb][ea])');
 
-            $(move).equal('B');
+            $(move).equal('B[]');
         });
 
         $.test($ => {

@@ -1,13 +1,13 @@
 module testbench {
     interface QArgs {
-        /** Enters the debugging mode. Use F10, F11 and Shift+F11 to debug the solver. */
-        debug: boolean;
+        /** ?debug=W or ?debug=B to enters the debugging mode */
+        debug: 'B' | 'W';
 
         /** Used to init the RNG. */
         rs: number;
 
-        /** Displays the ko-master toggle. Normally the solver doesn't need this help. */
-        km: boolean;
+        /** Sets the ko master. */
+        km: 'B' | 'W' | 'none';
 
         /** Enables the Benson's test. */
         benson: boolean;
@@ -23,7 +23,7 @@ module testbench {
             const [key, val] = pair.split('=').map(s => s.replace(/\+/g, ' ')).map(decodeURIComponent);
 
             try {
-                qargs[key] = val && JSON.parse(val);
+                qargs[key] = val ? JSON.parse(val) : undefined;
             } catch (err) {
                 qargs[key] = val;
             }

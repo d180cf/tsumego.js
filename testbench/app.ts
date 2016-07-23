@@ -5,6 +5,13 @@
 /// <reference path="editor.ts" />
 /// <reference path="vm.ts" />
 /// <reference path="directory.ts" />
+/// <reference path="debugger.ts" />
+
+// this is useful when debugging
+window['board'] = null;
+window['$s'] = tsumego.stone.toString;
+window['$x'] = tsumego.hex;
+window['ui'] = null;
 
 module testbench {
     import stone = tsumego.stone;
@@ -13,9 +20,6 @@ module testbench {
 
     declare var board: tsumego.Board;
     declare var ui: GobanElement;
-
-    window['board'] = null;
-    window['ui'] = null;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -99,96 +103,6 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    function dbgsolve(board: Board, color: number, nkotreats = 0) {
-        const solver = tsumego.solve.start({
-            debug: true,
-            root: board,
-            color: color,
-            tt: tt,
-            expand: tsumego.mgen.fixed(board, aim),
-            status: status,
-            alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim))
-        });
-
-        window['solver'] = solver;
-
-        let tick = 0;
-
-        const next = (render = true) => {
-            const {done, value} = solver.next();
-            const comment: string = value;
-            !done && tick++;
-
-            if (render) {
-                renderBoard();
-                vm.note = comment;
-            }
-        };
-
-        const stepOver = (ct: CancellationToken) => {
-            const hash = board.hash;
-
-            do {
-                next(false);
-            } while (board.hash != hash && !ct.cancelled);
-
-            next();
-        };
-
-        const stepOut = () => {
-            /*
-            log = false;
-            const n = solver.depth;
-            while (solver.depth >= n)
-                next();
-            log = true;
-            renderSGF(solver.current.node.toString('SGF'));
-            */
-        };
-
-        keyboard.hook(keyboard.Key.F10, event => {
-            event.preventDefault();
-            const ct = new CancellationToken;
-            const hook = keyboard.hook(keyboard.Key.Esc, event => {
-                event.preventDefault();
-                console.log('cancelling...');
-                ct.cancelled = true;
-            });
-
-            stepOver(ct);
-        });
-
-        keyboard.hook(keyboard.Key.F11, event => {
-            if (!event.shiftKey) {
-                event.preventDefault();
-                if (event.ctrlKey)
-                    debugger;
-                next();
-            } else {
-                // Shift+F11
-                event.preventDefault();
-                stepOut();
-            }
-        });
-
-        console.log(c2s(color), 'to play with', nkotreats, 'external ko treats\n',
-            'F11 - step into\n',
-            'Ctrl+F11 - step into and debug\n',
-            'F10 - step over\n',
-            'Shift+F11 - step out\n',
-            'G - go to a certain step\n');
-
-        keyboard.hook('G'.charCodeAt(0), event => {
-            event.preventDefault();
-            const stopat = +prompt('Step #:');
-            if (!stopat) return;
-            console.log('skipping first', stopat, 'steps...');
-            while (tick < stopat)
-                next();
-            renderBoard();
-        });
-    }
-
     const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
     const status = (b: Board) => sign(b.get(aim) || -tblock);
 
@@ -227,7 +141,10 @@ module testbench {
     }
 
     window.addEventListener('load', () => {
-        vm.kmVisible = !!qargs.km;
+        if (qargs.km) {
+            vm.kmVisible = true;
+            vm.km = stone.label.color(qargs.km);
+        }
 
         Promise.resolve().then(() => {
             const directory = new Directory(<HTMLElement>document.querySelector('.directory'));
@@ -255,6 +172,16 @@ module testbench {
 
                 loadProblem(path).then(() => {
                     directory.select(path);
+
+                    if (qargs.debug) {
+                        vm.dbg.enabled = true;
+                        lspath = null;
+                        solvingFor = +1;
+                        tblock = board.get(aim);
+                        solvingFor = stone.label.color(qargs.debug);
+                        dbgsolve(board, solvingFor, vm.km, aim, tt, status, renderBoard);
+                        console.warn('debug mode is on');
+                    }
                 }).catch(e => {
                     console.log('cannot load', path, e.stack);
                     location.hash = '#blank';
@@ -298,6 +225,7 @@ module testbench {
                 console.log(err.stack);
             });
 
+            if (!qargs.debug) {
             document.querySelector('#delete').addEventListener('click', e => {
                 if (lspath && lspath != 'blank' && confirm('Delete problem ' + lspath + '?')) {
                     ls.set(lspath, null);
@@ -327,10 +255,6 @@ module testbench {
                 lspath = null;
                 solvingFor = +1;
                 tblock = board.get(aim);
-
-                if (vm.debugSolver)
-                    dbgsolve(board, solvingFor, vm.km);
-                else
                     solveAndRender(solvingFor, vm.km);
             });
 
@@ -338,10 +262,6 @@ module testbench {
                 lspath = null;
                 solvingFor = -1;
                 tblock = board.get(aim);
-
-                if (vm.debugSolver)
-                    dbgsolve(board, solvingFor, vm.km);
-                else
                     solveAndRender(solvingFor, vm.km);
             });
 
@@ -385,6 +305,7 @@ module testbench {
                     throw err;
                 }
             });
+            }
         }).catch(err => {
             console.error(err.stack);
             alert(err);
@@ -416,6 +337,13 @@ module testbench {
 
     function updateSGF(sgfdata: string, nvar = 0) {
         const sgf = tsumego.SGF.parse(sgfdata);
+
+        if (!sgf) {
+            debugger;
+            console.error('Invalid SGF:\n' + sgfdata);
+            throw new SyntaxError('Invalid SGF');
+        }
+
         const setup = sgf.steps[0];
 
         board = new Board(sgfdata, nvar);
@@ -534,6 +462,7 @@ module testbench {
         // manages the selection area
         //
 
+        if (!qargs.debug) {
         let selecting = false;
         let dragging = false;
         let dragged = false;
@@ -607,6 +536,7 @@ module testbench {
             selecting = false;
             dragging = false;
         });
+        }
 
         //
         // displays the current coordinates in the lower right corner
@@ -616,7 +546,7 @@ module testbench {
             const [x, y] = [event.cellX, event.cellY];
             const s = stone(x, y, 0);
 
-            vm.coords = `${stone.cc.toString(s, board.size)} [${stone.toString(s)}]`;
+            vm.coords = `${stone.cc.toString(s, board.size)} ${stone.toString(s)}`;
         });
 
         ui.addEventListener('mouseout', () => {
@@ -627,6 +557,7 @@ module testbench {
         // the main click handler
         //
 
+        if (!qargs.debug) {
         ui.addEventListener('click', event => {
             const [x, y] = [event.cellX, event.cellY];
             const c = board.get(x, y);
@@ -650,6 +581,7 @@ module testbench {
             renderBoard();
             vm.note = stone.toString(stone(x, y, board.get(x, y)));
         });
+        }
 
         const wrapper = document.querySelector('.tsumego') as HTMLElement;
         wrapper.innerHTML = '';
@@ -666,7 +598,7 @@ module testbench {
 
     function getProblemSGF() {
         return board.toStringSGF('\n  ').replace(/\)$/,
-            (stone.hascoords(aim) ? '\n  MA[' + stone.toString(aim) + ']' : '') +
+            (stone.hascoords(aim) ? '\n  MA' + stone.toString(aim) : '') +
             ')');
     }
 

@@ -6,13 +6,6 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    const infdepth = 255;
-
-    module repd {
-        export const get = move => move >> 8 & 255;
-        export const set = (move, repd) => move & ~0xFF00 | repd << 8;
-    }
-
     interface Node {
         hash: number;
         play(move: stone): number;
@@ -57,6 +50,14 @@ module tsumego {
     }
 
     export namespace solve {
+        export interface DebugState {
+            km?: number;
+            path?: number[];
+            moves?: stone[];
+            color?: number;
+            depth?: number;
+        }
+
         export interface Args {
             root: Node;
             color: number;
@@ -65,7 +66,7 @@ module tsumego {
             expand(color: number): stone[];
             status(node: Node): number;
             alive?(node: Node): boolean;
-            debug?: boolean;
+            debug?: DebugState;
             time?: number;
             log?: {
                 write(data): void;
@@ -153,6 +154,7 @@ module tsumego {
                 b.w - a.w);  // first consider moves that lead to a winning position
 
             const path: number[] = []; // path[i] = hash of the i-th position
+            const hist: stone[] = []; // the sequence of moves that leads to the current position
 
             function* solve(color: number, km: number) {
                 remaining--;
@@ -173,9 +175,14 @@ module tsumego {
                 const ttres = tt.get(hashb, color, km);
 
                 stats && (stats.depth = depth, yield);
+                debug && (debug.color = color);
+                debug && (debug.depth = depth);
+                debug && (debug.moves = hist);
+                debug && (debug.path = path);
+                debug && (debug.km = km);
 
                 if (ttres) {
-                    debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
+                    //debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
                     return repd.set(ttres, infdepth);
                 }
 
@@ -252,10 +259,13 @@ module tsumego {
                     let s: stone;
 
                     path.push(hashb);
+                    hist.push(move || stone.nocoords(color));
                     stats && stats.nodes++;
+                    move && board.play(move);
+                    debug && (yield move ? stone.toString(move) : stone.label.string(color) + '[]');
+
 
                     if (!move) {
-                        debug && (yield stone.label.string(color) + ' plays elsewhere');
                         //const i = tags.lastIndexOf(tags[depth], -2);
 
                         let npasses = 1;
@@ -299,21 +309,18 @@ module tsumego {
                             s = yield* solve(-color, prevb == hashb ? 0 : km);
                         }
                     } else {
-                        board.play(move);
-                        debug && (yield);
-
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
                                 // let the opponent play the best move
                                 yield* solve(-color, move && km);
-
-                        board.undo();
                     }
 
-                    debug && (yield 'the outcome of this move: ' + stone.toString(s));
                     path.pop();
+                    hist.pop();
+                    move && board.undo();
+                    debug && (yield stone.toString(repd.set(move, 0) || stone.nocoords(color)) + ' \u27f6 ' + stone.toString(s));
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
@@ -399,6 +406,8 @@ module tsumego {
                 if (move2 * color > 0 && stone.hascoords(move2))
                     move = move2;
             }
+
+            move = repd.set(move, 0);
 
             return typeof args === 'string' ?
                 stone.toString(move) :

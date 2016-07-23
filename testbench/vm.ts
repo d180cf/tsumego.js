@@ -20,12 +20,12 @@ module testbench {
     export const vm = {
         /** The currently selected editor tool: MA, AB, AW, etc. */
         get tool(): string {
-            const button = document.querySelector('#tool > button.active');
+            const button = document.querySelector('#tool button.active');
             return button && button.getAttribute('data-value');
         },
 
         set tool(value: string) {
-            for (const button of document.querySelectorAll('#tool > button')) {
+            for (const button of document.querySelectorAll('#tool button')) {
                 if (button.getAttribute('data-value') == value)
                     button.classList.add('active');
                 else
@@ -33,15 +33,19 @@ module testbench {
             }
         },
 
-        /** Tells to invoke the solver in the step-by-step mode. */
-        get debugSolver(): boolean {
-            return !!qargs.debug;
-        },
-
         /** ko master: +1, -1 or 0 */
         get km(): number {
-            const b = document.querySelector('#km > button.active');
-            return b && +b.getAttribute('data-value');
+            const b = document.querySelector('#km button.active');
+            return b ? +b.getAttribute('data-value') : undefined;
+        },
+
+        set km(value: number) {
+            for (const button of document.querySelectorAll('#km button')) {
+                if (+button.getAttribute('data-value') == value)
+                    button.classList.add('active');
+                else
+                    button.classList.remove('active');
+            }
         },
 
         /** Hides/shows the km selector. */
@@ -75,6 +79,52 @@ module testbench {
                 $('#undo').removeClass('disabled');
             else
                 $('#undo').addClass('disabled');
+        },
+
+        dbg: {
+            set enabled(value: boolean) {
+                if (value) {
+                    $('#footer').css('background-color', '#a7691c');
+                    $('#dbg-panel').show();
+                    $('#solver-panel').hide();
+                    $('#file-panel').hide();
+                    $('#tool').hide();
+                } else {
+                    debugger;
+                }
+            },
+
+            set inactive(value: boolean) {
+                $('#dbg-panel button').toggleClass('disabled', value);
+            },
+
+            /** aka F5 */
+            get run() {
+                return $('#dbg-run');
+            },
+
+            get bp() {
+                return $('#dbg-bp');
+            },
+
+            /** aka F11 */
+            get stepInto() {
+                return $('#dbg-into');
+            },
+
+            /** aka F10 */
+            get stepOver() {
+                return $('#dbg-next');
+            },
+
+            /** aka Shift+F11 */
+            get stepOut() {
+                return $('#dbg-undo');
+            },
+
+            get stop() {
+                return $('#dbg-stop');
+            },
         }
     };
 }

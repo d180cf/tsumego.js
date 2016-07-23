@@ -118,6 +118,19 @@ module tsumego {
         }
     }
 
+    export const infdepth = 255; // only 8 bits available for storing the depth
+
+    /**
+     * If b(1), b(2), ... is the sequence of positions leading
+     * to the current position and the sub tree (sub graph, actually)
+     * of positions that proves the solution contains any of
+     * b(i), then repd.get(solution) = i.
+     */
+    export module repd {
+        export const get = move => move >> 8 & 255;
+        export const set = (move, repd) => move & ~0xFF00 | repd << 8;
+    }
+
     export module stone.label {
         /** W -> -1, B -> +1 */
         export function color(label: string) {
@@ -138,13 +151,16 @@ module tsumego {
         const n2s = (n: number) => String.fromCharCode(n + 0x61); // 0 -> `a`, 3 -> `d`
         const s2n = (s: string) => s.charCodeAt(0) - 0x61; // `d` -> 43 `a` -> 0
 
+        /** e.g. W[ab], [ab], W[] */
         export function toString(m: stone) {
             const c = color(m);
             const [x, y] = coords(m);
-            const s = !hascoords(m) ? null : n2s(x) + n2s(y);
-            const t = c > 0 ? 'B' : 'W';
+            const s = !hascoords(m) ? '' : n2s(x) + n2s(y);
+            const t = label.string(c) || '';
+            const _nr = repd.get(m);
 
-            return !c ? s : !s ? t : t + '[' + s + ']';
+            return t + '[' + s + ']'
+                + (_nr ? ' depth=' + _nr : '');
         }
 
         export function fromString(s: string) {
