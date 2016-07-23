@@ -31,6 +31,6 @@ module testbench {
 
         console.log('qargs:', qargs);
     } catch (err) {
-        console.log('Failed to parse qargs:', err);
+        console.warn('Failed to parse qargs:', err);
     }
 }

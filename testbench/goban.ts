@@ -95,7 +95,7 @@ namespace testbench {
             <svg version="1.0" xmlns="http://www.w3.org/2000/svg"
                  xmlns:xlink="http://www.w3.org/1999/xlink"
                  width="100%"
-                 viewBox="-0.5 -0.5 ${n} ${n}">
+                 viewBox="-1.5 -1.5 ${n + 2} ${n + 2}">
               <style>
                 * { stroke-width: 0.05 }
               </style>
@@ -147,6 +147,30 @@ namespace testbench {
                 }
             }
 
+            // upper letters: A, B, C, ...
+            for (let x = 0; x < n; x++) {
+                const label = stone.cc.toString(stone(x, 0, 0), n)[0];
+                svg.innerHTML += `<text x="${x}" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+            }
+
+            // left digits: 9, 8, 7, ...
+            for (let y = 0; y < n; y++) {
+                const label = stone.cc.toString(stone(0, y, 0), n)[1];
+                svg.innerHTML += `<text x="${-0.7}" y="${y}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+            }
+
+            // lower labels: a, b, c, ...
+            for (let x = 0; x < n; x++) {
+                const label = stone.toString(stone(x, 0, 0))[1];
+                svg.innerHTML += `<text x="${x}" y="${n - 1 + 0.7}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+            }
+
+            // right letters: a, b, c, ...
+            for (let y = 0; y < n; y++) {
+                const label = stone.toString(stone(0, y, 0))[2];
+                svg.innerHTML += `<text x="${n - 1 + 0.7}" y="${y}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+            }
+
             function getStoneCoords(event: MouseEvent) {
                 // Chrome had a bug which made offsetX/offsetY coords wrong
                 // this workaround computes the offset using client coords
@@ -158,14 +182,17 @@ namespace testbench {
                 const x = offsetX / r.width;
                 const y = offsetY / r.height;
 
-                return [
-                    Math.round(x * n - 0.5),
-                    Math.round(y * n - 0.5)
-                ];
+                const nx = Math.round(x * (n + 2) - 1.5);
+                const ny = Math.round(y * (n + 2) - 1.5);
+
+                return board.inBounds(nx, ny) && [nx, ny];
             }
 
             function attachCellCoords(event: GobanMouseEvent) {
-                [event.cellX, event.cellY] = getStoneCoords(event);
+                const coords = getStoneCoords(event);
+
+                if (coords)
+                    [event.cellX, event.cellY] = coords;
             }
 
             svg.addEventListener('click', attachCellCoords);

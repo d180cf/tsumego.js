@@ -190,7 +190,7 @@ module tsumego {
             const x = stone.x(s);
             const y = stone.y(s);
 
-            const xs = String.fromCharCode('A'.charCodeAt(0) + (x < 8 ? x : x - 1)); // skip the I letter
+            const xs = String.fromCharCode('A'.charCodeAt(0) + (x < 8 ? x : x + 1)); // skip the I letter
             const ys = (boardSize - y) + '';
 
             return xs + ys;
