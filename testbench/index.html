@@ -5,8 +5,17 @@
 
     <link href="favicon.ico" rel="icon" type="image/x-icon" />
 
+    <!-- RSVP is a polyfill for Promise which is missing in IE/Edge. -->
+    <script src="../libs/rsvp-latest.js"></script>
+
+    <!-- IE/Edge doesn't support lots of stuff from ES 6 -->
+    <script src="../libs/es6-polyfill.js"></script>
+
     <!-- Facebook's polyfill for ES 6 generators. -->
     <script src="../libs/regenerator-runtime.js"></script>
+
+    <!-- Google's polyfill for the innerHTML property of SVG elements. -->
+    <script src="../libs/innersvg.js"></script>
 
     <!-- jQuery mainly for Semantic UI, but it's now used by this app too. -->
     <script src="../libs/jquery-3.0.0.js"></script>
@@ -70,7 +79,7 @@
             <div class="ui big icon vertical buttons" id="dbg-panel">
                 <button class="ui icon button" id="dbg-run" title="Run" style="color:#21BA45">
                     <i class="play icon"></i>
-                </button>                
+                </button>
 
                 <button class="ui icon button" id="dbg-into" title="Step into">
                     <i class="play level down icon"></i>

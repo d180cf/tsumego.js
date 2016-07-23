@@ -21,7 +21,7 @@ module testbench {
          * Finds or creates the .ui.content element.
          */
         private getFolder(folder: string): Element {
-            for (const x of this.container.querySelectorAll('.title'))
+            for (const x of $(this.container).find('.title').toArray())
                 if (x.textContent == folder)
                     return <HTMLElement>x.nextSibling;
 
@@ -34,7 +34,7 @@ module testbench {
         }
 
         find(path: string | ((path: string) => boolean), list = this.container): HTMLElement {
-            for (const e of list.querySelectorAll('a.item')) {
+            for (const e of $(list).find('a.item').toArray()) {
                 const a = <HTMLAnchorElement>e;
 
                 const matches = typeof path === 'string' ?
@@ -82,7 +82,7 @@ module testbench {
         select(path: string) {
             $(this.container).find('.active').removeClass('active');
 
-            for (const e of this.container.querySelectorAll('.directory .item')) {
+            for (const e of $(this.container).find('.item').toArray()) {
                 const a = <HTMLAnchorElement>e;
 
                 if (a.hash == '#' + path) {

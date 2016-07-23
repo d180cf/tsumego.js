@@ -92,8 +92,8 @@ task('tb', { async: true }, mode => {
         } else {
             return babel({
                 blacklist: [
-                    'regenerator', // doesn't work in IE/Edge
-                    'es6.forOf', // doesn't work in IE/Edge
+                    //'regenerator', // doesn't work in IE/Edge
+                    //'es6.forOf', // doesn't work in IE/Edge
                     //'es6.blockScoping', // otheriwse const/let variables won't be bound in loops with callbacks
                 ]
             });

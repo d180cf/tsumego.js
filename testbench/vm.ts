@@ -25,7 +25,7 @@ module testbench {
         },
 
         set tool(value: string) {
-            for (const button of document.querySelectorAll('#tool button')) {
+            for (const button of $('#tool button').toArray()) {
                 if (button.getAttribute('data-value') == value)
                     button.classList.add('active');
                 else
@@ -40,7 +40,7 @@ module testbench {
         },
 
         set km(value: number) {
-            for (const button of document.querySelectorAll('#km button')) {
+            for (const button of $('#km button').toArray()) {
                 if (+button.getAttribute('data-value') == value)
                     button.classList.add('active');
                 else

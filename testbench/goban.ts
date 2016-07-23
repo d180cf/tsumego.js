@@ -18,7 +18,7 @@ namespace testbench {
         }
 
         private *nodes() {
-            const refs = this.svg.querySelectorAll(`use`);
+            const refs = $(this.svg).find(`use`).toArray();
 
             for (let i = 0; i < refs.length; i++)
                 if (refs[i].getAttribute('xlink:href') == '#' + this.tag)
@@ -96,12 +96,9 @@ namespace testbench {
                  xmlns:xlink="http://www.w3.org/1999/xlink"
                  width="100%"
                  viewBox="-1.5 -1.5 ${n + 2} ${n + 2}">
-              <style>
-                * { stroke-width: 0.05 }
-              </style>
               <defs>
                 <pattern id="svg-goban-grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
-                  <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black"></path>
+                  <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black" stroke-width="0.05"></path>
                 </pattern>
               </defs>
 
@@ -110,13 +107,15 @@ namespace testbench {
 
             const svg = <GobanElement>div.querySelector('svg');
 
+            div.removeChild(svg);
+
             Object.assign(svg, {
-                AB: new Marks(svg, '<circle id="AB" r="0.475" fill="black" stroke="black"></circle>'),
-                AW: new Marks(svg, '<circle id="AW" r="0.475" fill="white" stroke="black"></circle>'),
-                CR: new Marks(svg, '<circle id="CR" r="0.25" fill="none"></circle>'),
-                TR: new Marks(svg, '<path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none"></path>'),
-                MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none"></path>'),
-                SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none"></path>'),
+                AB: new Marks(svg, '<circle id="AB" r="0.475" fill="black" stroke="black" stroke-width="0.05"></circle>'),
+                AW: new Marks(svg, '<circle id="AW" r="0.475" fill="white" stroke="black" stroke-width="0.05"></circle>'),
+                CR: new Marks(svg, '<circle id="CR" r="0.25" fill="none" stroke-width="0.05"></circle>'),
+                TR: new Marks(svg, '<path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" fill="none" stroke-width="0.05"></path>'),
+                MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none" stroke-width="0.05"></path>'),
+                SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none" stroke-width="0.05"></path>'),
                 SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>'),
 
                 // invoked after a marker has been added or removed
