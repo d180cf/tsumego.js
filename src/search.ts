@@ -154,6 +154,7 @@ module tsumego {
                 b.w - a.w);  // first consider moves that lead to a winning position
 
             const path: number[] = []; // path[i] = hash of the i-th position
+            const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
             const hist: stone[] = []; // the sequence of moves that leads to the current position
 
             function* solve(color: number, km: number) {
@@ -266,17 +267,14 @@ module tsumego {
 
 
                     if (!move) {
-                        //const i = tags.lastIndexOf(tags[depth], -2);
+                        const nextkm = prevb == hashb && color * km < 0 ? 0 : km;
+                        const tag = hashb & ~15 | (-color & 3) << 2 | nextkm & 3; // tells which position, who plays and who is the km
+                        const isloop = tags.lastIndexOf(tag) >= 0;
 
-                        let npasses = 1;
-
-                        while (npasses <= depth && path[depth - npasses] == hashb)
-                            npasses++;
-
-                        if (npasses == 3) {
+                        if (isloop) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(status(board)), depth - npasses + 1);
+                            s = repd.set(stone.nocoords(status(board)), depth - 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -306,7 +304,9 @@ module tsumego {
                             // what the (prevb == hashb) check below does: it checks
                             // that if the two last moves were passes, the ko treats
                             // can be voided and the search can be resumed without them.
-                            s = yield* solve(-color, prevb == hashb ? 0 : km);
+                            tags.push(tag);
+                            s = yield* solve(-color, nextkm);
+                            tags.pop();
                         }
                     } else {
                         s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
