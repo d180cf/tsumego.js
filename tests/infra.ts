@@ -79,7 +79,7 @@ namespace tests {
     for (const a of args) {
         if (!a) continue;
 
-        const i = a.indexOf('=');
+        const i = a.indexOf(':');
 
         if (i < 0)
             vals.push(a);
@@ -88,14 +88,18 @@ namespace tests {
     }
 
     /**
-     * node test qwerty foo=bar
-     * /test?qwerty&foo=bar
+     * node test qwerty foo:bar
+     * /test?qwerty&foo:bar
      */
     export const argv: {
         [index: number]: string;
         unodes?: boolean;
+        mode?: 'es5' | 'es6';
         log?: string;
     } = vals;
+
+    console.log('args:', args);
+    console.log('argv:', argv);
 }
 
 namespace tests {
@@ -163,6 +167,7 @@ namespace tests.ut {
                         process.title = tname + ' @ ' + started.toLocaleTimeString();
 
                     try {
+                        debugger;
                         comment = test(expect);
                     } finally {
                         console.log = _console_log;
@@ -369,6 +374,16 @@ try {
     }
 } catch (e) {
     console.warn(e);
+}
+
+module tests {
+    if (argv.mode == 'es5') {
+        console.log('loading the regenerator runtime...');
+        global.regeneratorRuntime = require('../libs/regenerator-runtime');
+        global.tsumego = require('../tsumego.es5');
+    } else {
+        global.tsumego = require('../tsumego.es6');
+    }
 }
 
 const _dt0 = Date.now();

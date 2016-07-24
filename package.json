@@ -8,7 +8,7 @@
     "url": "https://github.com/d180cf/tsumego.js"
   },
   "devDependencies": {
-    "typescript": "1.8.0",
+    "typescript": "1.8.10",
     "jake": "8.0.12",
     "babel": "5.8.23"
   },

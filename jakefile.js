@@ -65,7 +65,7 @@ task('lib', { async: true }, () => {
 });
 
 desc('Runs unit tests.');
-task('test', { async: true }, filter => {
+task('test', ['lib'], { async: true }, filter => {
     console.log('running tests...');
     process.chdir('tests');
 
@@ -75,6 +75,9 @@ task('test', { async: true }, filter => {
         return exec('npm i');
     }).then(() => {
         return exec('node tests ' + (filter || ''), { printStdout: true });
+    }).then(() => {
+        if (!filter)
+            return exec('node tests mode:es5', { printStdout: true });
     }).then(() => {
         process.chdir('..');
     }).then(complete);
@@ -133,6 +136,7 @@ task('release', ['lib'], () => {
 
     copy('tsumego.es5.js');
     copy('tsumego.es6.js');
+    copy('tsumego.d.ts');
 });
 
 desc('Builds the site contents.');

@@ -1,4 +1,4 @@
-/// <reference path="../src/search.ts" />
+/// <reference path="../tsumego.d.ts" />
 
 /// <reference path="console.tree.ts" />
 /// <reference path="infra.ts" />

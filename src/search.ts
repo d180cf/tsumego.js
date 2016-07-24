@@ -6,7 +6,7 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    interface Node {
+    export interface Node {
         hash: number;
         play(move: stone): number;
         undo(): stone;

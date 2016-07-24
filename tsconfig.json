@@ -1,6 +1,7 @@
 ﻿{
   "files": [ "src/main.ts" ],
   "compilerOptions": {
+    "declaration": true,
     "out": "tsumego.js",
     "target": "es6",
     "experimentalDecorators": true,
