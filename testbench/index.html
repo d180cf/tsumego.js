@@ -20,6 +20,29 @@
     <!-- jQuery mainly for Semantic UI, but it's now used by this app too. -->
     <script src="../libs/jquery-3.0.0.js"></script>
 
+    <!-- The tsumego solver. -->
+    <script>
+        var mode = (/\bmode=(\w+)\b/.exec(location.search) || [])[1];
+        var sources = { es5: '../tsumego.es5.js', es6: '../tsumego.es6.js', dev: '../tsumego.js' };
+
+        if (!mode) {
+            try {
+                // check if es6 generators are supported:
+                // the es6 version is about 1.5x faster
+                new Function('!function*(){}');
+                mode = 'es6';
+            } catch (_) {
+                mode = 'es5';
+            }
+        }
+
+        var src = sources[mode];
+        var tag = '\x3cscript src="' + src + '"\x3e\x3c/script\x3e';
+
+        console.log('mode = ' + mode + '; src = ' + src);
+        document.write(tag);
+    </script>
+
     <!-- Semantic UI -->
     <link type="text/css" href="../libs/semantic-ui/semantic.css" rel="stylesheet" />
     <script src="../libs/semantic-ui/semantic.js"></script>

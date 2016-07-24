@@ -84,7 +84,7 @@ task('test', ['lib'], { async: true }, filter => {
 });
 
 desc('Builds the testbench app.');
-task('tb', { async: true }, mode => {
+task('tb', ['lib'], { async: true }, mode => {
     console.log('building the testbench app...');
     process.chdir('testbench');
 
@@ -147,6 +147,11 @@ task('site', ['tb'], () => {
     jake.cpR('site', 'bin');
     jake.cpR('libs', 'bin/site/libs');
     jake.mkdirP('bin/site/testbench');
+    
+    jake.cpR('tsumego.js', 'bin/site');
+    jake.cpR('tsumego.es5.js', 'bin/site');
+    jake.cpR('tsumego.es6.js', 'bin/site');
+
     jake.cpR('testbench/app.js', 'bin/site/testbench');
     jake.cpR('testbench/index.html', 'bin/site/testbench');
     jake.cpR('testbench/favicon.ico', 'bin/site/testbench');

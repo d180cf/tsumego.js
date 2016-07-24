@@ -10,7 +10,9 @@ This build doesn't use Babel which screws source maps produced by TypeScript. Ho
 
 ```
 jake tb
-``` 
+```
+
+The `dev` option only has an effect on how the web app sources are built. The library itself is built separately in three versions (dev, es5 and es6) and the web app detects at runtime which version to load.
 
 # Debug
 
@@ -31,6 +33,18 @@ The search simply does a `yield` after every move is made and after it's undone,
 This allows to stop the search at an interesting point and then start source level debugging.
 
 Generators are quite successfully transpiled to es5 JS with Babel and the Regenerator library, but unfortunately this screws source maps and source level debugging has to be done at the JS level, which looks nasty after all these `yield`s are transpiled to es5.
+
+## The `mode` parameter
+
+This parameter tells which version of the library should be loaded:
+
+- `?mode=dev` loads `tsumego.js` - it's debuggable because it has correct source maps
+- `?mode=es6` loads `tsumego.es6.js` which uses es6 generators
+- `?mode=es5` loads `tsumego.es5.js` whichs runs in IE, but is about 1.5x slower
+
+When the option is omitted, the app checks what the browser supports and loads either `es5` or `es6` version. 
+
+## The `depth` parameter
 
 Add the `?depth=4` parameter to see what moves are being explored by the solver. The debugger interrupts the solver every 1/4 second and draws the first few moves:
 
