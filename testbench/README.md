@@ -16,7 +16,7 @@ jake tb
 
 Usually in the URL there is just the problem id: `http://.../#basic/5`. To enter the debug mode add the `debug` parameter in the URL query: `?debug=B&km=W&rs=123#basic/7` (this one tells that black plays first, white is the ko master and the RNG should be initialized with `123` to make things reproducible). This should display this screen:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/debugger.png#1" />
+![](https://rawgit.com/d180cf/tsumego.js/master/docs/pics/debugger.png#1)
 
 The solver is a recursive function that implements a variation of depth-first search. That function is also a es6 generator - a feature that has appeared in JS just recently. Generators can be paused and resumed at arbitrary points and this is why this debugger can work: the search starts, suspends itself once the first move is made and the UI resumes the search when necessary.
 
@@ -31,6 +31,10 @@ The search simply does a `yield` after every move is made and after it's undone,
 This allows to stop the search at an interesting point and then start source level debugging.
 
 Generators are quite successfully transpiled to es5 JS with Babel and the Regenerator library, but unfortunately this screws source maps and source level debugging has to be done at the JS level, which looks nasty after all these `yield`s are transpiled to es5.
+
+Add the `?depth=4` parameter to see what moves are being explored by the solver. The debugger interrupts the solver every 1/4 second and draws the first few moves:
+
+![](https://rawgit.com/d180cf/tsumego.js/master/docs/pics/debugger2.png#1)
 
 # Notes
 

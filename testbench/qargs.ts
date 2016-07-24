@@ -11,6 +11,12 @@ module testbench {
 
         /** Enables the Benson's test. */
         benson: boolean;
+
+        /** Draws moves that are being explored by the solver. Defaults to 4. */
+        depth: number;
+
+        /** Tells how often the debugger interrupts the solver. 250 (ms) by default. */
+        freq: number;
     }
 
     export const qargs: QArgs = <any>{};

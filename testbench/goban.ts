@@ -5,7 +5,7 @@ namespace testbench {
     class Marks {
         private tag: string; // can be null; the "id" attribute for <use xlink:href="#ID">
 
-        constructor(private svg: GobanElement, private def: string) {
+        constructor(private svg: SVGGobanElement, private def: string) {
             try {
                 this.tag = /\bid="(\w+)"/.exec(def)[1];
                 const defs = <HTMLElement>svg.querySelector('defs');
@@ -30,7 +30,7 @@ namespace testbench {
             }
         }
 
-        get(x: number, y: number) {
+        get(x: number, y: number): HTMLElement {
             for (const ref of this.nodes())
                 if (+ref.getAttribute('x') == x && +ref.getAttribute('y') == y)
                     return ref;
@@ -38,16 +38,23 @@ namespace testbench {
             return null;
         }
 
-        add(x: number, y: number, value?: string) {
+        add(x: number, y: number, value?: string): HTMLElement {
             const ref = this.get(x, y);
             if (ref) return ref;
 
-            this.svg.innerHTML += this.tag ?
+            const g = <HTMLElement>document.createElementNS(this.svg.getAttribute('xmlns'), 'g');
+
+            g.innerHTML = this.tag ?
                 `<use x="${x}" y="${y}" xlink:href="#${this.tag}"/>` :
                 this.def.replace(/\bx=""/, 'x="' + x + '"').replace(/\by=""/, 'y="' + y + '"').replace('></', '>' + value + '</');
 
+            const m = <HTMLElement>g.firstChild;
+
+            g.removeChild(m);
+            this.svg.appendChild(m);
+
             this.svg.onupdated(x, y);
-            return this.get(x, y);
+            return m;
         }
 
         remove(x: number, y: number) {
@@ -68,7 +75,7 @@ namespace testbench {
         }
     }
 
-    export interface GobanElement extends HTMLElement {
+    export interface SVGGobanElement extends HTMLElement {
         AB: Marks; // black stone
         AW: Marks; // white stone
         CR: Marks; // circle
@@ -95,8 +102,8 @@ namespace testbench {
         cellY: number;
     }
 
-    export module GobanElement {
-        export function create(board: Board): GobanElement {
+    export module SVGGobanElement {
+        export function create(board: Board): SVGGobanElement {
             const n = board.size;
 
             const div = document.createElement('div');
@@ -115,7 +122,7 @@ namespace testbench {
               <rect x="0" y="0" width="${n - 1}" height="${n - 1}" fill="url(#svg-goban-grid)" stroke="black" stroke-width="0.1"></rect>
             </svg>`;
 
-            const svg = <GobanElement>div.querySelector('svg');
+            const svg = <SVGGobanElement>div.querySelector('svg');
 
             div.removeChild(svg);
 

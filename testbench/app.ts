@@ -19,7 +19,7 @@ module testbench {
     import profile = tsumego.profile;
 
     declare var board: tsumego.Board;
-    declare var ui: GobanElement;
+    declare var ui: SVGGobanElement;
 
     /** In SGF a B stone at x = 8, y = 2
         is written as B[ic] on a 9x9 goban
@@ -447,7 +447,7 @@ module testbench {
 
         vm.canUndo = !!move;
 
-        ui = GobanElement.create(board);
+        ui = SVGGobanElement.create(board);
 
         if (stone.hascoords(move) && solvingFor)
             ui.TR.add(stone.x(move), stone.y(move));
@@ -594,6 +594,8 @@ module testbench {
 
         if (lspath)
             ls.set(lspath, sgf);
+
+        return ui;
     }
 
     function getProblemSGF() {

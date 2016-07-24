@@ -8,7 +8,7 @@ module testbench {
     import TT = tsumego.TT;
     import hex = tsumego.hex;
 
-    export function dbgsolve(board: Board, color: number, km: number, aim: stone, tt: TT, status: (board: Board) => number, refresh: () => void) {
+    export function dbgsolve(board: Board, color: number, km: number, aim: stone, tt: TT, status: (board: Board) => number, refresh: () => SVGGobanElement) {
         const debug: DebugState = {};
 
         const solver = solve.start({
@@ -62,11 +62,16 @@ module testbench {
         }
 
         function run(stop = () => false) {
+            const svg = refresh();
+
             render = false;
             dbgbreak = false;
             vm.note = 'solving...';
 
             let comment = '';
+
+            const moves = [];
+            const items: HTMLElement[] = [];
 
             (function fn() {
                 const t = Date.now();
@@ -74,13 +79,38 @@ module testbench {
                 while (!isdone && !dbgbreak && !breakpoints.matches() && !stop()) {
                     comment = next();
 
-                    if (Date.now() > t + 250)
+                    if (Date.now() > t + (qargs.freq || 250)) {
+                        const newmoves = debug.moves.slice(0, qargs.depth || 4);
+
+                        if (newmoves + '' != moves + '') {
+                            moves.length = 0;
+                            moves.push(...newmoves);
+
+                            for (const item of items)
+                                svg.removeChild(item);
+
+                            items.length = 0;
+
+                            for (let i = 0; i < newmoves.length; i++) {
+                                const move = debug.moves[i];
+                                const [x, y] = stone.coords(move);
+
+                                if (stone.hascoords(move)) {
+                                    const stone = (move > 0 ? svg.AB : svg.AW).add(x, y);
+                                    const label = svg.LB.add(x, y, i + 1 + '');
+
+                                    items.push(stone, label);
+                                }
+                            }
+                        }
+
                         return setTimeout(fn);
+                    }
                 }
 
                 render = true;
-                refresh();
                 writeComment(comment);
+                refresh();
             })();
         }
 
