@@ -86,7 +86,7 @@ task('test', ['lib'], { async: true }, filter => {
 desc('Builds the testbench app.');
 task('tb', ['lib'], { async: true }, mode => {
     console.log('building the testbench app...');
-    process.chdir('testbench');
+    process.chdir('app');
 
     exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         if (mode == 'dev') {
@@ -146,16 +146,16 @@ task('site', ['tb'], () => {
     jake.mkdirP('bin');
     jake.cpR('site', 'bin');
     jake.cpR('libs', 'bin/site/libs');
-    jake.mkdirP('bin/site/testbench');
-    
+    jake.mkdirP('bin/site/app');
+
     jake.cpR('tsumego.js', 'bin/site');
     jake.cpR('tsumego.es5.js', 'bin/site');
     jake.cpR('tsumego.es6.js', 'bin/site');
 
-    jake.cpR('testbench/app.js', 'bin/site/testbench');
-    jake.cpR('testbench/index.html', 'bin/site/testbench');
-    jake.cpR('testbench/favicon.ico', 'bin/site/testbench');
-    jake.cpR('testbench/styles', 'bin/site/testbench/styles');
+    jake.cpR('app/app.js', 'bin/site/app');
+    jake.cpR('app/index.html', 'bin/site/app');
+    jake.cpR('app/favicon.ico', 'bin/site/app');
+    jake.cpR('app/styles', 'bin/site/app/styles');
 });
 
 desc('Builds everything and runs the tests.');
