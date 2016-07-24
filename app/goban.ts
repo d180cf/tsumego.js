@@ -8,7 +8,7 @@ namespace testbench {
         constructor(private svg: SVGGobanElement, private def: string) {
             try {
                 this.tag = /\bid="(\w+)"/.exec(def)[1];
-                const defs = <HTMLElement>svg.querySelector('defs');
+                const defs = svg.querySelector('defs');
                 defs.innerHTML += def;
             } catch (_) {
                 // the svg element cannot be referred to with <use>
@@ -122,7 +122,7 @@ namespace testbench {
               <rect x="0" y="0" width="${n - 1}" height="${n - 1}" fill="url(#svg-goban-grid)" stroke="black" stroke-width="0.1"></rect>
             </svg>`;
 
-            const svg = <SVGGobanElement>div.querySelector('svg');
+            const svg: SVGGobanElement = div.querySelector('svg') as any;
 
             div.removeChild(svg);
 

@@ -41,7 +41,7 @@ module tsumego {
             const v = this.outputs[this.outputs.length - 1];
 
             if (typeof layer === 'number') {
-                this.add(matrix.make(layer, v.length, () => rand() / layer * 2));
+                this.add(matrix.make(layer, v.length, () => rand() / <number>layer * 2));
             } else {
                 this.weights.push(layer);
                 this.outputs.push(vector.zero(layer.length));

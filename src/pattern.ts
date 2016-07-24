@@ -25,6 +25,12 @@ module tsumego {
      *  `.` = an empty intersection
      *  `-` = a neutral stone (the wall)
      *  `?` = anything (doesn't matter what's on that intersection)
+     *  
+     * The current implementation uses bitmasks and the fact that patterns
+     * are only 3x3 with the middle point empty at the moment. A probably
+     * better and more scalable approach would be a DFA matcher:
+     * www.gnu.org/software/gnugo/gnugo_10.html
+     * www.delorie.com/gnu/docs/gnugo/gnugo_160.html
      */
     export class Pattern {
         private masks = [new Array<BitMatrix>()]; // 8 elements

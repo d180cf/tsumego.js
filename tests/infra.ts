@@ -3,7 +3,6 @@ declare const global;
 declare const require: Function;
 
 interface Error {
-    stack: string;
     reason: Error;
 }
 
@@ -157,7 +156,7 @@ namespace tests.ut {
                     const _console_log = console.log;
 
                     console.log = (...args) => {
-                        logs.push(args.map(JSON.stringify));
+                        logs.push(args.map(<any>JSON.stringify));
                     };
 
                     const started = new Date;
@@ -367,7 +366,7 @@ try {
     }
 
     try {
-        new Function('function*f(){}');
+        new Function('!function*(){}');
     } catch (err) {
         console.warn('loading the regenerator runtime');
         global.regeneratorRuntime = require('../libs/regenerator-runtime');
