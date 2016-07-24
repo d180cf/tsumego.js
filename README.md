@@ -36,8 +36,9 @@ The solver explores about 10k positions per second, despite it uses es6 generato
 As far as I know, there are very few tsumego solving software:
 
 - Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
-- Martin Muller's [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos.
+- Martin Muller's [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos and uses a quite advanced version of depth first proof number search, as far as I know. It can handle tsumegos with up to 40 points according to published papers.  
 - Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x6.
-- Thomas Thompsen's [MadLab](http://www.t-t.dk/madlab/) can solve open tsumegos.
+- Thomas Thompsen's [MadLab](http://www.t-t.dk/madlab/) can solve open boundary tsumegos using the lambda proof number search. However it's not fast in enclosed ones.
+- Xiao's [XuznXuanGo](http://www.xuanxuango.com/solver.htm) does a stellar job on enclosed tsumegos and can handle many open boundary ones. I don't know what algorithms it uses, though.
 
 None of these are in JS, but some can be embedded in a website in a Java applet. Also, in theory, a C++ solver could be ported to JS with [Emcripten](https://en.wikipedia.org/wiki/Emscripten).
