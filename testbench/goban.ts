@@ -174,7 +174,7 @@ namespace testbench {
 
             // left digits: 9, 8, 7, ...
             for (let y = 0; y < n; y++) {
-                const label = stone.cc.toString(stone(0, y, 0), n)[1];
+                const label = stone.cc.toString(stone(0, y, 0), n).slice(1);
                 svg.LB.add(-0.7, y, label);
             }
 
