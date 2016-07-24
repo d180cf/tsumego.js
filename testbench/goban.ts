@@ -3,26 +3,31 @@ namespace testbench {
     import Board = tsumego.Board;
 
     class Marks {
-        private tag: string;
+        private tag: string; // can be null; the "id" attribute for <use xlink:href="#ID">
 
         constructor(private svg: GobanElement, private def: string) {
             try {
                 this.tag = /\bid="(\w+)"/.exec(def)[1];
-            } catch (err) {
-                throw SyntaxError('The shape def doesnt have an id="...": ' + def);
+                const defs = <HTMLElement>svg.querySelector('defs');
+                defs.innerHTML += def;
+            } catch (_) {
+                // the svg element cannot be referred to with <use>
             }
-
-            const defs = <HTMLElement>svg.querySelector('defs');
-
-            defs.innerHTML += def;
         }
 
         private *nodes() {
-            const refs = $(this.svg).find(`use`).toArray();
+            if (this.tag) {
+                const refs = $(this.svg).find(`use`).toArray();
 
-            for (let i = 0; i < refs.length; i++)
-                if (refs[i].getAttribute('xlink:href') == '#' + this.tag)
-                    yield refs[i];
+                for (let i = 0; i < refs.length; i++)
+                    if (refs[i].getAttribute('xlink:href') == '#' + this.tag)
+                        yield refs[i];
+            } else {
+                const type = /^<(\w+) /.exec(this.def)[1];
+                const refs = $(this.svg).find(type).toArray();
+
+                yield* refs;
+            }
         }
 
         get(x: number, y: number) {
@@ -33,10 +38,14 @@ namespace testbench {
             return null;
         }
 
-        add(x: number, y: number) {
+        add(x: number, y: number, value?: string) {
             const ref = this.get(x, y);
             if (ref) return ref;
-            this.svg.innerHTML += `<use x="${x}" y="${y}" xlink:href="#${this.tag}"/>`;
+
+            this.svg.innerHTML += this.tag ?
+                `<use x="${x}" y="${y}" xlink:href="#${this.tag}"/>` :
+                this.def.replace(/\bx=""/, 'x="' + x + '"').replace(/\by=""/, 'y="' + y + '"').replace('></', '>' + value + '</');
+
             this.svg.onupdated(x, y);
             return this.get(x, y);
         }
@@ -67,6 +76,7 @@ namespace testbench {
         SQ: Marks; // square
         MA: Marks; // cross
         SL: Marks; // selection
+        LB: Marks; // text label
 
         onupdated(x: number, y: number): void;
 
@@ -117,6 +127,7 @@ namespace testbench {
                 MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" fill="none" stroke-width="0.05"></path>'),
                 SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" fill="none" stroke-width="0.05"></path>'),
                 SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>'),
+                LB: new Marks(svg, `<text x="" y="" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0"></text>`),
 
                 // invoked after a marker has been added or removed
                 onupdated(x: number, y: number) {
@@ -127,8 +138,10 @@ namespace testbench {
                             try {
                                 const item = (<Marks>svg[mark]).get(x, y);
 
-                                if (item)
+                                if (item) {
                                     item.setAttribute('stroke', color);
+                                    item.setAttribute('fill', color);
+                                }
                             } catch (err) {
                                 console.log(mark, x, y, err);
                             }
@@ -149,25 +162,25 @@ namespace testbench {
             // upper letters: A, B, C, ...
             for (let x = 0; x < n; x++) {
                 const label = stone.cc.toString(stone(x, 0, 0), n)[0];
-                svg.innerHTML += `<text x="${x}" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+                svg.LB.add(x, -0.7, label);
             }
 
             // left digits: 9, 8, 7, ...
             for (let y = 0; y < n; y++) {
                 const label = stone.cc.toString(stone(0, y, 0), n)[1];
-                svg.innerHTML += `<text x="${-0.7}" y="${y}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+                svg.LB.add(-0.7, y, label);
             }
 
             // lower labels: a, b, c, ...
             for (let x = 0; x < n; x++) {
                 const label = stone.toString(stone(x, 0, 0))[1];
-                svg.innerHTML += `<text x="${x}" y="${n - 1 + 0.7}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+                svg.LB.add(x, n - 1 + 0.7, label);
             }
 
             // right letters: a, b, c, ...
             for (let y = 0; y < n; y++) {
                 const label = stone.toString(stone(0, y, 0))[2];
-                svg.innerHTML += `<text x="${n - 1 + 0.7}" y="${y}" font-size="0.3" text-anchor="middle" dominant-baseline="middle">${label}</text>`;
+                svg.LB.add(n - 1 + 0.7, y, label);
             }
 
             function getStoneCoords(event: MouseEvent) {
