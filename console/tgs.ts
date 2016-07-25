@@ -37,7 +37,7 @@ namespace tsumego {
             paused = false;
             args = Object.create(args);
 
-            const $ = args.stats = { nodes: 0, depth: 0 };
+            const $ = args.debug;
             const g = solve.start(args);
 
             let maxd = 0;
@@ -61,7 +61,7 @@ namespace tsumego {
                             process.title = [
                                 ['time', ((t1 - t0) / 1000).toFixed(1) + 's'],
                                 ['tt.size', args.tt.size],
-                                ['nodes', $.nodes],
+                                ['nodes', n],
                                 ['nodes/s', n / dt | 0],
                                 ['maxdepth', maxd],
                             ].map(x => x.join(' = ')).join('; ');
@@ -111,6 +111,7 @@ namespace tsumego {
             board: board,
             color: color,
             tt: tt,
+            debug: {},
             expand: mgen.fixed(board, target),
             target: target,
             alive: (b: Board) => benson.alive(b, target)

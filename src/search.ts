@@ -65,14 +65,6 @@ module tsumego {
             log?: {
                 write(data): void;
             };
-            unodes?: {
-                total: number;
-                unique: number;
-            };
-            stats?: {
-                nodes: number;
-                depth: number;
-            };
         }
 
         function parse(data: string): Args {
@@ -115,7 +107,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {board, color, km, tt = new TT, log, expand, target, alive, stats, unodes, debug, time} =
+            let {board, color, km, tt = new TT, log, expand, target, alive, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
             if (log && alive) {
@@ -168,7 +160,6 @@ module tsumego {
                 const hashb = board.hash;
                 const ttres = tt.get(hashb, color, km);
 
-                stats && (stats.depth = depth, yield);
                 debug && (debug.color = color);
                 debug && (debug.depth = depth);
                 debug && (debug.moves = hist);
@@ -183,15 +174,6 @@ module tsumego {
 
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
-
-                if (unodes) {
-                    unodes.total++;
-
-                    if (!unodes[hashb]) {
-                        unodes[hashb] = true;
-                        unodes.unique++;
-                    }
-                }
 
                 const guess = tt.move.get(hashb ^ color);
 
@@ -260,7 +242,6 @@ module tsumego {
 
                     path.push(hashb);
                     hist.push(move || stone.nocoords(color));
-                    stats && stats.nodes++;
                     move && board.play(move);
                     debug && (yield move ? stone.toString(move) : stone.label.string(color) + '[]');
 
