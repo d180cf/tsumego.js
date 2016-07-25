@@ -144,11 +144,14 @@ module tsumego {
             if (!stone.color(target))
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
-            /** Moves that require a ko treat are considered last.
-                That's not just perf optimization: the search depends on this. */
-            const sa = new SortedArray<stone, { d: number, w: number }>((a, b) =>
-                b.d - a.d || // moves that require a ko treat are considered last
-                b.w - a.w);  // first consider moves that lead to a winning position
+            const sa = new SortedArray<stone, number[]>((a, b) => {
+                for (let i = 0; i < a.length; i++) {
+                    const d = b[i] - a[i];
+                    if (d) return d;
+                }
+
+                return 0;
+            });
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -234,11 +237,14 @@ module tsumego {
                     if (d <= depth && km * color <= 0)
                         continue;
 
-                    sa.insert(repd.set(move, d), {
-                        d: d,
+                    sa.insert(repd.set(move, d), [
+                        // moves that require a ko treat are considered last
+                        // that's not just perf optimization: the search depends on this
+                        d,
+                        // first consider moves that lead to a winning position
                         // use previously found solution as a hint
-                        w: stone.color(tt.move.get(hash ^ -color)) * color
-                    });
+                        stone.color(tt.move.get(hash ^ -color)) * color
+                    ]);
                 }
 
                 // Consider making a pass as well. Passing locally is like
