@@ -53,7 +53,7 @@ module tsumego {
         }
 
         export interface Args {
-            root: Board;
+            board: Board;
             color: number;
             km?: number;
             tt?: TT;
@@ -106,7 +106,7 @@ module tsumego {
             const tb = board.get(target);
 
             return {
-                root: board,
+                board: board,
                 color: color,
                 expand: mgen.fixed(board, target),
                 target: target,
@@ -115,7 +115,7 @@ module tsumego {
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, km, tt = new TT, log, expand, target, alive, stats, unodes, debug, time} =
+            let {board, color, km, tt = new TT, log, expand, target, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
             if (log && alive) {

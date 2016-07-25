@@ -13,7 +13,7 @@ module testbench {
 
         const solver = solve.start({
             debug: debug,
-            root: board,
+            board: board,
             color: color,
             km: km,
             tt: tt,

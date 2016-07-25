@@ -60,7 +60,7 @@ module testbench {
             profile.reset();
 
             const g = tsumego.solve.start({
-                root: board,
+                board: board,
                 color: color,
                 km: km,
                 time: 250,

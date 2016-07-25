@@ -108,7 +108,7 @@ namespace tsumego {
         console.log('solving... look at the window title');
 
         const move = await xsolve({
-            root: board,
+            board: board,
             color: color,
             tt: tt,
             expand: mgen.fixed(board, target),

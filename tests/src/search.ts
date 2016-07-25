@@ -203,7 +203,7 @@ module tests {
                         }
                     } else {
                         const g = solve.start({
-                            root: b,
+                            board: b,
                             color: color,
                             tt: tt,
                             time: 1000,
