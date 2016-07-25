@@ -31,19 +31,19 @@ module tsumego {
      * Since a block a removed when it loses its last liberty, blocks with
      * libs = 0 or size = 0 do not represent any real entity on the board.
      */
-    export type block = number;
-
-    export function block(xmin: number, xmax: number, ymin: number, ymax: number, libs: number, size: number, color: number) {
-        return xmin | xmax << 4 | ymin << 8 | ymax << 12 | libs << 16 | size << 24 | color & 0x80000000;
-    }
+    export enum block { }
 
     export namespace block {
+        export function make(xmin: number, xmax: number, ymin: number, ymax: number, libs: number, size: number, color: number) {
+            return xmin | xmax << 4 | ymin << 8 | ymax << 12 | libs << 16 | size << 24 | color & 0x80000000;
+        }
+
         /** 
          * The board is represented by a square matrix in which
          * each cell contains either block id or 0, if the intersection
          * is unoccupied. This is why block ids start with 1.
          */
-        export type id = number;
+        export const enum id { }
 
         export const xmin = (b: block) => b & 15;
         export const xmax = (b: block) => b >> 4 & 15;
@@ -53,7 +53,7 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
-        export const join = (b1: block, b2: block) => block(
+        export const join = (b1: block, b2: block) => block.make(
             min(block.xmin(b1), block.xmin(b2)),
             max(block.xmax(b1), block.xmax(b2)),
             min(block.ymin(b1), block.ymin(b2)),
@@ -61,7 +61,7 @@ module tsumego {
             0, 0, 0);
 
         /** A pseudo block descriptor with 1 liberty. */
-        export const lib1 = block(0, 0, 0, 0, 1, 0, 0);
+        export const lib1 = block.make(0, 0, 0, 0, 1, 0, 0);
 
         /** Useful when debugging. */
         export const toString = (b: block) => !b ? null : (b > 0 ? '+' : '-') +
@@ -487,7 +487,7 @@ module tsumego {
                     /* T */ +(!nbs[2] && y > 0) +
                     /* B */ +(!nbs[3] && y < size - 1);
 
-                this.change(id_new, block(x, x, y, y, n, 1, color));
+                this.change(id_new, block.make(x, x, y, y, n, 1, color));
             } else {
                 // merge neighbors into one block
 
@@ -520,7 +520,7 @@ module tsumego {
                     // make the merged block point to the new block
 
                     if (id != id_new)
-                        this.change(id, block(0, 0, 0, 0, id_new, 0, 0));
+                        this.change(id, block.make(0, 0, 0, 0, id_new, 0, 0));
                 }
 
                 // libs need to be counted in the rectangle extended by 1 intersection
@@ -543,7 +543,7 @@ module tsumego {
                     }
                 }
 
-                this.change(id_new, block(xmin_new, xmax_new, ymin_new, ymax_new, libs_new, size_new, color));
+                this.change(id_new, block.make(xmin_new, xmax_new, ymin_new, ymax_new, libs_new, size_new, color));
             }
 
             this.history.added.push(x | y << 4
