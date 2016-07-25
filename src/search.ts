@@ -170,7 +170,7 @@ module tsumego {
             // the target gets to make two extra libs (maxlevel + 2), then
             // the target escapes because after the next attacker's move
             // the target will have at least maxlevel + 1 libs
-            function* solve(color: number, km: number, maxlevel?: number) {
+            function* solve(color: number, km: number, maxlevel: number) {
                 remaining--;
                 ntcalls++;
 
@@ -204,25 +204,6 @@ module tsumego {
 
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
-
-                // in the first call the max level isn't determined, so the search
-                // starts with the level corresponding to the number of libs of the target
-                // and if it doesn't work, it starts incrementing the max level until
-                // a solution is found
-                if (maxlevel === undefined) {
-                    const minlevel = nlibs - (color * target < 0 ? 1 : 0);
-
-                    for (let level = minlevel; level < inflevel; level++) {
-                        //debug && (yield `searching for ${stone.label.string(color)} with level = ${level}`);
-                        const move = yield* solve(color, km, level);
-
-                        if (rlvl.get(move) == inflevel)
-                            return move;
-                    }
-
-                    debugger; // no unconditional solution found
-                    return tt.get(board.hash, color, km, 0); // tt is correct in about 90% of cases
-                }
 
                 const guess = tt.move.get(hashb ^ color);
 
@@ -374,13 +355,13 @@ module tsumego {
                             s = rlvl.set(repd.set(stone.nocoords(target), infdepth), inflevel); // the target is sure alive now
                         } else if (maxlevel && minlevel > maxlevel) {
                             s = rlvl.set(repd.set(stone.nocoords(target), infdepth), minlevel - 1);
-                        } else if (maxlevel && color * target > 0 && minlevel < maxlevel) {
+                        } else if (maxlevel && color * target > 0 && minlevel < maxlevel && minlevel < 3) {
                             // if it's now the attacker's turn and the target has
                             // too few liberties, try to split the search into a
                             // few sub searches: first try to keep the target from
                             // getting more libs, then increment the max level and
                             // so on until a solutiuon is found
-                            for (let level = minlevel; level <= maxlevel; level++) {
+                            for (const level of [minlevel, maxlevel]) {
                                 //debug && (yield 'starting sub search with level = ' + level);
                                 s = yield* solve(-color, km, level);
                                 //debug && (yield 'sub search with level = ' + level + ' ended with ' + stone.toString(s));
@@ -389,7 +370,7 @@ module tsumego {
                                 // because in addition to making life it can also escape,
                                 // hence if the defender loses with a lower max level, it
                                 // will surely lose with all higher max levels
-                                if (s * target < 0)
+                                if (s * target < 0 || rlvl.get(s) >= maxlevel)
                                     break;
                             }
                         } else {
@@ -496,13 +477,13 @@ module tsumego {
                 }
             }
 
-            let move = yield* solve(color, km || 0);
+            let move = yield* solve(color, km || 0, 20);
 
             if (!Number.isFinite(km)) {
                 //debug && (yield 'km not specified, starting another search to find the best move');
                 // if it's a loss, see what happens if there are ko treats;
                 // if it's a win, try to find a stronger move, when the opponent has ko treats
-                const move2 = yield* solve(color, move * color > 0 ? -color : color);
+                const move2 = yield* solve(color, move * color > 0 ? -color : color, 20);
 
                 if (move2 * color > 0 && stone.hascoords(move2))
                     move = move2;
