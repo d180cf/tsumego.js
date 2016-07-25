@@ -74,12 +74,12 @@ module testbench {
 
             return new Promise<stone>(resolve => {
                 setTimeout(function fn() {
-                    op.notify();
+                    if (op) op.notify();
 
                     if (s.done) {
                         resolve(s.value);
                     } else {
-                        op.ntcalls = s.value;
+                        if (op) op.ntcalls = s.value;
                         s = g.next();
                         setTimeout(fn);
                     }
@@ -574,8 +574,15 @@ module testbench {
 
                     board.play(stone(x, y, color));
 
-                    if (color == -solvingFor && qargs.autorespond)
-                        solveAndRender(-color, vm.km);
+                    if (color == -solvingFor && qargs.autorespond) {
+                        // check if a response is needed
+                        solve(null, board, color, vm.km).then(move => {
+                            if (color * move < 0)
+                                vm.note = stone.label.string(-color) + ' does not need to respond';
+                            else
+                                return solveAndRender(-color, vm.km);
+                        });
+                    }
                 } else {
                     return;
                 }
@@ -640,6 +647,8 @@ module testbench {
                 renderBoard();
                 vm.note = stone.toString(move) + ' in ' + comment()
             }
+
+            return move;
         }).catch(err => {
             vm.note = err;
             throw err;
