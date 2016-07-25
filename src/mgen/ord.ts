@@ -11,7 +11,7 @@ module tsumego.mgen {
 
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
-        sa = new SortedArray<stone>();
+        private sa = new SortedArray<stone>();
 
         constructor(private board: Board, private target: stone) {
 
