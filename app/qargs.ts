@@ -17,6 +17,9 @@ module testbench {
 
         /** Tells how often the debugger interrupts the solver. 250 (ms) by default. */
         freq: number;
+
+        /** Once a tsumego is solved, the app can respond without clicking the solve button every time. */
+        autorespond: boolean;
     }
 
     export const qargs: QArgs = <any>{};
@@ -34,6 +37,9 @@ module testbench {
                 qargs[key] = val;
             }
         }
+
+        if (qargs.autorespond === undefined)
+            qargs.autorespond = true;
 
         console.log('qargs:', qargs);
     } catch (err) {

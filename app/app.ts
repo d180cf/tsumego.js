@@ -573,6 +573,9 @@ module testbench {
                             -solvingFor;
 
                     board.play(stone(x, y, color));
+
+                    if (color == -solvingFor && qargs.autorespond)
+                        solveAndRender(-color, vm.km);
                 } else {
                     return;
                 }
@@ -613,34 +616,33 @@ module testbench {
     function solveAndRender(color: number, km: number) {
         vm.note = 'Solving...';
 
-        setTimeout(() => {
-            const started = Date.now();
+        const started = Date.now();
 
-            const comment = () => ((Date.now() - started) / 1000 | 0) + 's'
-                + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-                + '; playouts = ' + (op.ntcalls / 1000 | 0) + 'K';
+        const comment = () => ((Date.now() - started) / 1000 | 0) + 's'
+            + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
+            + '; playouts = ' + (op.ntcalls / 1000 | 0) + 'K';
 
-            const op = {
-                ntcalls: 0,
-                notify() {
-                    vm.note = 'Solving... elapsed ' + comment();
-                }
-            };
+        const op = {
+            ntcalls: 0,
+            notify() {
+                vm.note = 'Solving... elapsed ' + comment();
+            }
+        };
 
-            solve(op, board, color, km, true).then(move => {
-                const duration = Date.now() - started;
+        return solve(op, board, color, km, true).then(move => {
+            const duration = Date.now() - started;
 
-                if (!stone.hascoords(move) || move * color < 0) {
-                    vm.note = c2s(color) + ' passes';
-                } else {
-                    board.play(move);
-                    console.log(board + '');
-                    renderBoard();
-                    vm.note = stone.toString(move) + ' in ' + comment()
-                }
-            }).catch(err => {
-                vm.note = err;
-            });
+            if (!stone.hascoords(move) || move * color < 0) {
+                vm.note = c2s(color) + ' passes';
+            } else {
+                board.play(move);
+                console.log(board + '');
+                renderBoard();
+                vm.note = stone.toString(move) + ' in ' + comment()
+            }
+        }).catch(err => {
+            vm.note = err;
+            throw err;
         });
     }
 }
