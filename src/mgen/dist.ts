@@ -155,10 +155,10 @@ module tsumego.mgen {
                             continue;
 
                         // this is either a defender's stone or an empty cell
-                        rzone.push(stone(x, y, 0));
+                        rzone.push(stone.make(x, y, 0));
 
-                        if (board.play(stone(x, y, +1)) || board.play(stone(x, y, -1))) {
-                            moves.push(stone(x, y, 0));
+                        if (board.play(stone.make(x, y, +1)) || board.play(stone.make(x, y, -1))) {
+                            moves.push(stone.make(x, y, 0));
                             board.undo();
                         }
                     }

@@ -23,7 +23,7 @@ module tsumego.mgen {
             if (Pattern.isEye(board, x, y, color))
                 return false;
 
-            const s = stone(x, y, color);
+            const s = stone.make(x, y, color);
             const r = board.play(s);
 
             if (!r) return false; // the move is not playable

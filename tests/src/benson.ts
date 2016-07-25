@@ -27,7 +27,7 @@ namespace tests {
                         const color = { x: +1, o: -1 }[marker.toLowerCase()] || 0;
 
                         if (color)
-                            board.play(stone(x, y, color));
+                            board.play(stone.make(x, y, color));
                     }
                 }
 
@@ -41,7 +41,7 @@ namespace tests {
                         const marker = chain > 0 ? 'X' : 'O';
 
                         tags.push(!chain ? '-' :
-                            benson.alive(board, stone(x, y, 0)) ? marker :
+                            benson.alive(board, stone.make(x, y, 0)) ? marker :
                                 marker.toLowerCase());
                     }
 
@@ -64,7 +64,7 @@ namespace tests {
         $.test($ => {
             /// start from a vacant point
             const b = new Board(9, []);
-            const p = stone(0, 0, 0);
+            const p = stone.make(0, 0, 0);
             const r = benson.alive(b, p);
             $(r).equal(false);
         });

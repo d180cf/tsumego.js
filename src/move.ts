@@ -20,10 +20,12 @@ module tsumego {
      * The remaining 5 bits of the 4-th byte are reserved for future use.
      *
      */
-    export type stone = number;
+    export enum stone { }
 
-    export function stone(x: number, y: number, color: number) {
-        return x | y << 4 | kCoord | (color && kColor) | color & kWhite;
+    export module stone {
+        export function make(x: number, y: number, color: number): stone {
+            return x | y << 4 | kCoord | (color && kColor) | color & kWhite;
+        }
     }
 
     export module stone {
@@ -45,10 +47,10 @@ module tsumego {
             const c = stone.color(m);
 
             return [
-                x <= 0x0 ? 0 : stone(x - 1, y, c),
-                x >= 0xF ? 0 : stone(x + 1, y, c),
-                y <= 0x0 ? 0 : stone(x, y - 1, c),
-                y >= 0xF ? 0 : stone(x, y + 1, c)];
+                x <= 0x0 ? 0 : stone.make(x - 1, y, c),
+                x >= 0xF ? 0 : stone.make(x + 1, y, c),
+                y <= 0x0 ? 0 : stone.make(x, y - 1, c),
+                y >= 0xF ? 0 : stone.make(x, y + 1, c)];
         }
 
         export const diagonals = (m: stone) => {
@@ -56,10 +58,10 @@ module tsumego {
             const c = stone.color(m);
 
             return [
-                x <= 0x0 || y <= 0x0 ? 0 : stone(x - 1, y - 1, c),
-                x >= 0xF || y <= 0x0 ? 0 : stone(x + 1, y - 1, c),
-                x <= 0x0 || y >= 0xF ? 0 : stone(x - 1, y + 1, c),
-                x >= 0xF || y >= 0xF ? 0 : stone(x + 1, y + 1, c)];
+                x <= 0x0 || y <= 0x0 ? 0 : stone.make(x - 1, y - 1, c),
+                x >= 0xF || y <= 0x0 ? 0 : stone.make(x + 1, y - 1, c),
+                x <= 0x0 || y >= 0xF ? 0 : stone.make(x - 1, y + 1, c),
+                x >= 0xF || y >= 0xF ? 0 : stone.make(x + 1, y + 1, c)];
         }
 
         export class SmallSet {
@@ -176,7 +178,7 @@ module tsumego {
             const x = s2n(s[0]);
             const y = s2n(s[1]);
 
-            return stone(x, y, c);
+            return stone.make(x, y, c);
         }
 
         export module list {

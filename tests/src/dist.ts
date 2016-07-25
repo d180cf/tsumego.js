@@ -19,7 +19,7 @@ module tests {
                 for (let y = 0; y < n; y++) {
                     const expected = (rows[y] || '').split(' ')[x] || '-';
 
-                    const actual = m.indexOf(stone(x, y, color)) >= 0 ? '+' :
+                    const actual = m.indexOf(stone.make(x, y, color)) >= 0 ? '+' :
                         b.get(x, y) > 0 ? 'X' : b.get(x, y) < 0 ? 'O' : '-';
 
                     h.set(x, y, actual, expected != actual ? AnsiEscapeCode.red :
@@ -43,7 +43,7 @@ module tests {
 
             for (let x = 0; x < 3; x++) {
                 for (let y = 0; y < 3; y++) {
-                    const t = stone(x, y, +1);
+                    const t = stone.make(x, y, +1);
 
                     b.play(t);
 
@@ -76,7 +76,7 @@ module tests {
 
             for (let x = 0; x < b.size; x++) {
                 for (let y = 0; y < b.size; y++) {
-                    const g = mgen.dist(b, stone(x, y, 0), 1);
+                    const g = mgen.dist(b, stone.make(x, y, 0), 1);
 
                     const _n = Array.from(b.libs(b.get(x, y))).map(([x, y]) => x | y << 4).sort();
                     const _b = g(+1).map(s => s & 0xFFFF).sort();
@@ -102,7 +102,7 @@ module tests {
             ]);
 
 
-            const g = mgen.dist(b, stone(3, 1, 0), 1);
+            const g = mgen.dist(b, stone.make(3, 1, 0), 1);
 
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();
@@ -123,7 +123,7 @@ module tests {
             ]);
 
 
-            const g = mgen.dist(b, stone(3, 1, 0), 1);
+            const g = mgen.dist(b, stone.make(3, 1, 0), 1);
 
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();
@@ -146,7 +146,7 @@ module tests {
             ]);
 
 
-            const g = mgen.dist(b, stone(3, 1, 0), 1);
+            const g = mgen.dist(b, stone.make(3, 1, 0), 1);
 
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();
@@ -169,7 +169,7 @@ module tests {
             ]);
 
 
-            const g = mgen.dist(b, stone(3, 1, 0), 1);
+            const g = mgen.dist(b, stone.make(3, 1, 0), 1);
 
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();

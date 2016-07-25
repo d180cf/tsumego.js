@@ -17,7 +17,7 @@ module tests {
                 '- - - - -',
             ]);
 
-            const g = mgen.fixed(b, stone(1, 0, 0));
+            const g = mgen.fixed(b, stone.make(1, 0, 0));
             const z = g(+1).map(x => x & 0xFF).sort((a, b) => a - b);
 
             console.log(z);
@@ -36,7 +36,7 @@ module tests {
                 '- - - - -',
             ]);
 
-            const g = mgen.fixed(b, stone(1, 0, 0));
+            const g = mgen.fixed(b, stone.make(1, 0, 0));
             const z = g(+1).map(x => x & 0xFF).sort((a, b) => a - b);
 
             console.log(z);
@@ -55,7 +55,7 @@ module tests {
                 '- - - - -',
             ]);
 
-            const g = mgen.fixed(b, stone(1, 0, 0));
+            const g = mgen.fixed(b, stone.make(1, 0, 0));
             const z = g(+1).map(x => x & 0xFF).sort((a, b) => a - b);
 
             console.log(z);
@@ -74,9 +74,9 @@ module tests {
                 '- - - - -',
             ]);
 
-            const g = mgen.fixed(b, stone(1, 1, 0));
+            const g = mgen.fixed(b, stone.make(1, 1, 0));
 
-            b.play(stone(2, 1, -1));
+            b.play(stone.make(2, 1, -1));
 
             const z = g(+1).map(x => x & 0xFF).sort((a, b) => a - b);
 
@@ -97,7 +97,7 @@ module tests {
                 'X X - - - -'
             ]);
 
-            const g = mgen.fixed(b, stone(2, 2, 0));
+            const g = mgen.fixed(b, stone.make(2, 2, 0));
             const z = g(+1).map(x => x & 0xFF).sort((a, b) => a - b);
 
             console.log(z);

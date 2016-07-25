@@ -168,25 +168,25 @@ namespace testbench {
 
             // upper letters: A, B, C, ...
             for (let x = 0; x < n; x++) {
-                const label = stone.cc.toString(stone(x, 0, 0), n)[0];
+                const label = stone.cc.toString(stone.make(x, 0, 0), n)[0];
                 svg.LB.add(x, -0.7, label);
             }
 
             // left digits: 9, 8, 7, ...
             for (let y = 0; y < n; y++) {
-                const label = stone.cc.toString(stone(0, y, 0), n).slice(1);
+                const label = stone.cc.toString(stone.make(0, y, 0), n).slice(1);
                 svg.LB.add(-0.7, y, label);
             }
 
             // lower labels: a, b, c, ...
             for (let x = 0; x < n; x++) {
-                const label = stone.toString(stone(x, 0, 0))[1];
+                const label = stone.toString(stone.make(x, 0, 0))[1];
                 svg.LB.add(x, n - 1 + 0.7, label);
             }
 
             // right letters: a, b, c, ...
             for (let y = 0; y < n; y++) {
-                const label = stone.toString(stone(0, y, 0))[2];
+                const label = stone.toString(stone.make(0, y, 0))[2];
                 svg.LB.add(n - 1 + 0.7, y, label);
             }
 

@@ -272,7 +272,7 @@ module testbench {
                         const y = stone.y(s);
                         const c = stone.color(s);
 
-                        b.play(stone(x, y, -c));
+                        b.play(stone.make(x, y, -c));
                     }
 
                     board = b.fork();
@@ -361,7 +361,7 @@ module testbench {
             const c = stone.color(s);
 
             if (sx != x || sy != y)
-                b.play(stone(sx, sy, c));
+                b.play(stone.make(sx, sy, c));
         }
 
         board = b.fork(); // drop history
@@ -409,7 +409,7 @@ module testbench {
                 }[event.keyCode];
 
                 const b = new Board(board.size);
-                const t = stone(stone.x(aim) + dx, stone.y(aim) + dy, 0);
+                const t = stone.make(stone.x(aim) + dx, stone.y(aim) + dy, 0);
 
                 try {
                     if (!b.inBounds(t))
@@ -418,7 +418,7 @@ module testbench {
                     for (const s1 of board.stones()) {
                         const [x1, y1] = stone.coords(s1);
                         const [x2, y2] = [x1 + dx, y1 + dy];
-                        const s2 = stone(x2, y2, stone.color(s1));
+                        const s2 = stone.make(x2, y2, stone.color(s1));
 
                         if (!b.inBounds(x2, y2) || !b.play(s2))
                             throw s1;
@@ -543,7 +543,7 @@ module testbench {
 
         ui.addEventListener('mousemove', event => {
             const [x, y] = [event.cellX, event.cellY];
-            const s = stone(x, y, 0);
+            const s = stone.make(x, y, 0);
 
             vm.coords = x >= 0 && y >= 0 ? `${stone.cc.toString(s, board.size)} ${stone.toString(s)}` : '';
         });
@@ -563,7 +563,7 @@ module testbench {
 
                 if (vm.tool == 'MA') {
                     if (!solvingFor)
-                        aim = stone(x, y, 0);
+                        aim = stone.make(x, y, 0);
                 } else if (/AB|AW/.test(vm.tool) || solvingFor) {
                     if (c && !solvingFor)
                         removeStone(x, y);
@@ -572,7 +572,7 @@ module testbench {
                         vm.tool == 'AW' ? -1 :
                             -solvingFor;
 
-                    board.play(stone(x, y, color));
+                    board.play(stone.make(x, y, color));
 
                     if (color == -solvingFor && qargs.autorespond) {
                         // check if a response is needed
@@ -588,7 +588,7 @@ module testbench {
                 }
 
                 renderBoard();
-                vm.note = stone.toString(stone(x, y, board.get(x, y)));
+                vm.note = stone.toString(stone.make(x, y, board.get(x, y)));
             });
         }
 
@@ -617,7 +617,7 @@ module testbench {
         const x = si.charCodeAt(0) - 65;
         const y = size - +/\d+/.exec(si)[0];
 
-        return stone(x, y, 0);
+        return stone.make(x, y, 0);
     }
 
     function solveAndRender(color: number, km: number) {

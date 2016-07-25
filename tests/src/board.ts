@@ -638,7 +638,7 @@
                 }],
             ];
 
-            const xyc = (m: string) => stone(
+            const xyc = (m: string) => stone.make(
                 m.charCodeAt(1) - 0x41,
                 b.size - +m.slice(2),
                 m[0] == '+' ? +1 : -1);
@@ -703,28 +703,28 @@
             ]);
 
             try {
-                b.play(stone(2, 0, +1));
+                b.play(stone.make(2, 0, +1));
                 $(b + '').equal(
                     '   A B C D E' + '\n' +
                     ' 5 - O X X O' + '\n' +
                     ' 4 X X - X O' + '\n' +
                     ' 3 - - X O O');
 
-                b.play(stone(2, 1, -1));
+                b.play(stone.make(2, 1, -1));
                 $(b + '').equal(
                     '   A B C D E' + '\n' +
                     ' 5 - O - - O' + '\n' +
                     ' 4 X X O - O' + '\n' +
                     ' 3 - - X O O');
 
-                b.play(stone(2, 0, +1));
+                b.play(stone.make(2, 0, +1));
                 $(b + '').equal(
                     '   A B C D E' + '\n' +
                     ' 5 - O X - O' + '\n' +
                     ' 4 X X O - O' + '\n' +
                     ' 3 - - X O O');
 
-                b.play(stone(3, 0, -1));
+                b.play(stone.make(3, 0, -1));
                 $(b + '').equal(
                     '   A B C D E' + '\n' +
                     ' 5 - O - O O' + '\n' +
@@ -748,10 +748,10 @@
             const hash0 = b.hash;
 
             const moves = [
-                stone(1, 2, +1), // just extra b stone
-                stone(1, 2, -1), // just extra w stone
-                stone(2, 0, +1), // some w stones captured
-                stone(2, 0, -1), // some b stones captured
+                stone.make(1, 2, +1), // just extra b stone
+                stone.make(1, 2, -1), // just extra w stone
+                stone.make(2, 0, +1), // some w stones captured
+                stone.make(2, 0, -1), // some b stones captured
             ];
 
             for (const s of moves) {
@@ -774,7 +774,7 @@
         $.test($ => {
             /// 5x5 with a stone
             const board = new Board(5);
-            board.play(stone(2, 2, +1));
+            board.play(stone.make(2, 2, +1));
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
             $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
@@ -863,7 +863,7 @@
 
             console.log(b + '');
 
-            const n = b.play(stone(5, 2, +1));
+            const n = b.play(stone.make(5, 2, +1));
 
             console.log(b + '');
 
@@ -887,7 +887,7 @@
                 '- -'
             ]);
 
-            const r = b.play(stone(0, 1, 1));
+            const r = b.play(stone.make(0, 1, 1));
 
             $(r).equal(2);
 
@@ -905,7 +905,7 @@
                 'X X'
             ]);
 
-            const r = b.play(stone(0, 0, -1));
+            const r = b.play(stone.make(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -918,7 +918,7 @@
                 'X X X'
             ]);
 
-            const r = b.play(stone(0, 0, -1));
+            const r = b.play(stone.make(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -932,7 +932,7 @@
                 'X X X'
             ]);
 
-            const r = b.play(stone(0, 0, -1));
+            const r = b.play(stone.make(0, 0, -1));
 
             $(r).equal(0);
         });
@@ -946,7 +946,7 @@
                 'X X X'
             ]);
 
-            const r = b.play(stone(0, 0, -1));
+            const r = b.play(stone.make(0, 0, -1));
 
             $(r).equal(0);
         });

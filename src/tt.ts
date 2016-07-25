@@ -63,7 +63,7 @@ module tsumego {
 
             // the move must be dropped if the outcome is a loss
             return winner * color > 0 && entry.m(e) ?
-                stone(entry.x(e), entry.y(e), winner) :
+                stone.make(entry.x(e), entry.y(e), winner) :
                 stone.nocoords(winner);
         }
 

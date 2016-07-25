@@ -163,7 +163,7 @@ namespace tsumego {
                 const color = /B|X/.test(sc.toUpperCase()) ? +1 : -1;
                 const x = sx.toUpperCase().charCodeAt(0) - 0x41;
                 const y = board.size - +sy;
-                const n = board.play(stone(x, y, color));
+                const n = board.play(stone.make(x, y, color));
 
                 if (!n)
                     console.log('invalid move');

@@ -131,7 +131,7 @@ module tsumego {
             let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
 
             // tells who is being captured: coords + color
-            target = stone(stone.x(target), stone.y(target), sign(board.get(target)));
+            target = stone.make(stone.x(target), stone.y(target), sign(board.get(target)));
 
             if (!stone.color(target))
                 throw Error('The target points to an empty point: ' + stone.toString(target));

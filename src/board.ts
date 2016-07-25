@@ -34,7 +34,7 @@ module tsumego {
     export enum block { }
 
     export namespace block {
-        export function make(xmin: number, xmax: number, ymin: number, ymax: number, libs: number, size: number, color: number) {
+        export function make(xmin: number, xmax: number, ymin: number, ymax: number, libs: number, size: number, color: number): block {
             return xmin | xmax << 4 | ymin << 8 | ymax << 12 | libs << 16 | size << 24 | color & 0x80000000;
         }
 
@@ -214,7 +214,7 @@ module tsumego {
             rows.map((row, y) => {
                 row.replace(/\s/g, '').split('').map((chr, x) => {
                     let c = chr == 'X' ? +1 : chr == 'O' ? -1 : 0;
-                    if (c && !this.play(stone(x, y, c)))
+                    if (c && !this.play(stone.make(x, y, c)))
                         throw new Error('Invalid setup.');
                 });
             });
@@ -594,7 +594,7 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return stone(x, y, c || +1);
+            return stone.make(x, y, c || +1);
         }
 
         toStringCompact() {
@@ -623,7 +623,7 @@ module tsumego {
                 for (let y = 0; y < this.size; y++)
                     for (let x = 0; x < this.size; x++)
                         if (fn(this.get(x, y)))
-                            list += stone.toString(stone(x, y, +1)).slice(1);
+                            list += stone.toString(stone.make(x, y, +1)).slice(1);
 
                 return list && indent + pf + list;
             }
@@ -686,7 +686,7 @@ module tsumego {
             for (let x = 0; x < this.size; x++) {
                 for (let y = 0; y < this.size; y++) {
                     const s = this.get(x, y);
-                    if (s) yield stone(x, y, s);
+                    if (s) yield stone.make(x, y, s);
                 }
             }
         }
@@ -701,10 +701,10 @@ module tsumego {
                     const i = y * this.size + x;
 
                     if (this.hashtb[i] == (hash & 0x0000FFFF))
-                        return stone(x, y, +1);
+                        return stone.make(x, y, +1);
 
                     if (this.hashtw[i] == (hash & 0xFFFF0000))
-                        return stone(x, y, -1);
+                        return stone.make(x, y, -1);
                 }
             }
 
