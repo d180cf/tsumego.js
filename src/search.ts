@@ -6,12 +6,6 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    export interface Node {
-        hash: number;
-        play(move: stone): number;
-        undo(): stone;
-    }
-
     /**
      * The problem's description is given as an SGF string:
      *
@@ -59,13 +53,13 @@ module tsumego {
         }
 
         export interface Args {
-            root: Node;
+            root: Board;
             color: number;
             km?: number;
             tt?: TT;
             expand(color: number): stone[];
-            status(node: Node): number;
-            alive?(node: Node): boolean;
+            status(node: Board): number;
+            alive?(node: Board): boolean;
             debug?: DebugState;
             time?: number;
             log?: {
@@ -182,7 +176,8 @@ module tsumego {
                 debug && (debug.path = path);
                 debug && (debug.km = km);
 
-                if (ttres) {
+                // due to collisions, tt may give a result for a different position
+                if (ttres && !board.get(ttres)) {
                     //debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
                     return repd.set(ttres, infdepth);
                 }
