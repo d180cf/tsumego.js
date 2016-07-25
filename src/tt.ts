@@ -22,10 +22,12 @@ module tsumego {
      * Obviously, w < b, as otherwise the status would be ambiguous.
      * This implies that the zero entry is not valid.
      */
-    type entry = number;
+    enum entry { }
 
-    function entry(x: number, y: number, b: number, w: number, m: boolean) {
-        return x | y << 4 | (b & 7) << 8 | (w & 7) << 11 | (m ? 0x8000 : 0);
+    module entry {
+        export function make(x: number, y: number, b: number, w: number, m: boolean): entry {
+            return x | y << 4 | (b & 7) << 8 | (w & 7) << 11 | (m ? 0x8000 : 0);
+        }
     }
 
     module entry {
@@ -35,7 +37,7 @@ module tsumego {
         export const w = (e: entry) => (e >> 11 & 7) << 29 >> 29;
         export const m = (e: entry) => !!(e & 0x8000);
 
-        export const base = entry(0, 0, +3, -3, false);
+        export const base = entry.make(0, 0, +3, -3, false);
     }
 
     /** Transposition Table */
@@ -87,8 +89,8 @@ module tsumego {
             const b = entry.b(e);
             const w = entry.w(e);
 
-            const e2 = move > 0 && km < b ? entry(x, y, km, w, hc) :
-                move < 0 && km > w ? entry(x, y, b, km, hc) :
+            const e2 = move > 0 && km < b ? entry.make(x, y, km, w, hc) :
+                move < 0 && km > w ? entry.make(x, y, b, km, hc) :
                     e;
 
             this.data[color & 2].set(hash, e2);
