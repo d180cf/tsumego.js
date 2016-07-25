@@ -1,13 +1,14 @@
 module tsumego.mgen {
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
-        sa = new SortedArray<stone, { r: number; p: number; q: number, u: number, v: number }>((a, b) =>
-            b.r - a.r || // maximize the number of captured stones first
-            a.u - b.u || // minimize the number of own blocks in atari
-            b.p - a.p || // maximize the number of own liberties
-            b.v - a.v || // maximize the number of the opponent's blocks in atari
-            a.q - b.q || // minimize the number of the opponent's liberties
-            random() - 0.5);
+        sa = new SortedArray<stone, number[]>((a, b) => {
+            for (let i = 0; i < a.length; i++) {
+                const d = b[i] - a[i];
+                if (d) return d;
+            }
+
+            return random() - 0.5;
+        });
 
         constructor(private board: Board, private target: stone) {
 
@@ -25,7 +26,8 @@ module tsumego.mgen {
 
             const s = stone(x, y, color);
             const r = board.play(s);
-            if (!r) return false;
+
+            if (!r) return false; // the move is not playable
 
             try {
                 const t = board.get(this.target);
@@ -36,14 +38,23 @@ module tsumego.mgen {
 
                 // it's surprising, that with this dumb moves ordering
                 // and with the cached tt results, the 1-st move appears
-                // to be correct in 98% of cases
-                this.sa.insert(s, {
-                    r: r,
-                    p: sumlibs(board, +color),
-                    q: sumlibs(board, -color),
-                    u: ninatari(board, +color),
-                    v: ninatari(board, -color),
-                });
+                // to be wrong only in 2% of cases
+                this.sa.insert(s, [
+                    // maximize the number of captured stones first
+                    +r,
+
+                    // minimize the number of own blocks in atari
+                    -ninatari(board, +color),
+
+                    // maximize the number of own liberties
+                    +sumlibs(board, +color),
+
+                    // maximize the number of the opponent's blocks in atari
+                    +ninatari(board, -color),
+
+                    // minimize the number of the opponent's liberties
+                    -sumlibs(board, -color),
+                ]);
             } finally {
                 board.undo();
             }
