@@ -67,7 +67,6 @@ module testbench {
                 tt: tt,
                 target: aim,
                 expand: tsumego.mgen.fixed(board, aim),
-                estimate: estimate,
                 alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
             });
 

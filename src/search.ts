@@ -186,6 +186,7 @@ module tsumego {
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hashb = board.hash;
+                const nlibs = block.libs(board.get(target));
                 const ttres = tt.get(hashb, color, km, maxlevel);
 
                 debug && (debug.level = maxlevel);
@@ -209,7 +210,7 @@ module tsumego {
                 // and if it doesn't work, it starts incrementing the max level until
                 // a solution is found
                 if (maxlevel === undefined) {
-                    const minlevel = estimate(board) - (color * target < 0 ? 1 : 0);
+                    const minlevel = nlibs - (color * target < 0 ? 1 : 0);
 
                     for (let level = minlevel; level < inflevel; level++) {
                         //debug && (yield `searching for ${stone.label.string(color)} with level = ${level}`);
@@ -365,9 +366,9 @@ module tsumego {
                         // libs by one at most, so the min level will be the number of libs
                         // minus one; if it's now the defender's turn, then the min level
                         // is the number of libs by definition of the max level
-                        const minlevel = estimate(board) - (target * color > 0 ? 1 : 0);
+                        const minlevel = block.libs(board.get(target)) - (target * color > 0 ? 1 : 0);
 
-                        if (status(board) * target < 0) {
+                        if (!board.get(target)) {
                             s = rlvl.set(repd.set(stone.nocoords(-target), infdepth), inflevel); // the target is captured
                         } else if (color * target > 0 && alive && alive(board)) {
                             s = rlvl.set(repd.set(stone.nocoords(target), infdepth), inflevel); // the target is sure alive now

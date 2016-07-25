@@ -211,7 +211,6 @@ module tests {
                             expand: mgen.fixed(b, target),
                             target: target,
                             //alive: (b: Board) => tsumego.benson.alive(b, target)
-                            estimate: (b: Board) => tsumego.block.libs(b.get(target)),
                         });
 
                         const t = Date.now();
