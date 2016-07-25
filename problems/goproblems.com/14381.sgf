@@ -5,5 +5,7 @@
   (;W[ef];B[eh];W[dh]
     (;B[di]
       (;W[ci];B[fh];W[cg];B[ff];W[dg])
-      (;W[dg];B[ei];W[ci];B[fh];W[fi]))
+      (;W[dg];B[ei];W[ci];B[fh]
+        (;W[fi])
+        (;W[ff]C[Well, this is a dumb move, but it works too.])))
     (;B[dg];W[ei];B[cg];W[cf];B[ch];W[di])))

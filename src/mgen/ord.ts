@@ -31,9 +31,10 @@ module tsumego.mgen {
 
             try {
                 const t = board.get(this.target);
+                const n = block.libs(t);
 
                 // there is no point to play self atari moves
-                if (t * color > 0 && block.libs(t) < 2)
+                if (t * color > 0 && n < 2)
                     return false;
 
                 // it's surprising, that with this dumb moves ordering
@@ -41,16 +42,19 @@ module tsumego.mgen {
                 // to be wrong only in 2% of cases
                 this.sa.insert(s, [
                     // maximize the number of captured stones first
-                    +r,
+                    r,
 
                     // minimize the number of own blocks in atari
                     -ninatari(board, +color),
 
+                    // minimize/maximize the number of libs of the target
+                    n * color * sign(t),
+
                     // maximize the number of own liberties
-                    +sumlibs(board, +color),
+                    sumlibs(board, +color),
 
                     // maximize the number of the opponent's blocks in atari
-                    +ninatari(board, -color),
+                    ninatari(board, -color),
 
                     // minimize the number of the opponent's liberties
                     -sumlibs(board, -color),
