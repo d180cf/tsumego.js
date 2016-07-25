@@ -5,6 +5,10 @@ module tsumego.mgen {
     // dS / dx = ((2 * S - 1)/x)**2
     const S = (x: number) => (1 + x / (1 + sign(x) * x)) / 2;
 
+    // weights for these parameters were guessed there must be better ones, but
+    // so far my attempts to gradient descent to optimal weights haven't succeeded
+    const w = [1e-0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5, 1e-6];
+
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
         sa = new SortedArray<stone>();
@@ -38,29 +42,28 @@ module tsumego.mgen {
 
                 // it's surprising, that with this dumb moves ordering
                 // and with the cached tt results, the 1-st move appears
-                // to be wrong only in 2% of cases; weights for these
-                // parameters were guessed there must be better ones
+                // to be wrong only in 2% of cases
                 this.sa.insert(s, [
                     // maximize the number of captured stones first
-                    + 1e-0 * S(r)
+                    + w[0] * S(r)
 
                     // minimize the number of own blocks in atari
-                    + 1e-1 * S(-ninatari(board, +color))
+                    + w[1] * S(-ninatari(board, +color))
 
                     // minimize/maximize the number of libs of the target
-                    + 1e-2 * S(n * color * sign(t))
+                    + w[2] * S(n * color * sign(t))
 
                     // maximize the number of own liberties
-                    + 1e-3 * S(sumlibs(board, +color))
+                    + w[3] * S(sumlibs(board, +color))
 
                     // maximize the number of the opponent's blocks in atari
-                    + 1e-4 * S(ninatari(board, -color))
+                    + w[4] * S(ninatari(board, -color))
 
                     // minimize the number of the opponent's liberties
-                    + 1e-5 * S(-sumlibs(board, -color))
+                    + w[5] * S(-sumlibs(board, -color))
 
                     // if everything above is the same, pick a random move
-                    + 1e-6 * S(random() - 0.5)
+                    + w[6] * S(random() - 0.5)
                 ]);
             } finally {
                 board.undo();
