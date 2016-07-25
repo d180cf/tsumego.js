@@ -1,14 +1,7 @@
 module tsumego.mgen {
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
-        sa = new SortedArray<stone, number[]>((a, b) => {
-            for (let i = 0; i < a.length; i++) {
-                const d = b[i] - a[i];
-                if (d) return d;
-            }
-
-            return random() - 0.5;
-        });
+        sa = new SortedArray<stone>();
 
         constructor(private board: Board, private target: stone) {
 
@@ -58,6 +51,9 @@ module tsumego.mgen {
 
                     // minimize the number of the opponent's liberties
                     -sumlibs(board, -color),
+
+                    // if everything above is the same, pick a random move
+                    random() - 0.5,
                 ]);
             } finally {
                 board.undo();
