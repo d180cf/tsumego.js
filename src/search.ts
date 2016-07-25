@@ -58,7 +58,7 @@ module tsumego {
             km?: number;
             tt?: TT;
             expand(color: number): stone[];
-            status(node: Board): number;
+            target: stone;
             alive?(node: Board): boolean;
             debug?: DebugState;
             time?: number;
@@ -109,13 +109,13 @@ module tsumego {
                 root: board,
                 color: color,
                 expand: mgen.fixed(board, target),
-                status: (b: Board) => b.get(target) ? tb : -tb,
+                target: target,
                 alive: (b: Board) => tsumego.benson.alive(b, target)
             };
         }
 
         export function* start(args: Args | string) {
-            let {root: board, color, km, tt = new TT, log, expand, status, alive, stats, unodes, debug, time} =
+            let {root: board, color, km, tt = new TT, log, expand, target, alive, stats, unodes, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
 
             if (log && alive) {
@@ -138,8 +138,11 @@ module tsumego {
 
             let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
 
-            // tells who is being captured
-            const target = status(board);
+            // tells who is being captured: coords + color
+            target = stone(stone.x(target), stone.y(target), sign(board.get(target)));
+
+            if (!stone.color(target))
+                throw Error('The target points to an empty point: ' + stone.toString(target));
 
             /** Moves that require a ko treat are considered last.
                 That's not just perf optimization: the search depends on this. */
@@ -269,7 +272,7 @@ module tsumego {
                         if (isloop) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(status(board)), depth - 1);
+                            s = repd.set(stone.nocoords(target), depth - 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -304,7 +307,7 @@ module tsumego {
                             tags.pop();
                         }
                     } else {
-                        s = status(board) * target < 0 ? repd.set(stone.nocoords(-target), infdepth) :
+                        s = !board.get(target) ? repd.set(stone.nocoords(-target), infdepth) :
                             // white has secured the group: black cannot
                             // capture it no matter how well it plays
                             color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :

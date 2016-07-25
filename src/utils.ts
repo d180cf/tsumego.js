@@ -5,6 +5,8 @@
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
 
+    export const sign = (x: number) => x < 0 ? -1 : x > 0 ? +1 : 0;
+
     export const nesw = [[-1, 0], [+1, 0], [0, -1], [0, +1]];
 
     export function* region(root: stone, belongs: (target: stone, source: stone) => boolean, neighbors = stone.neighbors) {

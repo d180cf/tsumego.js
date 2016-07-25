@@ -112,7 +112,7 @@ namespace tsumego {
             color: color,
             tt: tt,
             expand: mgen.fixed(board, target),
-            status: (b: Board) => b.get(target) < 0 ? -1 : +1,
+            target: target,
             alive: (b: Board) => benson.alive(b, target)
         });
 

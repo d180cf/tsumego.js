@@ -8,7 +8,7 @@ module testbench {
     import TT = tsumego.TT;
     import hex = tsumego.hex;
 
-    export function dbgsolve(board: Board, color: number, km: number, aim: stone, tt: TT, status: (board: Board) => number, refresh: () => SVGGobanElement) {
+    export function dbgsolve(board: Board, color: number, km: number, aim: stone, tt: TT, refresh: () => SVGGobanElement) {
         const debug: DebugState = {};
 
         const solver = solve.start({
@@ -18,7 +18,7 @@ module testbench {
             km: km,
             tt: tt,
             expand: mgen.fixed(board, aim),
-            status: status,
+            target: aim,
             alive: qargs.benson && ((b: Board) => benson.alive(b, aim))
         });
 

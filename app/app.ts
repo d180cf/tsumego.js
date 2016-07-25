@@ -65,9 +65,9 @@ module testbench {
                 km: km,
                 time: 250,
                 tt: tt,
+                target: aim,
                 expand: tsumego.mgen.fixed(board, aim),
                 alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
-                status: status
             });
 
             let s = g.next();
@@ -104,7 +104,6 @@ module testbench {
     }
 
     const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
-    const status = (b: Board) => sign(b.get(aim) || -tblock);
 
     var aim = 0, lspath = '', solvingFor, tblock: number;
 
@@ -179,7 +178,7 @@ module testbench {
                         solvingFor = +1;
                         tblock = board.get(aim);
                         solvingFor = stone.label.color(qargs.debug);
-                        dbgsolve(board, solvingFor, vm.km, aim, tt, status, renderBoard);
+                        dbgsolve(board, solvingFor, vm.km, aim, tt, renderBoard);
                         console.warn('debug mode is on');
                     }
                 }).catch(e => {

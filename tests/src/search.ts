@@ -209,7 +209,7 @@ module tests {
                             time: 1000,
                             log: log,
                             expand: mgen.fixed(b, target),
-                            status: (b: Board) => sign(b.get(target) || -tblock),
+                            target: target,
                             //alive: (b: Board) => tsumego.benson.alive(b, target)
                         });
 
