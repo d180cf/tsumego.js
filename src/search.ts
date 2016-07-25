@@ -248,7 +248,9 @@ module tsumego {
                 // may be useful: a position may be unsolvable with the given
                 // history of moves, but once it's reset, the position can be
                 // solved despite the move is yilded to the opponent.
-                nodes.push(0);
+                // Also, there is no point to pass if the target is in atari.
+                if (block.libs(board.get(target)) > 1)
+                    nodes.push(0);
 
                 let trials = 0;
 
