@@ -32,28 +32,29 @@ module tsumego.mgen {
 
                 // it's surprising, that with this dumb moves ordering
                 // and with the cached tt results, the 1-st move appears
-                // to be wrong only in 2% of cases
+                // to be wrong only in 2% of cases; weights for these
+                // parameters were guessed - perhaps there are better ones
                 this.sa.insert(s, [
                     // maximize the number of captured stones first
-                    r,
+                    + 1e-1 * r
 
                     // minimize the number of own blocks in atari
-                    -ninatari(board, +color),
+                    + 1e-2 * -ninatari(board, +color)
 
                     // minimize/maximize the number of libs of the target
-                    n * color * sign(t),
+                    + 1e-3 * n * color * sign(t)
 
                     // maximize the number of own liberties
-                    sumlibs(board, +color),
+                    + 1e-4 * sumlibs(board, +color)
 
                     // maximize the number of the opponent's blocks in atari
-                    ninatari(board, -color),
+                    + 1e-5 * ninatari(board, -color)
 
                     // minimize the number of the opponent's liberties
-                    -sumlibs(board, -color),
+                    + 1e-6 * -sumlibs(board, -color)
 
                     // if everything above is the same, pick a random move
-                    random() - 0.5,
+                    + 1e-7 * (random() - 0.5)
                 ]);
             } finally {
                 board.undo();

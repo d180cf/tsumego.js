@@ -1,16 +1,7 @@
 module tsumego {
-    function compare(lhs: number[], rhs: number[]) {
-        for (let i = 0; i < lhs.length; i++) {
-            const d = rhs[i] - lhs[i];
-            if (d) return d;
-        }
-
-        return 0;
-    }
-
     export class SortedArray<T> {
         private items: T[];
-        private flags: number[][];
+        private flags: [number][];
 
         /** 
          * The items will be sorted in such a way that
@@ -55,12 +46,15 @@ module tsumego {
          *
          * This property allows to compose a few sorted arrays.
          */
-        insert(item: T, flag: number[]) {
+        insert(item: T, flag: [number]) {
             const {items, flags} = this;
 
             let i = items.length;
 
-            while (i > 0 && compare(flags[i - 1], flag) > 0)
+            // it sounds crazy, but passing around this single number
+            // inside a one element array is way faster than passing
+            // this number alone: 10s vs 14s (!)
+            while (i > 0 && flags[i - 1][0] < flag[0])
                 i--;
 
             // using .push when i == n and .unshift when i == 0

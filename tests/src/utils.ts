@@ -5,16 +5,8 @@ namespace tests {
     ut.group($ => {
         /// sorted array
 
-        const charCodes = (s: string) => s.split('').map(c => c.charCodeAt(0));
-
-        function compare(lhs: number[], rhs: number[]) {
-            for (let i = 0; i < lhs.length; i++) {
-                const d = rhs[i] - lhs[i];
-                if (d) return d;
-            }
-
-            return 0;
-        }
+        // computes s[0] + s[1] / 256 + s[2] / 256**2 + s[3] / 256**3 + ...
+        const value = (s: string): number => s.charCodeAt(0) + (s.length < 1 ? 0 : value(s.slice(1)) / 256);
 
         $.test($ => {
             /// numbers
@@ -27,10 +19,10 @@ namespace tests {
 
             for (let i = 0; i < n; i++) {
                 const x = rand() & 0xFFFF;
-                sa.insert(x, charCodes(x + ''));
+                sa.insert(x, [value(x + '')]);
 
                 for (let i = 1; i < numbers.length; i++)
-                    if (compare(charCodes(numbers[i - 1] + ''), charCodes(numbers[i] + '')) > 0)
+                    if (value(numbers[i - 1] + '') < value(numbers[i] + ''))
                         throw new Error('Incorrectly sorted numbers: ' + numbers);
             }
 

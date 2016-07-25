@@ -215,10 +215,10 @@ module tsumego {
                     sa.insert(repd.set(move, d), [
                         // moves that require a ko treat are considered last
                         // that's not just perf optimization: the search depends on this
-                        d,
+                        + d
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint
-                        stone.color(tt.move.get(hash ^ -color)) * color
+                        + 0.5 * stone.color(tt.move.get(hash ^ -color)) * color
                     ]);
                 }
 
