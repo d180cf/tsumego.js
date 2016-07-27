@@ -21,16 +21,48 @@ namespace tests {
     }
 
     /**
-     * node test qwerty foo:bar
+     * node test qwerty foo=bar
+     * jake test[qwerty;foo:bar]
      * /test?qwerty&foo:bar
      */
     export const argv: {
         [index: number]: string;
-        unodes?: boolean;
         mode?: 'es5' | 'es6';
-        log?: string;
+        logfile?: string;
     } = vals;
+
+    const defs = {
+        logfile(s) {
+            /// the log file
+            return s || 'logs.json';
+        },
+
+        mode(s) {
+            /// if es5, loads some es6 polyfills
+            return s || 'es6';
+        },
+    };
 
     console.log('args:', args);
     console.log('argv:', argv);
+
+    for (const name in defs) {
+        const fn = defs[name];
+        const s = /[/]{3}([^\n]+)/.exec(fn)[1].trim();
+        const dv = fn(undefined);
+
+        console.log(' ', name.cyan(), '-', s, dv === undefined ? 'required'.white() : 'default'.white() + ' = ' + dv);
+    }
+
+    for (const name in args) {
+        if (/^\d+$/.test(name)) continue;
+        console.log('unknown argument:', name);
+        process.exit(1);
+    }
+
+    for (const name in defs) {
+        if (/^\d+$/.test(name)) continue;
+        const fn = defs[name];
+        argv[name] = fn(argv[name]);
+    }
 }

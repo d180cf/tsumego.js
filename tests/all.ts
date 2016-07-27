@@ -2,6 +2,7 @@
 /// <reference path="../libs/node.d.ts" />
 
 /// <reference path="isnode.ts" />
+/// <reference path="colors.ts" />
 /// <reference path="argv.ts" />
 /// <reference path="infra.ts" />
 /// <reference path="console.tree.ts" />
