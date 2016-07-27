@@ -1,9 +1,9 @@
 module tsumego.mgen {
     // this is something like the sigmoid function
-    // to map values to [0, 1] range, but it's
+    // to map values to [-1, +1] range, but it's
     // considerably faster; it's derivative is
-    // dS / dx = ((2 * S - 1)/x)**2
-    const S = (x: number) => (1 + x / (1 + sign(x) * x)) / 2;
+    // dS / dx = (S / x)**2
+    const S = (x: number) => x / (1 + sign(x) * x);
 
     // weights for these parameters were guessed there must be better ones, but
     // so far my attempts to gradient descent to optimal weights haven't succeeded
