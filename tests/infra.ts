@@ -1,9 +1,5 @@
-﻿declare const process;
-declare const global;
-declare const require: Function;
-
-interface Error {
-    reason: Error;
+﻿interface Error {
+    reason?: Error;
 }
 
 interface String {
@@ -17,10 +13,6 @@ interface String {
 
     /** Removes ANSI escape codes. */
     clean(): string;
-}
-
-namespace tests {
-    export const isNode = typeof process === 'object';
 }
 
 // en.wikipedia.org/wiki/ANSI_escape_code#Colors
@@ -66,39 +58,6 @@ namespace tests {
         error.reason = reason;
         throw error;
     }
-}
-
-namespace tests {
-    const vals = [];
-
-    const args: string[] = isNode ?
-        process.argv.slice(2) :
-        location.search.slice(1).split('&');
-
-    for (const a of args) {
-        if (!a) continue;
-
-        const i = a.indexOf(':');
-
-        if (i < 0)
-            vals.push(a);
-        else
-            vals[a.slice(0, i)] = a.slice(i + 1);
-    }
-
-    /**
-     * node test qwerty foo:bar
-     * /test?qwerty&foo:bar
-     */
-    export const argv: {
-        [index: number]: string;
-        unodes?: boolean;
-        mode?: 'es5' | 'es6';
-        log?: string;
-    } = vals;
-
-    console.log('args:', args);
-    console.log('argv:', argv);
 }
 
 namespace tests {
@@ -354,6 +313,13 @@ namespace tests.ut {
     function truncate(s: string, i, j: number) {
         const w = s.slice(i, j);
         return j < s.length ? w : w + '...';
+    }
+}
+
+declare module NodeJS {
+    interface Global {
+        regeneratorRuntime: any;
+        tsumego: typeof tsumego;
     }
 }
 

@@ -1,5 +1,8 @@
 /// <reference path="../tsumego.d.ts" />
+/// <reference path="../libs/node.d.ts" />
 
+/// <reference path="isnode.ts" />
+/// <reference path="argv.ts" />
 /// <reference path="infra.ts" />
 /// <reference path="console.tree.ts" />
 /// <reference path="stats.ts" />
