@@ -63,6 +63,7 @@ module tsumego {
             debug?: DebugState;
             time?: number;
             log?: {
+                sgf?: boolean; // logs SGF for every solved node; 1.5x slower
                 write(data): void;
             };
         }
@@ -359,9 +360,9 @@ module tsumego {
                 log && log.write({
                     color: color,
                     result: result,
+                    trials: trials,
                     hash: board.hash,
-                    //sgf: board.toStringSGF(),
-                    trials: trials
+                    sgf: log.sgf && board.toStringSGF(),
                 });
 
                 return result;

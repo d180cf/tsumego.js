@@ -27,11 +27,17 @@ namespace tests {
      */
     export const argv: {
         [index: number]: string;
-        mode?: 'es5' | 'es6';
-        logfile?: string;
-    } = vals;
+        mode: 'es5' | 'es6';
+        logsgf: boolean;
+        logfile: string;
+    } = vals as any;
 
     const defs = {
+        logsgf(s) {
+            /// logs SGF for every solved position
+            return s ? !!JSON.parse(s) : false;
+        },
+
         logfile(s) {
             /// the log file
             return s || 'logs.json';

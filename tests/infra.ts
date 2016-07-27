@@ -20,6 +20,7 @@ namespace tests {
     export const log = {
         path: path,
         stream: fs.createWriteStream(path),
+        sgf: argv.logsgf,
         write(data) {
             this.stream.write(JSON.stringify(data));
             this.stream.write(',\n');
