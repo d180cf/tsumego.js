@@ -1,14 +1,24 @@
+/// <reference path="../libs/lodash.d.ts" />
+
+declare module _ {
+    interface LoDashImplicitObjectWrapper<T> {
+        toSparseArray(defval: number): LoDashImplicitObjectWrapper<number[]>;
+        barChart(): LoDashImplicitObjectWrapper<string[]>;
+        percentage(): LoDashImplicitObjectWrapper<number[]>;
+    }
+}
+
 namespace stats {
     declare const require;
 
-    const _ = require('lodash');
+    const _: _.LoDashStatic = require('lodash');
 
     const pad = (x, n: number, c = ' ') => (c.repeat(n) + x).slice(-n);
 
     _.mixin({
-        pie(data) {
-            const sum = _.sum(data);
-            return _.map(data, x => x / sum);
+        percentage(data) {
+            const sum = _.reduce(data, (a: number, b) => a + b, 0);
+            return _.map(data, (x: number) => x / sum);
         },
 
         toSparseArray(data, defaultValue) {
@@ -47,24 +57,32 @@ namespace stats {
             .value()
             .join('\n'));
 
-        console.log('\ntt guess:\n' + src
-            .filter(x => x.guess)
-            .countBy(x => +!((x.guess ^ x.result) & 0x800000FF))
-            .toSparseArray(0)
-            .barChart()
-            .value()
-            .join('\n'));
+        console.log('\ntt guessed that it is a win:', src
+            .filter(x => x.guess && x.result * x.color > 0)
+            .countBy(x => x.guess * x.color > 0)
+            .percentage()
+            .value()[1] * 100 | 0, '%');
 
-        console.log('\nnumber of moves before a win:\n' + src
-            .filter(x => x.result > 0)
+        console.log('\ntt guessed the winning move:', src
+            .filter(x => x.guess && x.result * x.color > 0)
+            .countBy(x => !((x.guess ^ x.result) & 0x800000FF)) // same coords and same color
+            .percentage()
+            .value()[1] * 100 | 0, '%');
+
+        console.log('\ntt guessed that it is a loss:', src
+            .filter(x => x.guess && x.result * x.color < 0)
+            .countBy(x => x.guess * x.color < 0)
+            .percentage()
+            .value()[1] * 100 | 0, '%');
+
+        console.log('\nthe 1-st move is correct:', src
+            .filter(x => x.trials && x.result * x.color > 0)
             .countBy('trials')
-            .toSparseArray(0)
-            .barChart()
-            .value()
-            .join('\n'));
+            .percentage()
+            .value()[0] * 100 | 0, '%');
 
         console.log('\nnumber of moves before a loss:\n' + src
-            .filter(x => x.result < 0)
+            .filter(x => x.result * x.color < 0)
             .countBy('trials')
             .toSparseArray(0)
             .barChart()

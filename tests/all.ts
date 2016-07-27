@@ -33,10 +33,10 @@ namespace tests {
         const text = fs.readFileSync(log.path, 'utf8');
         const json = JSON.parse(text);
         stats.analyze(json);
-    });
 
-    // process.exit(0) somehow prevents stream
-    // buffers from being flushed to files
-    if (isNode && ut.failed)
-        process.exit(1);
+        // process.exit(0) somehow prevents stream
+        // buffers from being flushed to files
+        if (isNode && ut.failed)
+            process.exit(1);
+    });
 }

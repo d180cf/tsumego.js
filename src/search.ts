@@ -215,10 +215,12 @@ module tsumego {
                     sa.insert(repd.set(move, d), [
                         // moves that require a ko treat are considered last
                         // that's not just perf optimization: the search depends on this
-                        + d
+                        + 1e-0 * d
+                        // tt guesses the correct winning move in 83% of cases
+                        + 1e-1 * sign(guess * color)
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint
-                        + 0.5 * stone.color(tt.move.get(hash ^ -color)) * color
+                        + 1e-2 * sign(tt.move.get(hash ^ -color) * color)
                     ]);
                 }
 
@@ -243,7 +245,7 @@ module tsumego {
                     path.push(hashb);
                     hist.push(move || stone.nocoords(color));
                     move && board.play(move);
-                    debug && (yield move ? stone.toString(move) : stone.label.string(color) + '[]');
+                    debug && (yield stone.toString(move || stone.nocoords(color)));
 
 
                     if (!move) {
@@ -289,12 +291,12 @@ module tsumego {
                             tags.pop();
                         }
                     } else {
-                        s = !board.get(target) ? repd.set(stone.nocoords(-target), infdepth) :
-                            // white has secured the group: black cannot
-                            // capture it no matter how well it plays
-                            color * target > 0 && alive && alive(board) ? repd.set(stone.nocoords(target), infdepth) :
-                                // let the opponent play the best move
-                                yield* solve(-color, move && km);
+                        if (!board.get(target))
+                            s = repd.set(stone.nocoords(-target), infdepth);
+                        else if (color * target > 0 && alive && alive(board))
+                            s = repd.set(stone.nocoords(target), infdepth);
+                        else
+                            s = yield* solve(-color, move && km);
                     }
 
                     path.pop();
@@ -355,7 +357,10 @@ module tsumego {
                 tt.move.set(hashb ^ color, result);
 
                 log && log.write({
-                    result: color * stone.color(result),
+                    color: color,
+                    result: result,
+                    hash: board.hash,
+                    //sgf: board.toStringSGF(),
                     trials: trials
                 });
 
