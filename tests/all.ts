@@ -7,6 +7,8 @@
 /// <reference path="infra.ts" />
 /// <reference path="console.tree.ts" />
 /// <reference path="stats.ts" />
+/// <reference path="../libs/json-file.ts" />
+/// <reference path="collection.ts" />
 /// <reference path="es6aiter.ts" />
 /// <reference path="ascii-board.ts" />
 
@@ -30,7 +32,7 @@ namespace tests {
 
     log.stream.end('{}]', () => {
         // skip analysis if all tests are selected
-        if (!argv[0]) return;
+        if (!argv.log) return;
 
         stats.analyze(log.path);
 

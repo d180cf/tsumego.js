@@ -1,0 +1,9 @@
+{
+  "files": [ "usestrict.ts", "adjuster.ts" ],
+  "compilerOptions": {
+    "outFile": ".bin/adjuster.js",
+    "target": "es6",
+    "experimentalDecorators": true,
+    "sourceMap": true
+  }
+}

@@ -207,7 +207,7 @@ module tests {
                             color: color,
                             tt: tt,
                             time: 1000,
-                            log: log,
+                            log: argv.log && log,
                             expand: mgen.fixed(b, target),
                             target: target,
                             //alive: (b: Board) => tsumego.benson.alive(b, target)

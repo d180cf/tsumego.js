@@ -346,22 +346,15 @@ module tsumego {
                 if (repd.get(result) > depth + 1)
                     tt.set(hashb, color, result, km);
 
-                if (guess) {
-                    log && log.write({
-                        board: hashb,
-                        color: color,
-                        guess: guess,
-                        result: result
-                    });
-                }
-
                 tt.move.set(hashb ^ color, result);
 
                 log && log.write({
                     color: color,
                     result: result,
+                    target: target,
                     trials: trials,
-                    hash: board.hash,
+                    guess: guess,
+                    board: board.hash,
                     sgf: log.sgf && board.toStringSGF(),
                 });
 
