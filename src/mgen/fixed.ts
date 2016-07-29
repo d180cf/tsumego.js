@@ -36,8 +36,8 @@ module tsumego.mgen {
 
         // and add those blocks to the rzone as they may be captured
         for (const b of inner)
-            for (const [x, y] of board.list(b))
-                rzone.add(stone.make(x, y, 0));
+            for (const s of board.stones(b))
+                rzone.add(stone.make(stone.x(s), stone.y(s), 0));
 
         // remove the target block from the rzone
         rzone.remove(s => board.get(s) == ts);

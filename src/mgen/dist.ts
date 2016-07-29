@@ -102,8 +102,8 @@ module tsumego.mgen {
                                         if (nnb == tblock || nnb * tblock <= 0 || dmap.get(nnx, nny) <= d)
                                             continue;
 
-                                        for (const [x, y] of board.list(nnb))
-                                            dmap.set(x, y, d);
+                                        for (const s of board.stones(nnb))
+                                            dmap.set(stone.x(s), stone.y(s), d);
                                     }
                                 } else if (nb * tblock < 0) {
                                     // it's an adjacent enemy block: check if it can be captured
@@ -125,8 +125,8 @@ module tsumego.mgen {
 
                                             // if the block being captured has other adjacent blocks,
                                             // those become reachable within rd steps as well                                            
-                                            for (const [x1, y1] of board.list(fb))
-                                                dmap.set(x1, y1, rd);
+                                            for (const s1 of board.stones(fb))
+                                                dmap.set(stone.x(s1), stone.y(s1), rd);
                                         }
                                     }
                                 }

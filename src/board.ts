@@ -681,11 +681,24 @@ module tsumego {
                 this.toStringTXT(mode);
         }
 
-        *stones() {
-            for (let x = 0; x < this.size; x++) {
-                for (let y = 0; y < this.size; y++) {
-                    const s = this.get(x, y);
-                    if (s) yield stone.make(x, y, s);
+        /**
+         * stones() lists all the stones on the board
+         * stones(b) lists only stones that belong to block b
+         * stones(0) returns an ampty list
+         */
+        *stones(b?: block) {
+            const all = b === undefined;
+
+            if (!all && !b) return;
+
+            const [xmin, xmax, ymin, ymax] = !all ? block.dims(b) : [0, this.size - 1, 0, this.size - 1];
+
+            for (let x = xmin; x <= xmax; x++) {
+                for (let y = ymin; y <= ymax; y++) {
+                    const c = this.get(x, y);
+
+                    if (!all ? c == b : c)
+                        yield stone.make(x, y, c);
                 }
             }
         }
@@ -732,21 +745,6 @@ module tsumego {
                         yield [x, y];
                 }
             }
-        }
-
-        /**
-         * for (const [x, y] of board.list(block))
-         *      console.log("a stone of the block", x, y);
-         */
-        *list(b: block) {
-            if (!b) return;
-
-            let [xmin, xmax, ymin, ymax] = block.dims(b);
-
-            for (let x = xmin; x <= xmax; x++)
-                for (let y = ymin; y <= ymax; y++)
-                    if (this.get(x, y) == b)
-                        yield [x, y];
         }
 
         neighbors(x: number, y: number): [number, number][] {

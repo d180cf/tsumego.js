@@ -64,8 +64,8 @@
                 const w = [];
                 const q = b.get(+t >> 4, +t & 15);
 
-                for (const [x, y] of b.list(q))
-                    w.push(x << 4 | y);
+                for (const s of b.stones(q))
+                    w.push(stone.x(s) << 4 | stone.y(s));
 
                 console.log(t, q, r[t], w);
 
