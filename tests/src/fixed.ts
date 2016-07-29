@@ -86,6 +86,25 @@ module tests {
         });
 
         $.test($ => {
+            /// inner eye
+
+            const b = new Board(7, [
+                'O - X O X',
+                'X X X O X',
+                'O O O O X',
+                '- - - X X',
+                'X X X X -',
+            ]);
+
+            const g = mgen.fixed(b, stone.make(0, 2, 0));
+            const z = g(-1).map(x => x & 0xFF).sort((a, b) => a - b);
+
+            console.log(z);
+
+            $(z).equal([0x01, 0x30, 0x31, 0x32]);
+        });
+
+        $.test($ => {
             /// sample 1
 
             const b = new Board(9, [

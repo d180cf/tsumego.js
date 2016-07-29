@@ -27,17 +27,24 @@ module tsumego.mgen {
         const inner: block[] = [];
 
         test: for (const b of adjacent) {
+            let n = 0;
+
             for (const [x, y] of board.libs(b))
                 if (!rzone.has(stone.make(x, y, 0)))
-                    continue test;
+                    if (++n > 1)
+                        continue test;
 
             inner.push(b);
         }
 
         // and add those blocks to the rzone as they may be captured
-        for (const b of inner)
+        for (const b of inner) {
             for (const s of board.stones(b))
                 rzone.add(stone.make(stone.x(s), stone.y(s), 0));
+
+            for (const [x, y] of board.libs(b))
+                rzone.add(stone.make(x, y, 0));
+        }
 
         // remove the target block from the rzone
         rzone.remove(s => board.get(s) == ts);
