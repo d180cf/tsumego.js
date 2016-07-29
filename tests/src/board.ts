@@ -737,38 +737,11 @@
         });
 
         $.test($ => {
-            /// diff
-
-            const b = new Board(5, [
-                ' - O - X O ',
-                ' X X O X O ',
-                ' - - X O O ',
-            ]);
-
-            const hash0 = b.hash;
-
-            const moves = [
-                stone.make(1, 2, +1), // just extra b stone
-                stone.make(1, 2, -1), // just extra w stone
-                stone.make(2, 0, +1), // some w stones captured
-                stone.make(2, 0, -1), // some b stones captured
-            ];
-
-            for (const s of moves) {
-                b.play(s);
-                const d = b.diff(hash0, b.hash);
-                b.undo();
-                $(d).equal(s);
-            }
-        });
-
-        $.test($ => {
             /// empty 3x3
             const board = new Board(3);
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
             $(board.toString()).equal('   A\n 3 -');
-            $(board.toStringCompact()).equal('3x3()');
         });
 
         $.test($ => {
@@ -778,7 +751,6 @@
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
             $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
-            $(board.toStringCompact()).equal('5x5(;;--X)');
         });
 
         $.test($ => {
@@ -820,8 +792,6 @@
                 ' 2 - X O O',
                 ' 1 O O O -'
             ].join('\n'));
-
-            $(board.toStringCompact()).equal('9x9(-X;XOO;XXO;-XO;-X-O;--XO;-XO;-XOO;OOO)');
         });
 
         $.test($ => {

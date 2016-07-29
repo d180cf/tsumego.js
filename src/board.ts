@@ -182,6 +182,22 @@ module tsumego {
         private hashtb = sequence(256, rand).map(x => x & 0x0000FFFF);
         private hashtw = sequence(256, rand).map(x => x & 0xFFFF0000);
 
+        get sgf() {
+            return this.toStringSGF();
+        }
+
+        set sgf(value: string) {
+            this.initFromSGF(value);
+        }
+
+        get text() {
+            return this.toStringTXT();
+        }
+
+        set text(value: string) {
+            this.initFromTXT(value.split(/\r?\n/));
+        }
+
         constructor(size: number);
         constructor(size: number, rows: string[]);
         constructor(sgf: string | SGF.Node, /** 1 based */variation?: number);
@@ -194,8 +210,6 @@ module tsumego {
                 if (setup instanceof Array)
                     this.initFromTXT(setup);
             }
-
-            this.drop();
         }
 
         private init(size: number) {
@@ -218,6 +232,8 @@ module tsumego {
                         throw new Error('Invalid setup.');
                 });
             });
+
+            this.drop();
         }
 
         private initFromSGF(source: string | SGF.Node, nvar?: number) {
@@ -249,6 +265,8 @@ module tsumego {
 
             if (nvar)
                 placevar(sgf.vars[nvar - 1]);
+
+            this.drop();
         }
 
         /**
@@ -290,7 +308,7 @@ module tsumego {
         }
 
         private lift(id: block.id): block.id {
-            let bd;
+            let bd: block;
 
             while (id && !block.size(bd = this.blocks[id]))
                 id = block.libs(bd);
@@ -302,7 +320,7 @@ module tsumego {
          * Returns block id or zero. 
          * The block data can be read from blocks[id]. 
          */
-        private getBlockId(x: number, y: number) {
+        private getBlockId(x: number, y: number): block.id {
             return this.isInBounds(x, y) ?
                 this.lift(this.table[y * this.size + x]) :
                 0;
@@ -597,25 +615,6 @@ module tsumego {
             return stone.make(x, y, c || +1);
         }
 
-        toStringCompact() {
-            const n = this.size;
-            let h = '', len = 0;
-
-            for (let y = 0; y < n; y++) {
-                let rx = h.length;
-
-                for (let x = 0; x < n; x++) {
-                    const b = this.get(x, y);
-                    h += b > 0 ? 'X' : b < 0 ? 'O' : '-';
-                    if (b) len = rx = h.length;
-                }
-
-                h = h.slice(0, rx) + ';';
-            }
-
-            return n + 'x' + n + '(' + h.slice(0, len) + ')';
-        }
-
         toStringSGF(indent = '') {
             const take = (pf: string, fn: (g: number) => boolean) => {
                 let list = '';
@@ -689,26 +688,6 @@ module tsumego {
                     if (s) yield stone.make(x, y, s);
                 }
             }
-        }
-
-        diff(from: number, to: number): stone {
-            const hash = from ^ to;
-
-            if (!hash) return 0;
-
-            for (let y = 0; y < this.size; y++) {
-                for (let x = 0; x < this.size; x++) {
-                    const i = y * this.size + x;
-
-                    if (this.hashtb[i] == (hash & 0x0000FFFF))
-                        return stone.make(x, y, +1);
-
-                    if (this.hashtw[i] == (hash & 0xFFFF0000))
-                        return stone.make(x, y, -1);
-                }
-            }
-
-            return null;
         }
 
         /** Checks if (x, y) is a liberty of block b. */
@@ -786,21 +765,6 @@ module tsumego {
                 nbs.push([x, y + 1]);
 
             return nbs;
-        }
-
-        private path() {
-            const moves: number[] = [];
-            const path: Board[] = [];
-
-            let move: number;
-
-            while (move = this.undo())
-                moves.unshift(move);
-
-            for (move of moves) {
-                path.push(this.fork());
-                this.play(move);
-            }
         }
     }
 }
