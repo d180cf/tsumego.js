@@ -210,7 +210,7 @@ module tests {
                             log: argv.log && log,
                             expand: mgen.fixed(b, target),
                             target: target,
-                            //alive: (b: Board) => tsumego.benson.alive(b, target)
+                            alive: argv.benson && ((b: Board) => tsumego.benson.alive(b, target)),
                         });
 
                         const t = Date.now();

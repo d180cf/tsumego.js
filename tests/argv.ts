@@ -29,11 +29,17 @@ namespace tests {
         [index: number]: string;
         mode: 'es5' | 'es6';
         log: boolean;
+        benson: boolean;
         logsgf: boolean;
         logfile: string;
     } = vals as any;
 
     const defs = {
+        benson(s) {
+            /// uses the benson's test in the solver
+            return s ? !!JSON.parse(s) : false;
+        },
+
         log(s) {
             /// enables logging
             return s ? !!JSON.parse(s) : false;
