@@ -4,11 +4,14 @@
 module tsumego {
     import BitMatrix = linalg.BitMatrix;
 
-    enum Tags {
-        'X' = 0, // a stone of the same color
-        'O' = 1, // a stone of the opposite color
-        '-' = 2, // a neutral stone (the wall)
-        '.' = 3, // a vacant intersection
+    enum tags {
+        'x' = 0, // a stone of the same color
+        'o' = 1, // a stone of the opposite color
+        '#' = 2, // a neutral stone (the wall)
+        '-' = 3, // a vacant intersection
+        'X' = 4, // a safe stone of the same color
+        'O' = 5, // a safe stone of the opposite color
+        max = 6
     }
 
     const same = (m: BitMatrix, b: number) => (m.bits & b) === m.bits;
@@ -16,15 +19,9 @@ module tsumego {
     /**
      * An example of a pattern:
      *
-     *      X X ?
-     *      O . X
-     *      - - -
-     *
-     *  `X` = a stone of the same color
-     *  `O` = a stone of the opposite color
-     *  `.` = an empty intersection
-     *  `-` = a neutral stone (the wall)
-     *  `?` = anything (doesn't matter what's on that intersection)
+     *      x x ?
+     *      o - x
+     *      # # #
      *  
      * The current implementation uses bitmasks and the fact that patterns
      * are only 3x3 with the middle point empty at the moment. A probably
@@ -35,45 +32,31 @@ module tsumego {
     export class Pattern {
         private masks = [new Array<BitMatrix>()]; // 8 elements
 
-        static uceyes = [
-            new Pattern([
-                'XXX',
-                'X.X',
-                'XXX'
-            ]),
-            new Pattern([
-                'XX?',
-                'X.X',
-                'XXX'
-            ]),
-            new Pattern([
-                'XXX',
-                'X.X',
-                '---'
-            ]),
-            new Pattern([
-                'XX-',
-                'X.-',
-                '---'
-            ])
-        ]
-
         // the constructor can be very slow as every pattern
         // is constructed only once before the solver starts
         constructor(data: string[]) {
-            // m[0] = bits for X
-            // m[1] = bits for O
-            // m[2] = bits for -
-            // m[3] = bits for .
+            // m[0][t] = bitmask for tags[t]
+            // m[t] = the t-th transform of m[0]
             const m = this.masks;
 
-            for (let i = 0; i < 4; i++)
+            for (let i = 0; i < tags.max; i++)
                 m[0].push(new BitMatrix(3, 3));
 
             for (let row = 0; row < data.length; row++) {
-                for (let col = 0; col < data[row].length; col++) {
-                    const tag = data[row].charAt(col).toUpperCase();
-                    const mask = m[0][Tags[tag]];
+                const line = data[row].replace(/\s/g, '');
+
+                for (let col = 0; col < line.length; col++) {
+                    const chr = line[col];
+
+                    if (chr == '?')
+                        continue;
+
+                    const tag = tags[chr];
+
+                    if (tag === undefined)
+                        throw SyntaxError(`Invalid char ${chr} at ${row}:${col} in [${data.join(' | ')}]`);
+
+                    const mask = m[0][tag];
 
                     if (mask)
                         mask.set(row, col, true);
@@ -104,28 +87,45 @@ module tsumego {
                 m.push(m[i].map(m => m.t));
         }
 
-        static take(board: Board, x0: number, y0: number, color: number) {
+        static take(board: Board, x0: number, y0: number, color: number, safe?: (s: stone) => boolean) {
             // constructing and disposing an array at every call
             // might look very inefficient, but getting rid of it
             // by declaring this array as a variable outside the
             // method doesn't improve performance at all in V8
-            const m = [0, 0, 0, 0];
+            const m = [];
 
-            for (let i = 0; i < 3; i++) {
-                for (let j = 0; j < 3; j++) {
-                    const x = x0 + j - 1;
-                    const y = y0 + i - 1;
+            for (let i = 0; i < tags.max; i++)
+                m.push(0);
+
+            for (let dy = 0; dy < 3; dy++) {
+                for (let dx = 0; dx < 3; dx++) {
+                    const x = x0 + dx - 1;
+                    const y = y0 + dy - 1;
                     const c = board.get(x, y);
-                    const b = 1 << (3 * i + j);
+                    const s = stone.make(x, y, c);
+                    const b = 1 << (3 * dy + dx);
 
-                    if (c * color > 0)
-                        m[0] |= b; // a stone of the same color
-                    else if (c * color < 0)
-                        m[1] |= b; // a stone of the opposite color
-                    else if (!board.inBounds(x, y))
-                        m[2] |= b; // a neutral stone (the wall)
-                    else
-                        m[3] |= b; // a vacant intersection
+                    if (c * color > 0) {
+                        // a stone of the same color
+                        m[0] |= b;
+
+                        // a safe stone of the same color
+                        if (safe && safe(s))
+                            m[4] |= b;
+                    } else if (c * color < 0) {
+                        // a stone of the opposite color
+                        m[1] |= b;
+
+                        // a safe stone of the same color
+                        if (safe && safe(s))
+                            m[5] |= b;
+                    } else if (!board.inBounds(x, y)) {
+                        // a neutral stone (the wall)
+                        m[2] |= b;
+                    } else {
+                        // a vacant intersection
+                        m[3] |= b;
+                    }
                 }
             }
 
@@ -133,28 +133,16 @@ module tsumego {
         }
 
         test(m: number[]) {
+            // for .. of here makes the entires solver 1.12x slower
             search: for (let i = 0; i < 8; i++) {
                 const w = this.masks[i];
 
-                for (let j = 0; j < 4; j++)
+                for (let j = 0; j < tags.max; j++)
                     if (!same(w[j], m[j]))
                         continue search;
 
                 return true;
             }
-
-            return false;
-        }
-
-        static isEye(board: Board, x: number, y: number, color: number) {
-            const snapshot = Pattern.take(board, x, y, color);
-            const patterns = Pattern.uceyes;
-
-            // for..of would create an iterator and make
-            // the function about 2x slower overall
-            for (let i = 0; i < patterns.length; i++)
-                if (patterns[i].test(snapshot))
-                    return true;
 
             return false;
         }

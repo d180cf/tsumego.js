@@ -19,7 +19,7 @@
 /// <reference path="src/sgf.ts" />
 /// <reference path="src/dcnn.ts" />
 /// <reference path="src/board.ts" />
-/// <reference path="src/uceyes.ts" />
+/// <reference path="src/dumb.ts" />
 /// <reference path="src/search.ts" />
 /// <reference path="src/benson.ts" />
 

@@ -187,7 +187,7 @@ namespace tests.ut {
             return (value: string) => {
                 if (value !== pattern) {
                     assert(false, 'The two strings do not match:'
-                        + '\n lhs: ' + stringify(value)
+                        + '\n rhs: ' + stringify(value)
                         + '\n lhs: ' + stringify(pattern)
                         + '\ndiff: ' + strdiff(value, pattern));
                 }
