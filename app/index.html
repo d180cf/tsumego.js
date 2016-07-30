@@ -17,6 +17,9 @@
     <!-- Google's polyfill for the innerHTML property of SVG elements. -->
     <script src="../libs/innersvg.js"></script>
 
+    <!-- It's used in the directory to hash SGF. -->
+    <script src="../libs/md5.js"></script>
+
     <!-- jQuery mainly for Semantic UI, but it's now used by this app too. -->
     <script src="../libs/jquery-3.0.0.js"></script>
 
@@ -68,17 +71,17 @@
         -->
 
     <div id="grid" class="ui grid">
-        <div class="ui column" style="height:calc(100% - 2em);width:12em">
-            <div class="ui inverted segment" style="height:100%">
-                <div class="ui inverted accordion directory">
-                    <div class="title active">Problems</div>
-                    <div class="content active">
-                        <div class="ui inverted selection list"></div>
-                    </div>
+        <div class="ui column" style="height:calc(100% - 2em);width:15em">
+            <div class="ui inverted segment" style="height:100%" id="directory">
+                <div class="ui icon inverted transparent input">
+                    <input type="text" placeholder="Search...">
+                    <i class="circular search link icon"></i>
                 </div>
+
+                <div class="ui inverted vertical menu"></div>
             </div>
         </div>
-        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 15.5em);padding:0 2pt">
+        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 18.5em);padding:0 2pt">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
@@ -142,20 +145,6 @@
 
                     <button class="ui icon button" id="flipc" title="Invert stone colors">
                         <i class="right adjust icon"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div id="file-panel">
-                <div class="ui divider"></div>
-
-                <div class="ui big icon vertical buttons">
-                    <button class="ui icon button" id="delete" title="Delete this tsumego">
-                        <i class="right delete icon"></i>
-                    </button>
-
-                    <button class="ui icon button" id="rename" title="Rename this tsumego">
-                        <i class="right arrow icon"></i>
                     </button>
                 </div>
             </div>

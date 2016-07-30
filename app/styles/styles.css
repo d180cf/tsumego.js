@@ -36,13 +36,12 @@ html, body {
     cursor: pointer;
 }
 
-.tsumego svg {
-    width: calc(100vw - 16em);
-    height: calc(100vw - 16em);
-
-    max-height: calc(100vh - 6em);
-    max-width: calc(100vh - 6em);
-}
+    .tsumego svg {
+        width: calc(100vw - 19em);
+        height: calc(100vw - 19em);
+        max-height: calc(100vh - 6em);
+        max-width: calc(100vh - 6em);
+    }
 
 .workspace pre {
     height: 200pt;
@@ -69,11 +68,41 @@ html, body {
     bottom: 0;
 }
 
-.directory .list {
-    max-height: 20em;
-    overflow-y: auto;
-    overflow-x: hidden;
+#directory {
+    padding: 0;
 }
+
+    #directory > .input {
+        padding: 1em;
+        width: 100%;
+    }
+
+    #directory > .menu {
+        height: calc(100vh - 5em);
+        margin: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+        #directory > .menu > .item > .undo {
+            display: none;
+        }
+
+        #directory > .menu > .item.deleted > .close {
+            display: none;
+        }
+
+        #directory > .menu > .item.deleted > .undo {
+            display: inherit;
+        }
+
+        #directory > .menu > .item > .close:hover {
+            color: red;
+        }
+
+        #directory > .menu > .item > .undo:hover {
+            color: green;
+        }
 
 #dbg-panel {
     display: none;

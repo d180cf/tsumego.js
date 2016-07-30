@@ -146,7 +146,7 @@ module testbench {
         }
 
         Promise.resolve().then(() => {
-            const directory = new Directory(<HTMLElement>document.querySelector('.directory'));
+            const directory = new Directory('#directory');
 
             window.addEventListener('hashchange', () => {
                 const path = location.hash.slice(1); // #abc -> abc
@@ -187,11 +187,11 @@ module testbench {
                 });
             }
 
-            ls.added.push(path => {
+            ls.added.add(path => {
                 directory.add(path);
             });
 
-            ls.removed.push(path => {
+            ls.removed.add(path => {
                 directory.remove(path);
             });
 
@@ -213,7 +213,7 @@ module testbench {
 
                             const name = path.replace('.sgf', '');
 
-                            if (!lsdata[name])
+                            if (!ls.get(name))
                                 directory.add(name);
                         }).catch(err => {
                             console.log(err.stack);
@@ -225,29 +225,9 @@ module testbench {
             });
 
             if (!qargs.debug) {
-                document.querySelector('#delete').addEventListener('click', e => {
-                    if (lspath && lspath != 'blank' && confirm('Delete problem ' + lspath + '?')) {
-                        ls.set(lspath, null);
-                        location.hash = '#blank';
-                    }
-                });
-
-                document.querySelector('#rename').addEventListener('click', e => {
-                    if (!lspath) return;
-
-                    const path2 = prompt('New name for ' + lspath);
-
-                    if (!path2) return;
-
-                    if (ls.data[path2])
-                        alert(path2 + ' already exists');
-
-                    if (lspath != 'blank')
-                        ls.set(lspath, null);
-
-                    lspath = path2;
-                    renderBoard(); // it saves the sgf at the new location
-                    location.hash = '#' + lspath;
+                directory.deleted.add(path => {
+                    console.log('deleting ' + path + '...');
+                    ls.set(path, null);
                 });
 
                 document.querySelector('#solve-b').addEventListener('click', e => {
@@ -282,12 +262,9 @@ module testbench {
                 document.querySelector('#undo').addEventListener('click', () => {
                     const move = board.undo();
 
-                    if (move)
-                        console.log('undo ' + stone.toString(move));
-                    else
-                        console.log('nothing to undo');
-
-                    console.log(board + '');
+                    if (!move)
+                        vm.note = 'Nothing to undo';
+                                        
                     renderBoard();
                 });
 
@@ -295,7 +272,6 @@ module testbench {
 
                 input.addEventListener('focusout', e => {
                     try {
-                        console.log('focusout');
                         updateSGF(vm.sgf);
                     } catch (err) {
                         // partial input is not valid SGF
@@ -326,10 +302,6 @@ module testbench {
                 });
             }).then(sgfdata => {
                 updateSGF(sgfdata, nvar && +nvar);
-
-                console.log(sgfdata);
-                console.log(board + '');
-                console.log(board.toStringSGF());
             });
         });
     }
@@ -643,7 +615,6 @@ module testbench {
                 vm.note = c2s(color) + ' passes';
             } else {
                 board.play(move);
-                console.log(board + '');
                 renderBoard();
                 vm.note = stone.toString(move) + ' in ' + comment()
             }

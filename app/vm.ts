@@ -87,7 +87,6 @@ module testbench {
                     $('#footer').css('background-color', '#a7691c');
                     $('#dbg-panel').show();
                     $('#solver-panel').hide();
-                    $('#file-panel').hide();
                     $('#tool').hide();
                 } else {
                     debugger;

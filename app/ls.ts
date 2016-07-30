@@ -6,34 +6,46 @@ namespace testbench {
         [path: string]: string; // SGF
     }
 
-    export const ls = {
+    class Storage {
         /** A callback that's invoked once an entry is removed. */
-        removed: <Array<(path: string) => void>>[],
+        removed = new Event<(path: string) => void>();
 
         /** A callback that's invoked once an entry is added. */
-        added: <Array<(path: string, sgf: string) => void>>[],
+        added = new Event<(path: string, sgf: string) => void>();
 
         get data(): Data {
             return JSON.parse(storage.getItem(name)) || {};
-        },
+        }
 
         set data(json: Data) {
             storage.setItem(name, JSON.stringify(json));
-        },
+        }
+
+        get(path: string) {
+            return this.data[path];
+        }
 
         set(path: string, sgf: string) {
-            const json = ls.data;
+            const json = this.data;
             const wasthere = !!json[path];
             json[path] = sgf || undefined;
-            ls.data = json;
+            this.data = json;
 
             if (wasthere && !sgf)
-                for (const fn of this.removed)
-                    fn(path);
+                this.removed.fire(path);
 
             if (!wasthere && sgf)
-                for (const fn of this.added)
-                    fn(path, sgf);
+                this.added.fire(path, sgf);
+        }
+
+        get filter() {
+            return storage.getItem('filter') || '';
+        }
+
+        set filter(value: string) {
+            storage.setItem('filter', value || '');
         }
     }
+
+    export const ls = new Storage;
 }

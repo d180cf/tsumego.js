@@ -6,35 +6,73 @@ module testbench {
      * It uses a .ui.accordion to group tsumegos by folder.
      */
     export class Directory {
-        constructor(private container: HTMLElement) {
-            $(container).click(event => {
+        private input: JQuery;
+        private container: JQuery;
+
+        /** Fired when the close icon is clicked on an item. */
+        public deleted = new Event<(path: string) => void>();
+
+        constructor(container: string | Element | JQuery) {
+            this.input = $(container).find('input');
+            this.container = $(container).find('.menu');
+
+            this.input.change(() => {
+                this.filter = this.input.val();
+            });
+
+            this.filter = ls.filter;
+
+            this.container.click(event => {
                 const target = $(event.target);
 
-                if (target.is('.title')) {
-                    target.siblings().removeClass('active');
-                    target.addClass('active').next('.content').addClass('active');
+                if (target.is('.icon')) {
+                    event.stopPropagation();
+                    event.preventDefault(); // otherwise window#hashchange will be triggered
+
+                    if (target.is('.close')) {
+                        const a = target.parent();
+                        a.addClass('deleted'); // to be actually deleted once page closed
+                    }
+
+                    if (target.is('.undo')) {
+                        const a = target.parent();
+                        a.removeClass('deleted');
+                    }
                 }
+            });
+
+            window.addEventListener('beforeunload', () => {
+                this.container.find('.item.deleted').each((i, a) => {
+                    const path = $(a).text();
+                    this.deleted.fire(path);
+                });
             });
         }
 
-        /**
-         * Finds or creates the .ui.content element.
-         */
-        private getFolder(folder: string): Element {
-            for (const x of $(this.container).find('.title').toArray())
-                if (x.textContent == folder)
-                    return <HTMLElement>x.nextSibling;
-
-            if (!folder)
-                return $(this.container).find('.content:first')[0];
-
-            this.container.innerHTML += `<div class="title">${folder}</div><div class="content"><div class="ui inverted selection list"></div></div>`;
-
-            return $(this.container).find('.content:last')[0];
+        get filter() {
+            return this.input.val();
         }
 
-        find(path: string | ((path: string) => boolean), list = this.container): HTMLElement {
-            for (const e of $(list).find('a.item').toArray()) {
+        set filter(value: string) {
+            this.input.val(value);
+            ls.filter = value;
+
+            for (const e of this.container.find('a.item').toArray())
+                this.toggle(e, value);
+        }
+
+        private toggle(item, filter: string) {
+            const path = $(item).text();
+
+            const visible = path.indexOf(filter) >= 0
+                // it would be odd if the current tsumego was hidden
+                || path == location.hash.slice(1);
+
+            $(item).toggle(visible);
+        }
+
+        find(path: string | ((path: string) => boolean)) {
+            for (const e of this.container.find('a.item').toArray()) {
                 const a = <HTMLAnchorElement>e;
 
                 const matches = typeof path === 'string' ?
@@ -50,55 +88,43 @@ module testbench {
          * Returns an existing entry if it already exists.
          */
         add(path: string) {
-            if (this.find(path))
-                return;
+            let a = this.find(path);
 
-            const folder = path.indexOf('/') < 0 ? null : path.split('/')[0];
-            const name = folder ? path.slice(folder.length + 1) : path;
-            const content = this.getFolder(folder);
-            const list = <HTMLElement>content.querySelector('.ui.list');
-            const next = this.find(s => s > path, list);
+            if (!a) {
+                const next = this.find(s => s > path);
 
-            const a = document.createElement('a');
+                a = document.createElement('a');
 
-            a.setAttribute('class', 'item');
-            a.setAttribute('href', '#' + path);
-            a.textContent = name;
+                a.setAttribute('class', 'item');
+                a.setAttribute('href', '#' + path);
+                a.textContent = path;
+                a.innerHTML += '<i class="icon close" title="Delete this tsumego"></i>';
+                a.innerHTML += '<i class="icon undo" title="Restore this tsumego"></i>';
 
-            list.insertBefore(a, next);
+                if (next)
+                    $(a).insertBefore(next);
+                else
+                    this.container.append(a);
+
+                this.toggle(a, this.filter);
+            }
+
+            return a;
         }
 
         /**
          * Does nothing if the entry doesn't exist.
          */
         remove(path: string) {
-            const a = this.find(path);
-            a && a.parentNode.removeChild(a);
+            $(this.find(path)).remove();
         }
 
         /**
          * Makes this item active. Expands folders as necessary.
          */
         select(path: string) {
-            $(this.container).find('.active').removeClass('active');
-
-            for (const e of $(this.container).find('.item').toArray()) {
-                const a = <HTMLAnchorElement>e;
-
-                if (a.hash == '#' + path) {
-                    a.classList.add('active');
-
-                    const content = a.parentElement.parentElement;
-                    content.classList.add('active');
-
-                    const title = content.previousElementSibling;
-                    title.classList.add('active');
-
-                    //a.scrollIntoView();
-                } else {
-                    a.classList.remove('active');
-                }
-            }
+            this.container.find('.active').removeClass('active');
+            $(this.find(path)).addClass('active');
         }
     }
 }

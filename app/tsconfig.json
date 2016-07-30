@@ -1,5 +1,8 @@
 {
-  "files": [ "app.ts" ],
+  "files": [
+    "event.ts",
+    "app.ts"
+  ],
   "compilerOptions": {
     "out": "app.js",
     "target": "es6",
