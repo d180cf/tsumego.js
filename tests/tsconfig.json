@@ -1,5 +1,32 @@
 {
-  "files": [ "all.ts" ],
+  "files": [
+    "../tsumego.d.ts",
+    "../libs/node.d.ts",
+
+    "isnode.ts",
+    "colors.ts",
+    "argv.ts",
+    "infra.ts",
+    "console.tree.ts",
+    "stats.ts",
+    "../libs/json-file.ts",
+    "collection.ts",
+    "es6aiter.ts",
+    "ascii-board.ts",
+
+    "src/benson.t.ts",
+    "src/board.t.ts",
+    "src/dcnn.t.ts",
+    "src/dist.t.ts",
+    "src/dumb.t.ts",
+    "src/fixed.t.ts",
+    "src/gf2.t.ts",
+    "src/search.t.ts",
+    "src/sgf.t.ts",
+    "src/utils.t.ts",
+
+    "all.ts"
+  ],
   "compilerOptions": {
     "out": "tests.js",
     "target": "es6",
