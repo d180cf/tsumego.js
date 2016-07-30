@@ -111,8 +111,8 @@
             const moves: [string, number, () => void][] = [
                 ['+A5', 1, () => {
                     $(b.toString()).equal([
-                        '   A',
-                        ' 5 X',
+                        '  a',
+                        'a X',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -122,8 +122,8 @@
 
                 ['-B5', 1, () => {
                     $(b.toString()).equal([
-                        '   A B',
-                        ' 5 X O',
+                        '  a b',
+                        'a X O',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -134,9 +134,9 @@
 
                 ['+B4', 1, () => {
                     $(b.toString()).equal([
-                        '   A B',
-                        ' 5 X O',
-                        ' 4 - X',
+                        '  a b',
+                        'a X O',
+                        'b - X',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -148,9 +148,9 @@
 
                 ['-C5', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C',
-                        ' 5 X O O',
-                        ' 4 - X -',
+                        '  a b c',
+                        'a X O O',
+                        'b - X -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -162,9 +162,9 @@
 
                 ['+A4', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C',
-                        ' 5 X O O',
-                        ' 4 X X -',
+                        '  a b c',
+                        'a X O O',
+                        'b X X -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -176,9 +176,9 @@
 
                 ['-E5', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -191,12 +191,12 @@
 
                 ['+A1', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - - - -',
-                        ' 2 - - - - -',
-                        ' 1 X - - - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - - - -',
+                        'd - - - - -',
+                        'e X - - - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -210,12 +210,12 @@
 
                 ['-D2', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - - - -',
-                        ' 2 - - - O -',
-                        ' 1 X - - - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - - - -',
+                        'd - - - O -',
+                        'e X - - - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -230,12 +230,12 @@
 
                 ['-B2', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - - - -',
-                        ' 2 - O - O -',
-                        ' 1 X - - - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - - - -',
+                        'd - O - O -',
+                        'e X - - - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -251,12 +251,12 @@
 
                 ['-C3', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - O - -',
-                        ' 2 - O - O -',
-                        ' 1 X - - - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - O - -',
+                        'd - O - O -',
+                        'e X - - - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -273,12 +273,12 @@
 
                 ['-C1', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - O - -',
-                        ' 2 - O - O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - O - -',
+                        'd - O - O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -296,12 +296,12 @@
 
                 ['+C2', 0, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - O - -',
-                        ' 2 - O - O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - O - -',
+                        'd - O - O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -319,12 +319,12 @@
 
                 ['-C2', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X - - -',
-                        ' 3 - - O - -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X - - -',
+                        'c - - O - -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -342,12 +342,12 @@
 
                 ['+D5', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X O',
-                        ' 4 X X - - -',
-                        ' 3 - - O - -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X O',
+                        'b X X - - -',
+                        'c - - O - -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -366,12 +366,12 @@
 
                 ['+E4', 2, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X - - X',
-                        ' 3 - - O - -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X - - X',
+                        'c - - O - -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -391,12 +391,12 @@
 
                 ['-D4', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X - O X',
-                        ' 3 - - O - -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X - O X',
+                        'c - - O - -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -417,12 +417,12 @@
 
                 ['+D3', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X - O X',
-                        ' 3 - - O X -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X - O X',
+                        'c - - O X -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -444,12 +444,12 @@
 
                 ['-C4', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X O O X',
-                        ' 3 - - O X -',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X O O X',
+                        'c - - O X -',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -471,12 +471,12 @@
 
                 ['+E3', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X O O X',
-                        ' 3 - - O X X',
-                        ' 2 - O O O -',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X O O X',
+                        'c - - O X X',
+                        'd - O O O -',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -498,12 +498,12 @@
 
                 ['-E2', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X O O X',
-                        ' 3 - - O X X',
-                        ' 2 - O O O O',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X O O X',
+                        'c - - O X X',
+                        'd - O O O O',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -525,12 +525,12 @@
 
                 ['+E5', 0, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X O O X',
-                        ' 3 - - O X X',
-                        ' 2 - O O O O',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X O O X',
+                        'c - - O X X',
+                        'd - O O O O',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -552,12 +552,12 @@
 
                 ['-E5', 5, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X O O -',
-                        ' 3 - - O - -',
-                        ' 2 - O O O O',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X O O -',
+                        'c - - O - -',
+                        'd - O O O O',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -580,12 +580,12 @@
 
                 ['+E4', 1, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O - O',
-                        ' 4 X X O O X',
-                        ' 3 - - O - -',
-                        ' 2 - O O O O',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O - O',
+                        'b X X O O X',
+                        'c - - O - -',
+                        'd - O O O O',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -609,12 +609,12 @@
 
                 ['+D5', 2, () => {
                     $(b.toString()).equal([
-                        '   A B C D E',
-                        ' 5 X O O X -',
-                        ' 4 X X O O X',
-                        ' 3 - - O - -',
-                        ' 2 - O O O O',
-                        ' 1 X - O - -',
+                        '  a b c d e',
+                        'a X O O X -',
+                        'b X X O O X',
+                        'c - - O - -',
+                        'd - O O O O',
+                        'e X - O - -',
                     ].join('\n'));
 
                     $(b.blocks.map(block.toString)).equal([null,
@@ -705,31 +705,31 @@
             try {
                 b.play(stone.make(2, 0, +1));
                 $(b + '').equal(
-                    '   A B C D E' + '\n' +
-                    ' 5 - O X X O' + '\n' +
-                    ' 4 X X - X O' + '\n' +
-                    ' 3 - - X O O');
+                    '  a b c d e' + '\n' +
+                    'a - O X X O' + '\n' +
+                    'b X X - X O' + '\n' +
+                    'c - - X O O');
 
                 b.play(stone.make(2, 1, -1));
                 $(b + '').equal(
-                    '   A B C D E' + '\n' +
-                    ' 5 - O - - O' + '\n' +
-                    ' 4 X X O - O' + '\n' +
-                    ' 3 - - X O O');
+                    '  a b c d e' + '\n' +
+                    'a - O - - O' + '\n' +
+                    'b X X O - O' + '\n' +
+                    'c - - X O O');
 
                 b.play(stone.make(2, 0, +1));
                 $(b + '').equal(
-                    '   A B C D E' + '\n' +
-                    ' 5 - O X - O' + '\n' +
-                    ' 4 X X O - O' + '\n' +
-                    ' 3 - - X O O');
+                    '  a b c d e' + '\n' +
+                    'a - O X - O' + '\n' +
+                    'b X X O - O' + '\n' +
+                    'c - - X O O');
 
                 b.play(stone.make(3, 0, -1));
                 $(b + '').equal(
-                    '   A B C D E' + '\n' +
-                    ' 5 - O - O O' + '\n' +
-                    ' 4 X X O - O' + '\n' +
-                    ' 3 - - X O O');
+                    '  a b c d e' + '\n' +
+                    'a - O - O O' + '\n' +
+                    'b X X O - O' + '\n' +
+                    'c - - X O O');
             } catch (e) {
                 console.log(b + '');
                 throw e;
@@ -741,7 +741,6 @@
             const board = new Board(3);
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[3])');
-            $(board.toString()).equal('   A\n 3 -');
         });
 
         $.test($ => {
@@ -750,7 +749,6 @@
             board.play(stone.make(2, 2, +1));
 
             $(board.toString('SGF')).equal('(;FF[4]SZ[5]AB[cc])');
-            $(board.toString()).equal('   A B C\n 5 - - -\n 4 - - -\n 3 - - X');
         });
 
         $.test($ => {
@@ -763,10 +761,10 @@
             /// variation from sgf
             const board = new Board(`(;FF[4]SZ[3]AB[aa][bb]AW[ba](;AB[cc]AW[ab]))`, 1);
             $(board + '').equal(
-                '   A B C' + '\n' +
-                ' 3 - O -' + '\n' +
-                ' 2 O X -' + '\n' +
-                ' 1 - - X');
+                '  a b c' + '\n' +
+                'a - O -' + '\n' +
+                'b O X -' + '\n' +
+                'c - - X');
         });
 
         $.test($ => {
@@ -781,16 +779,16 @@
                 + 'AW[bb][cb][cc][cd][de][df][cg][ch][dh][ai][bi][ci])');
 
             $(board.toString()).equal([
-                '   A B C D',
-                ' 9 - X - -',
-                ' 8 X O O -',
-                ' 7 X X O -',
-                ' 6 - X O -',
-                ' 5 - X - O',
-                ' 4 - - X O',
-                ' 3 - X O -',
-                ' 2 - X O O',
-                ' 1 O O O -'
+                '  a b c d',
+                'a - X - -',
+                'b X O O -',
+                'c X X O -',
+                'd - X O -',
+                'e - X - O',
+                'f - - X O',
+                'g - X O -',
+                'h - X O O',
+                'i O O O -'
             ].join('\n'));
         });
 
@@ -809,16 +807,16 @@
             ]);
 
             $(board + '').equal([
-                '   A B C D E F G H J',
-                ' 9 - X - - - - - - -',
-                ' 8 X O O - - - - - -',
-                ' 7 X X O - - - - - X',
-                ' 6 - X O - - - - - -',
-                ' 5 - X - O - - - - -',
-                ' 4 - - X O - - - - -',
-                ' 3 - X O - - - - - -',
-                ' 2 - X O O - - - - -',
-                ' 1 O O O - - - - - -'
+                '  a b c d e f g h i',
+                'a - X - - - - - - -',
+                'b X O O - - - - - -',
+                'c X X O - - - - - X',
+                'd - X O - - - - - -',
+                'e - X - O - - - - -',
+                'f - - X O - - - - -',
+                'g - X O - - - - - -',
+                'h - X O O - - - - -',
+                'i O O O - - - - - -'
             ].join('\n'));
         });
 
@@ -841,12 +839,12 @@
             $(n).equal(5 + 1);
 
             $(b + '').equal(
-                '   A B C D E F G H\n' +
-                ' 9 X - X X O O O O\n' +
-                ' 8 X X - X X O O X\n' +
-                ' 7 - - X - - X O X\n' +
-                ' 6 - - X - - - X X\n' +
-                ' 5 - - - X X X - -');
+                '  a b c d e f g h\n' +
+                'a X - X X O O O O\n' +
+                'b X X - X X O O X\n' +
+                'c - - X - - X O X\n' +
+                'd - - X - - - X X\n' +
+                'e - - - X X X - -');
         });
 
         $.test($ => {

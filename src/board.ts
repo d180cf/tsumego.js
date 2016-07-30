@@ -645,20 +645,18 @@ module tsumego {
                             ymax = max(y, ymax);
 
             if (!hideLabels) {
-                s += '  ';
+                s += ' ';
 
                 for (let x = 0; x <= xmax; x++)
-                    s += ' ' + String.fromCharCode(0x41 + (x < 8 ? x : x + 1)); // skip I
+                    s += ' ' + stone.toString(stone.make(x, 0, 0))[1];
             }
 
             for (let y = 0; y <= ymax; y++) {
                 if (s)
                     s += '\n';
 
-                if (!hideLabels) {
-                    const n = (this.size - y) + '';
-                    s += n.length < 2 ? ' ' + n : n;;
-                }
+                if (!hideLabels)
+                    s += stone.toString(stone.make(0, y, 0))[2];
 
                 for (let x = 0; x <= xmax; x++) {
                     const b = this.get(x, y);

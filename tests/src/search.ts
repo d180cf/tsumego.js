@@ -194,7 +194,7 @@ module tests {
                     if (stone.fromString(moves[0]) * color < 0) {
                         for (const move of moves) {
                             if (!b.play(stone.fromString(move)))
-                                throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move);
+                                throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + b);
 
                             seq.push(move);
                             playout(root[move]);
@@ -232,10 +232,10 @@ module tests {
                         const move = stone.toString(r);
 
                         if (!root[move])
-                            throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves);
+                            throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves + '\n' + b);
 
                         if (!b.play(r))
-                            throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move);
+                            throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + b);
 
                         seq.push(move);
                         playout(root[move]);
