@@ -61,6 +61,16 @@ module testbench {
                 this.toggle(e, value);
         }
 
+        item(path: string) {
+            const a = this.add(path);
+
+            return new class DirectoryItem {
+                set hard(value: boolean) {
+                    $(a).toggleClass('hard', value);
+                }
+            }
+        }
+
         private toggle(item, filter: string) {
             const path = $(item).text();
 
@@ -97,9 +107,10 @@ module testbench {
 
                 a.setAttribute('class', 'item');
                 a.setAttribute('href', '#' + path);
-                a.textContent = path;
+                a.textContent = path;                
                 a.innerHTML += '<i class="icon close" title="Delete this tsumego"></i>';
                 a.innerHTML += '<i class="icon undo" title="Restore this tsumego"></i>';
+                a.innerHTML += '<i class="icon star" title="The solver cannot solve this tsumego in 10 seconds"></i>';
 
                 if (next)
                     $(a).insertBefore(next);

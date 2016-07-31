@@ -213,8 +213,9 @@ module testbench {
 
                             const name = path.replace('.sgf', '');
 
-                            if (!ls.get(name))
-                                directory.add(name);
+                            // the problem is considered to be hard if it
+                            // doesn't appear in unit tests
+                            directory.item(name).hard = !/\bPL\[/.test(sgf);
                         }).catch(err => {
                             console.log(err.stack);
                         });
@@ -264,7 +265,7 @@ module testbench {
 
                     if (!move)
                         vm.note = 'Nothing to undo';
-                                        
+
                     renderBoard();
                 });
 
