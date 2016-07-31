@@ -1,6 +1,7 @@
 {
   "files": [
     "event.ts",
+    "storage.ts",
     "app.ts"
   ],
   "compilerOptions": {

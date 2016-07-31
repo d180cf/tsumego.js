@@ -20,7 +20,14 @@ module testbench {
                 this.filter = this.input.val();
             });
 
-            this.filter = ls.filter;
+            this.filter = ss.filter;
+
+            setTimeout(() => {
+                // restore the scrolling offset after
+                // the problems are loaded; that's a hack,
+                // actually
+                this.container.scrollTop(ss.dst)
+            });
 
             this.container.click(event => {
                 const target = $(event.target);
@@ -42,6 +49,8 @@ module testbench {
             });
 
             window.addEventListener('beforeunload', () => {
+                ss.dst = this.container.scrollTop();
+
                 this.container.find('.item.deleted').each((i, a) => {
                     const path = $(a).text();
                     this.deleted.fire(path);
@@ -67,7 +76,7 @@ module testbench {
 
         set filter(value: string) {
             this.input.val(value);
-            ls.filter = value;
+            ss.filter = value;
 
             for (const e of this.container.find('a.item').toArray())
                 this.toggle(e, value);
@@ -122,7 +131,7 @@ module testbench {
                 a.textContent = path;
                 a.innerHTML += '<i class="icon close" title="Delete this tsumego"></i>';
                 a.innerHTML += '<i class="icon undo" title="Restore this tsumego"></i>';
-                a.innerHTML += '<i class="icon star" title="The solver cannot solve this tsumego in 10 seconds"></i>';
+                a.innerHTML += '<i class="icon star" title="This is a hard tsumego"></i>';
 
                 if (next)
                     $(a).insertBefore(next);

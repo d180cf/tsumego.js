@@ -1,7 +1,6 @@
 /// <reference path="../tsumego.d.ts" />
 /// <reference path="kb.ts" />
 /// <reference path="xhr.ts" />
-/// <reference path="ls.ts" />
 /// <reference path="goban.ts" />
 /// <reference path="vm.ts" />
 /// <reference path="directory.ts" />
@@ -43,12 +42,15 @@ module testbench {
     }
 
     /** shared transposition table for black and white */
-    export var tt = new tsumego.TT;
+    export var tt: tsumego.TT;
 
     interface AsyncOperation {
         ntcalls: number;
         notify(): void;
+        cancelled?: string;
     }
+
+    let solving: AsyncOperation;
 
     // ?rs=123 sets the rand seed
     const rs = +qargs.rs || (Date.now() | 0);
@@ -72,11 +74,13 @@ module testbench {
 
             let s = g.next();
 
-            return new Promise<stone>(resolve => {
+            return new Promise<stone>((resolve, reject) => {
                 setTimeout(function fn() {
-                    if (op) op.notify();
+                    op && op.notify();
 
-                    if (s.done) {
+                    if (op && op.cancelled) {
+                        reject(op.cancelled);
+                    } else if (s.done) {
                         resolve(s.value);
                     } else {
                         if (op) op.ntcalls = s.value;
@@ -85,11 +89,7 @@ module testbench {
                     }
                 });
             }).then(rs => {
-                if (log) {
-                    profile.log();
-                    console.log(s2s(color, rs));
-                }
-
+                log && profile.log();
                 return rs;
             });
         });
@@ -255,8 +255,9 @@ module testbench {
 
                         b.play(stone.make(x, y, -c));
                     }
-
+                    
                     board = b.fork();
+                    tt = new tsumego.TT;
                     renderBoard();
                 });
 
@@ -289,6 +290,9 @@ module testbench {
     });
 
     function loadProblem(path: string) {
+        if (solving)
+            solving.cancelled = 'cancelled because loading ' + path;        
+
         return Promise.resolve().then(() => {
             console.log('loading problem', path);
             const [source, nvar] = path.split(':');
@@ -298,7 +302,7 @@ module testbench {
 
             return Promise.resolve().then(() => {
                 return ls.data[source] || send('GET', '/problems/' + source + '.sgf').catch(e => {
-                    console.log(source, 'cannot be loaded', e);
+                    console.log(source, 'cannot be loaded', e);                    
                     return new Board(9).toStringSGF();
                 });
             }).then(sgfdata => {
@@ -321,8 +325,9 @@ module testbench {
         board = new Board(sgfdata, nvar);
         aim = stone.fromString((setup['MA'] || ['aa'])[0]);
         selection = null;
-
+        
         board = board.fork(); // drop the history of moves
+        tt = new tsumego.TT;
         renderBoard();
     }
 
@@ -338,6 +343,7 @@ module testbench {
         }
 
         board = b.fork(); // drop history
+        tt = new tsumego.TT;
     }
 
     document.addEventListener('keyup', event => {
@@ -408,6 +414,7 @@ module testbench {
 
                 aim = t;
                 board = b;
+                tt = new tsumego.TT;
                 renderBoard();
                 return;
         }
@@ -602,7 +609,7 @@ module testbench {
             + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
             + '; playouts = ' + (op.ntcalls / 1000 | 0) + 'K';
 
-        const op = {
+        const op = solving = {
             ntcalls: 0,
             notify() {
                 vm.note = 'Solving... elapsed ' + comment();
@@ -612,16 +619,20 @@ module testbench {
         return solve(op, board, color, km, true).then(move => {
             const duration = Date.now() - started;
 
+            solving = null;
+
             if (!stone.hascoords(move) || move * color < 0) {
                 vm.note = c2s(color) + ' passes';
             } else {
                 board.play(move);
                 renderBoard();
-                vm.note = stone.toString(move) + ' in ' + comment()
+                vm.note = stone.toString(move) + ' in ' + comment();
+                console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
             }
 
             return move;
         }).catch(err => {
+            solving = null;
             vm.note = err;
             throw err;
         });

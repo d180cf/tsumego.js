@@ -762,5 +762,10 @@ module tsumego {
 
             return nbs;
         }
+
+        /** the sequence of moves that was given to .play(...) to get this position */
+        get moves() {
+            return this.history.added.map(x => stone.make(x & 15, x >> 4 & 15, x));
+        }
     }
 }

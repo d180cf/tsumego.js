@@ -1,24 +1,27 @@
 namespace testbench {
     const name = 'tsumego.js';
-    const storage = localStorage;
 
     interface Data {
         [path: string]: string; // SGF
     }
 
-    class Storage {
+    class SVM {
         /** A callback that's invoked once an entry is removed. */
         removed = new Event<(path: string) => void>();
 
         /** A callback that's invoked once an entry is added. */
         added = new Event<(path: string, sgf: string) => void>();
 
+        constructor(private storage: Storage) {
+
+        }
+
         get data(): Data {
-            return JSON.parse(storage.getItem(name)) || {};
+            return JSON.parse(this.storage.getItem(name)) || {};
         }
 
         set data(json: Data) {
-            storage.setItem(name, JSON.stringify(json));
+            this.storage.setItem(name, JSON.stringify(json));
         }
 
         get(path: string) {
@@ -39,13 +42,22 @@ namespace testbench {
         }
 
         get filter() {
-            return storage.getItem('filter') || '';
+            return this.storage.getItem('filter') || '';
         }
 
         set filter(value: string) {
-            storage.setItem('filter', value || '');
+            this.storage.setItem('filter', value || '');
+        }
+
+        get dst() {
+            return +this.storage.getItem('dst') || 0;
+        }
+
+        set dst(value: number) {
+            this.storage.setItem('dst', value + '');
         }
     }
 
-    export const ls = new Storage;
+    export const ls = new SVM(localStorage);
+    export const ss = new SVM(sessionStorage);
 }
