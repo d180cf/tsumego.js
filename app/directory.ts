@@ -47,6 +47,18 @@ module testbench {
                     this.deleted.fire(path);
                 });
             });
+
+            document.addEventListener('keydown', event => {
+                const a = this.container.find('.item.active');
+
+                if (!event.ctrlKey && !event.shiftKey && !event.altKey) {
+                    if (event.keyCode == 38)
+                        location.hash = a.prevAll('.item:visible').first().attr('href') || location.hash;
+
+                    if (event.keyCode == 40)
+                        location.hash = a.nextAll('.item:visible').first().attr('href') || location.hash;
+                }
+            });
         }
 
         get filter() {
@@ -107,7 +119,7 @@ module testbench {
 
                 a.setAttribute('class', 'item');
                 a.setAttribute('href', '#' + path);
-                a.textContent = path;                
+                a.textContent = path;
                 a.innerHTML += '<i class="icon close" title="Delete this tsumego"></i>';
                 a.innerHTML += '<i class="icon undo" title="Restore this tsumego"></i>';
                 a.innerHTML += '<i class="icon star" title="The solver cannot solve this tsumego in 10 seconds"></i>';
