@@ -14,6 +14,19 @@ jake tb
 
 The `dev` option only has an effect on how the web app sources are built. The library itself is built separately in three versions (dev, es5 and es6) and the web app detects at runtime which version to load.
 
+# Run
+
+Use `http-server` to host the app. In the root project dir:
+
+```
+... > npm i -g http-server
+... > http-server -p 80
+Starting up http-server, serving ./
+Available on:
+  http://192.168.1.2:80
+  http://127.0.0.1:80
+```
+
 # Debug
 
 Usually in the URL there is just the problem id: `http://.../#basic/5`. To enter the debug mode add the `debug` parameter in the URL query: `?debug=B&km=W&rs=123#basic/7` (this one tells that black plays first, white is the ko master and the RNG should be initialized with `123` to make things reproducible). This should display this screen:
