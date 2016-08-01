@@ -18,6 +18,14 @@ module testbench {
     hookToolToKey('AW', 'W'); // W = white
 
     export const vm = new class VM {
+        constructor() {
+            $(window).on('load', () => {
+                $('#sgf').focusout(() => {
+                    this.sgfchanged.fire();
+                });
+            });
+        }
+
         /** The currently selected editor tool: MA, AB, AW, etc. */
         get tool(): string {
             const button = document.querySelector('#tool button.active');
@@ -69,6 +77,8 @@ module testbench {
         set sgf(text: string) {
             $('#sgf').text(text);
         }
+
+        sgfchanged = new Event<() => void>();
 
         set svg(text: string) {
             $('#svg').text(text);

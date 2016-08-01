@@ -255,7 +255,7 @@ module testbench {
 
                         b.play(stone.make(x, y, -c));
                     }
-                    
+
                     board = b.fork();
                     tt = new tsumego.TT;
                     renderBoard();
@@ -270,9 +270,7 @@ module testbench {
                     renderBoard();
                 });
 
-                const input = <HTMLTextAreaElement>document.querySelector('#sgf');
-
-                input.addEventListener('focusout', e => {
+                vm.sgfchanged.add(() => {
                     try {
                         updateSGF(vm.sgf);
                     } catch (err) {
@@ -291,7 +289,7 @@ module testbench {
 
     function loadProblem(path: string) {
         if (solving)
-            solving.cancelled = 'cancelled because loading ' + path;        
+            solving.cancelled = 'cancelled because loading ' + path;
 
         return Promise.resolve().then(() => {
             console.log('loading problem', path);
@@ -302,7 +300,7 @@ module testbench {
 
             return Promise.resolve().then(() => {
                 return ls.data[source] || send('GET', '/problems/' + source + '.sgf').catch(e => {
-                    console.log(source, 'cannot be loaded', e);                    
+                    console.log(source, 'cannot be loaded', e);
                     return new Board(9).toStringSGF();
                 });
             }).then(sgfdata => {
@@ -325,7 +323,7 @@ module testbench {
         board = new Board(sgfdata, nvar);
         aim = stone.fromString((setup['MA'] || ['aa'])[0]);
         selection = null;
-        
+
         board = board.fork(); // drop the history of moves
         tt = new tsumego.TT;
         renderBoard();

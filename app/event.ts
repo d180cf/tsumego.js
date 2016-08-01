@@ -7,8 +7,13 @@ module testbench {
         }
 
         fire(...args) {
-            for (const listener of this.listeners)
-                listener(...args);
+            for (const listener of this.listeners) {
+                try {
+                    listener(...args);
+                } catch (err) {
+                    console.log('an event listener has thrown an error:', err && err.stack || err);
+                }
+            }
         }
     }
 }
