@@ -344,21 +344,22 @@ module testbench {
         tt = new tsumego.TT;
     }
 
-    document.addEventListener('keyup', event => {
-        const enum KeyCode {
-            ArrowL = 37,
-            ArrorT = 38,
-            ArrowR = 39,
-            ArrorB = 40,
+    const enum KeyCode {
+        ArrowL = 37,
+        ArrorT = 38,
+        ArrowR = 39,
+        ArrorB = 40,
 
-            Delete = 46,
-        }
+        Delete = 46,
+    }
+
+    // removes all the stones in the selection
+    $(document).on('keyup', event => {
+        if (!selection)
+            return;
 
         switch (event.keyCode) {
             case KeyCode.Delete:
-                if (!selection)
-                    return;
-
                 for (const s of board.stones()) {
                     const x = stone.x(s);
                     const y = stone.y(s);
@@ -369,15 +370,19 @@ module testbench {
 
                 selection = null;
                 renderBoard();
-                return;
+        }
+    });
 
+    // moves all the stones in the given direction
+    $(document).on('keyup', event => {
+        if (!event.ctrlKey || selection)
+            return;
+
+        switch (event.keyCode) {
             case KeyCode.ArrowL:
             case KeyCode.ArrorT:
             case KeyCode.ArrowR:
             case KeyCode.ArrorB:
-                if (!event.ctrlKey || selection)
-                    return;
-
                 const [dx, dy] = {
                     [KeyCode.ArrowL]: [-1, 0],
                     [KeyCode.ArrowR]: [+1, 0],
@@ -414,7 +419,32 @@ module testbench {
                 board = b;
                 tt = new tsumego.TT;
                 renderBoard();
-                return;
+        }
+    });
+
+    // resizes the board
+    $(document).on('keyup', event => {
+        if (!event.shiftKey || selection)
+            return;
+
+        try {
+            switch (event.keyCode) {
+                case KeyCode.ArrowL:
+                case KeyCode.ArrowR:
+
+                    const b = new Board(board.size + (event.keyCode == KeyCode.ArrowR ? +1 : -1))
+
+                    for (const s of board.stones())
+                        if (!b.play(s))
+                            throw Error(stone.toString(s) + ' does not fit the ' + b.size + 'x' + b.size + ' board');
+
+                    board = b;
+                    tt = new tsumego.TT;
+                    renderBoard();
+            }
+        } catch (err) {
+            vm.note = err;
+            throw err;
         }
     });
 
