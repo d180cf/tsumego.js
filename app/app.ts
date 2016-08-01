@@ -321,7 +321,7 @@ module testbench {
         const setup = sgf.steps[0];
 
         board = new Board(sgfdata, nvar);
-        aim = stone.fromString((setup['MA'] || ['aa'])[0]);
+        aim = setup['MA'] ? stone.fromString(setup['MA'][0]) : 0;
         selection = null;
 
         board = board.fork(); // drop the history of moves
@@ -386,10 +386,10 @@ module testbench {
                 }[event.keyCode];
 
                 const b = new Board(board.size);
-                const t = stone.make(stone.x(aim) + dx, stone.y(aim) + dy, 0);
+                const t = aim && stone.make(stone.x(aim) + dx, stone.y(aim) + dy, 0);
 
                 try {
-                    if (!b.inBounds(t))
+                    if (t && !b.inBounds(t))
                         throw aim;
 
                     for (const s1 of board.stones()) {

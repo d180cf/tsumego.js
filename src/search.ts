@@ -132,6 +132,9 @@ module tsumego {
 
             let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
 
+            if (!stone.hascoords(target))
+                throw Error('The target stone is not set');
+
             // tells who is being captured: coords + color
             target = stone.make(stone.x(target), stone.y(target), sign(board.get(target)));
 
