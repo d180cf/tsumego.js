@@ -2,9 +2,9 @@
 
 It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which the target is surrounded by a wall with no holes and the area being surrounded is up to 20 intersections. Some of these basic problems are rated as 9 dan on goproblems, though. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
-Here are a couple problems ([15197](http://www.goproblems.com/15197) and [13083](http://www.goproblems.com/13083) from goproblems.com) rated as 9 dan that this solver can handle in a few seconds:
+Here are a few problems that this solver can handle in a few seconds:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/15197.svg" height="200pt" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/13083.svg" height="200pt" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/15197.svg" height="200pt" title="goproblems.com/15197" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/13083.svg" height="200pt" title="goproblems.com/13083" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg" height="200pt" title="goproblems.com/21185" />
 
 To get this solution first take a [release](https://github.com/d180cf/tsumego.js/releases) of the solver and then invoke `tsumego.solve`:
 
