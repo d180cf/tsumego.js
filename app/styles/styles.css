@@ -44,7 +44,7 @@ html, body {
     }
 
 .workspace pre {
-    height: 200pt;
+    height: calc(100vh - 7em);
     width: 100%;
     white-space: pre-wrap;
     overflow-y: auto;
@@ -55,6 +55,10 @@ html, body {
     border: none;
     vertical-align: top;
 }
+
+    .workspace pre:focus {
+        outline: none;
+    }
 
 #tutorial-hint {
     position: fixed;
