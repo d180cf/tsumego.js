@@ -141,7 +141,7 @@ namespace testbench {
                     const color = svg.AB.get(x, y) ? 'white' : 'black';
 
                     for (const mark in svg) {
-                        if (/^[A-Z]{2}$/.test(mark) && mark != 'AB' && mark != 'AW') {
+                        if (/^[A-Z]{2}$/.test(mark) && !/AB|AW|SL/.test(mark)) {
                             try {
                                 const item = (<Marks>svg[mark]).get(x, y);
 
