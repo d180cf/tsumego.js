@@ -48,7 +48,7 @@ module tsumego.mgen {
             // it's surprising, that with this dumb moves ordering
             // and with the cached tt results, the 1-st move appears
             // to be wrong only in 2% of cases
-            this.sa.insert(s, [
+            const v =
                 // maximize the number of captured stones first
                 + w[0] * S(r)
 
@@ -68,9 +68,9 @@ module tsumego.mgen {
                 + w[5] * S(sumlibs(board, -color))
 
                 // if everything above is the same, pick a random move
-                + w[6] * S(random() - 0.5)
-            ]);
-
+                + w[6] * S(random() - 0.5);
+            
+            this.sa.insert(s, [v]);
             board.undo();
             return true;
         }

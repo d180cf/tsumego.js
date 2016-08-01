@@ -274,6 +274,9 @@ module tsumego {
          */
         drop() {
             this.history = { added: [], hashes: [], changed: [] };
+
+            for (let i = 0; i < this.table.length; i++)
+                this.table[i] = this.lift(this.table[i]);
         }
 
         /** 
@@ -288,6 +291,7 @@ module tsumego {
             b.table = this.table.slice(0);
             b.blocks = this.blocks.slice(0);
 
+            b.drop();
             return b;
         }
 
