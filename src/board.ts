@@ -239,6 +239,7 @@ module tsumego {
         private initFromSGF(source: string | SGF.Node, nvar?: number) {
             const sgf = typeof source === 'string' ? SGF.parse(source) : source;
             if (!sgf) throw new SyntaxError('Invalid SGF: ' + source);
+
             const setup = sgf.steps[0]; // ;FF[4]SZ[19]...
             const size = +setup['SZ'];
             if (!size) throw SyntaxError('SZ[n] tag must specify the size of the board.');
@@ -429,7 +430,7 @@ module tsumego {
             const x = stone.x(move);
             const y = stone.y(move);
 
-            if (!color || !stone.hascoords(move) || this.getBlockId(x, y))
+            if (!color || !stone.hascoords(move) || !this.isInBounds(x, y) || this.getBlockId(x, y))
                 return 0;
 
             const size = this.size;
