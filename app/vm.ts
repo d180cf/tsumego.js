@@ -81,6 +81,9 @@ module testbench {
         sgfchanged = new Event<() => void>();
 
         set svg(text: string) {
+            // better to reformat the entire xml, but this works too
+            text = text.replace(/(<\/\w+>)(<\w+)/gm, '$1\n  $2');
+
             $('#svg').text(text);
         }
 
