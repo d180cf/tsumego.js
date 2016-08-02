@@ -5,6 +5,351 @@
     import Board = tsumego.Board;
 
     ut.group($ => {
+        /// board.redo
+
+        $.test($ => {
+            /// a new stone
+
+            const b = new Board(5);
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// extending a block
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - - - - ',
+                ' - X - - - ',
+                ' - X - - - ',
+                ' - - - - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// connecting 2 blocks
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - - X - ',
+                ' - X - X - ',
+                ' - X - - - ',
+                ' - - - - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// connecting 3 blocks
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - - X - ',
+                ' X X - X - ',
+                ' - - X - - ',
+                ' - - X X - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// connecting 4 blocks
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - X - - ',
+                ' X X - X - ',
+                ' - - X - - ',
+                ' - - X X - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// attaching to 1 block
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - - - - ',
+                ' - O - - - ',
+                ' - O - - - ',
+                ' - - - - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// attaching to 2 blocks
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - O O O ',
+                ' - O - - - ',
+                ' - O - - - ',
+                ' - - - - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// attaching to 3 blocks
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - O O O ',
+                ' O O - - - ',
+                ' - - O - - ',
+                ' - - O - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// attaching and extending
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - O O O ',
+                ' O O - X X ',
+                ' - - X - - ',
+                ' - - X - - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 1)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// capturing a stone
+
+            const b = new Board(5, [
+                ' - - - - - ',
+                ' - - - - - ',
+                ' - X - - - ',
+                ' - X O X - ',
+                ' - X X X - ',
+            ]);
+
+            const s = stone.make(2, 2, +1);
+
+            const s1 = b + '';
+
+            b.play(s);
+
+            const s2 = b + '';
+
+            for (let i = 0; i < 5; i++) {
+                const _s = b.undo();
+
+                if (b + '' != s1 || _s != s)
+                    throw Error('Undo failed at step ' + i);
+
+                const _r = b.play(s);
+
+                if (b + '' != s2 || _r != 2)
+                    throw Error('Redo failed at step ' + i);
+            }
+        });
+
+        $.test($ => {
+            /// redo
+
+            const b = new Board('(;FF[4]SZ[7]'
+                + 'AB[ea][bb][db][fb][cc][fc][ad][bd][dd][fd][ae][ee][bf][df][ff][cg][fg]'
+                + 'AW[ba][ab][cb][eb][gb][ac][dc][ec][cd][gd][be][ce][fe][af][ef][gf][bg][eg])');
+
+            const m = {};
+
+            for (const c of [-1, +1]) {
+                for (const s of b.range(c)) {
+                    const r = b.play(s);
+                    m[stone.toString(s)] = b + '';
+                    r && b.undo();
+                }
+            }
+
+            for (const k in m) {
+                const s = stone.fromString(k);
+                const r = b.play(s);
+
+                if (m[k] != b + '')
+                    throw Error('Cannot redo ' + k);
+
+                r && b.undo();
+            }
+        });
+    });
+
+    ut.group($ => {
         /// board
 
         $.test($ => {

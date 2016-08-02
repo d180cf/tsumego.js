@@ -5,6 +5,9 @@
 /// <reference path="sgf.ts" />
 
 module tsumego {
+    export var _n_play = 0;
+    export var _n_redo = 0;
+
     /**
      * A block descriptor is represented by a 32 bit signed integer:
      *
@@ -170,6 +173,16 @@ module tsumego {
             changed: number[];
         };
 
+        private _redo_hist = 0; // tells when the cache is valid
+        private _redo_data: {
+            // x: 4 bits, y: 4 bits, color: 1 bit (9 bits total)
+            [move: number]: {
+                hash: number; // the board hash is this move is played
+                cell: block.id; // the block id to be set at that move location
+                list: number[]; // [block.id, block] pairs that tell what blocks to change
+            }
+        };
+
         /** 
          * A random 32 bit number for each intersection in the 16x16 board. 
          * The hash of the board is then computed as H(B) = XOR Q(i, j) where
@@ -278,6 +291,9 @@ module tsumego {
 
             for (let i = 0; i < this.table.length; i++)
                 this.table[i] = this.lift(this.table[i]);
+
+            this._redo_data = null;
+            this._redo_hist = 0;
         }
 
         /** 
@@ -426,6 +442,15 @@ module tsumego {
          * allocate temporary objects and thus is pretty fast.
          */
         play(move: stone): number {
+            if (this._redo_data && this._redo_hist == this.history.added.length) {
+                const nres = this.redo(move);
+
+                if (nres)
+                    return nres;
+            } else {
+                this._redo_data = null;
+            }
+
             const color = stone.color(move);
 
             const x = stone.x(move);
@@ -433,6 +458,8 @@ module tsumego {
 
             if (!color || !stone.hascoords(move) || !this._inBounds(x, y) || this.getBlockId(x, y))
                 return 0;
+
+            _n_play++;
 
             const size = this.size;
             const hash = this.hash;
@@ -507,6 +534,9 @@ module tsumego {
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors
+
+                if (id_new > 255)
+                    throw Error('Too many blocks: ' + id_new);
 
                 const n =
                     /* L */ +(!nbs[0] && x > 0) +
@@ -599,16 +629,25 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
-            const c = move & 0x80000000;
+            const k = y * this.size + x;
+            const c = move & 0x80000000 ? -1 : +1;
             const n = move >> 8 & 255;
             const b = move >> 16 & 255;
 
-            this.table[y * this.size + x] = b;
+            const next = {
+                hash: this.hash,
+                cell: this.table[k],
+                list: [],
+            };
+
+            this.table[k] = b;
             this.hash = this.history.hashes.pop();
 
             for (let i = 0; i < n; i++) {
                 const bd = this.history.changed.pop();
                 const id = this.history.changed.pop();
+
+                next.list.push(id, this.blocks[id]);
 
                 // when a new block is added, the corresponding
                 // record in the history looks like changing
@@ -621,7 +660,65 @@ module tsumego {
                     this.blocks[id] = bd;
             }
 
-            return stone.make(x, y, c || +1);
+            const rh = this.history.added.length;
+
+            if (!this._redo_data || this._redo_hist != rh) {
+                this._redo_data = [];
+                this._redo_hist = rh;
+            }
+
+            this._redo_data[x | y << 4 | c & 256] = next;
+
+            return stone.make(x, y, c);
+        }
+
+        /**
+         * Quickly replays a move if it has been played and undone.
+         * About 47% of calls to play(...) are handled here, however
+         * this makes the solver only 1.18x faster, perhaps due to
+         * the need to support the redo cache. The redo(...) itself
+         * spends only 9% of the time, while play(...) spends 44%.
+         */
+        private redo(move: stone): number {
+            const [x, y] = stone.coords(move);
+            const k = x + y * this.size;
+            const c = move > 0 ? +1 : -1;
+            const next = this._redo_data[x | y << 4 | c & 256];
+
+            if (!next)
+                return 0;
+
+            _n_redo++;
+
+            this.history.hashes.push(this.hash);
+            this.history.added.push(x | y << 4
+                | next.list.length / 2 << 8
+                | this.table[k] << 16
+                | c & 0x80000000);
+
+            this.hash = next.hash;
+            this.table[k] = next.cell;
+
+            let nres = 0;
+
+            for (let i = next.list.length - 2; i >= 0; i -= 2) {
+                const id = next.list[i];
+                const bd = next.list[i + 1];
+
+                if (!bd)
+                    nres += block.size(this.blocks[id]);
+
+                this.history.changed.push(id, this.blocks[id]);
+                this.blocks[id] = bd;
+            }
+
+            return nres + 1;
+        }
+
+        *range(color = 0) {
+            for (let y = 0; y < this.size; y++)
+                for (let x = 0; x < this.size; x++)
+                    yield stone.make(x, y, color);
         }
 
         toStringSGF(indent = '') {
