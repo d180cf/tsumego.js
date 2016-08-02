@@ -57,10 +57,8 @@ module testbench {
     console.log('rand seed:', rs);
     tsumego.rand.seed(rs);
 
-    function solve(op: AsyncOperation, board: Board, color: number, km: number, log = false): Promise<stone> {
+    function solve(op: AsyncOperation, board: Board, color: number, km: number): Promise<stone> {
         return Promise.resolve().then(() => {
-            profile.reset();
-
             const g = tsumego.solve.start({
                 board: board,
                 color: color,
@@ -88,9 +86,6 @@ module testbench {
                         setTimeout(fn);
                     }
                 });
-            }).then(rs => {
-                log && profile.log();
-                return rs;
             });
         });
     }
@@ -583,7 +578,8 @@ module testbench {
                     board.play(stone.make(x, y, color));
 
                     if (color == -solvingFor && qargs.autorespond) {
-                        // check if a response is needed
+                        vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
+
                         solve(null, board, color, vm.km).then(move => {
                             if (color * move < 0)
                                 vm.note = stone.label.string(-color) + ' does not need to respond';
@@ -644,13 +640,17 @@ module testbench {
             }
         };
 
-        return solve(op, board, color, km, true).then(move => {
+        return solve(op, board, color, km).then(move => {
             const duration = Date.now() - started;
 
             solving = null;
 
-            if (!stone.hascoords(move) || move * color < 0) {
-                vm.note = c2s(color) + ' passes';
+            if (move * color < 0) {
+                vm.note = color * board.get(aim) < 0 ?
+                    stone.label.string(color) + ' cannot capture the group' :
+                    stone.label.string(color) + ' cannot save the group';
+            } else if (!stone.hascoords(move)) {
+                vm.note = stone.label.string(color) + ' passes';
             } else {
                 board.play(move);
                 renderBoard();
