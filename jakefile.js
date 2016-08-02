@@ -66,14 +66,16 @@ task('lib', { async: true }, () => {
 
 desc('Runs unit tests.');
 task('test', ['lib'], { async: true }, filter => {
-    console.log('running tests...');
+    console.log('building tests.js...');
     process.chdir('tests');
 
     exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         return babel();
     }).then(() => {
+        console.log('npm install...');
         return exec('npm i');
     }).then(() => {
+        console.log('running tests...');
         return exec('node tests ' + (filter || ''), { printStdout: true });
     }).then(() => {
         if (!filter)
