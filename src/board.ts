@@ -3,6 +3,7 @@
 /// <reference path="rand.ts" />
 /// <reference path="prof.ts" />
 /// <reference path="sgf.ts" />
+/// <reference path="event.ts" />
 
 module tsumego {
     export var _n_play = 0;
@@ -56,12 +57,12 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
-        export const join = (b1: block, b2: block) => block.make(
+        export const join = (b1: block, b2: block) => b1 && b2 && block.make(
             min(block.xmin(b1), block.xmin(b2)),
             max(block.xmax(b1), block.xmax(b2)),
             min(block.ymin(b1), block.ymin(b2)),
             max(block.ymax(b1), block.ymax(b2)),
-            0, 0, 0);
+            0, 0, 0) || b1 || b2;
 
         /** A pseudo block descriptor with 1 liberty. */
         export const lib1 = block.make(0, 0, 0, 0, 1, 0, 0);
@@ -708,11 +709,30 @@ module tsumego {
                 if (!bd)
                     nres += block.size(this.blocks[id]);
 
-                this.history.changed.push(id, this.blocks[id]);
-                this.blocks[id] = bd;
+                this.change(id, bd);
             }
 
             return nres + 1;
+        }
+
+        getRemovedBlocks() {
+            const moves = this.history.added;
+            const blocks = this.history.changed;
+
+            const move = moves[moves.length - 1];
+            const n = move >> 8 & 255;
+
+            const removed: block[] = [];
+
+            for (let i = 0; i < n; i++) {
+                const id = blocks[blocks.length - i * 2]
+                const bd = blocks[blocks.length - i * 2 + 1];
+
+                if (bd && !this.blocks[id])
+                    removed.push(bd);
+            }
+
+            return removed;
         }
 
         *range(color = 0) {
@@ -849,6 +869,19 @@ module tsumego {
                         yield [x, y];
                 }
             }
+        }
+
+        rect(color: number) {
+            let rect: block = 0;
+
+            for (let i = 0; i < this.blocks.length; i++) {
+                const b = this.blocks[i];
+
+                if (b * color > 0 && block.size(b) > 0)
+                    rect = block.join(rect, b);
+            }
+
+            return rect;
         }
 
         neighbors(x: number, y: number): [number, number][] {

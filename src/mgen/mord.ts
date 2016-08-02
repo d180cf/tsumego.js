@@ -1,3 +1,5 @@
+/// <reference path="eulern.ts" />
+
 module tsumego.mgen {
     // this is something like the sigmoid function
     // to map values to [-1, +1] range, but it's
@@ -7,17 +9,20 @@ module tsumego.mgen {
 
     // weights for these parameters were guessed there must be better ones, but
     // so far my attempts to gradient descent to optimal weights haven't succeeded
-    const w = [1e-0, -1e-1, 1e-2, 1e-3, 1e-4, -1e-5, 1e-6];
+    const w = [1e-0, -1e-1, 1e-2, -1e-3, 1e-4, 1e-5, -1e-6, 1e-7];
 
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
         private sa = new SortedArray<stone>();
 
-        constructor(private board: Board, private target: stone, private safe?: (s: stone) => boolean) {
+        private eulern: EulerN;
 
+        constructor(private board: Board, private target: stone, private safe?: (s: stone) => boolean) {
+            this.eulern = new EulerN(board, sign(board.get(target)));
         }
 
         reset() {
+            this.eulern.reset();
             return this.sa.reset();
         }
 
@@ -58,18 +63,21 @@ module tsumego.mgen {
                 // minimize/maximize the number of libs of the target
                 + w[2] * S(n * color * sign(t))
 
+                // max/min the "eyeness" of the target
+                + w[3] * S(this.eulern.value(s, r) * color * sign(t))
+
                 // maximize the number of own liberties
-                + w[3] * S(sumlibs(board, +color))
+                + w[4] * S(sumlibs(board, +color))
 
                 // maximize the number of the opponent's blocks in atari
-                + w[4] * S(ninatari(board, -color))
+                + w[5] * S(ninatari(board, -color))
 
                 // minimize the number of the opponent's liberties
-                + w[5] * S(sumlibs(board, -color))
+                + w[6] * S(sumlibs(board, -color))
 
                 // if everything above is the same, pick a random move
-                + w[6] * S(random() - 0.5);
-            
+                + w[7] * S(random() - 0.5);
+
             this.sa.insert(s, [v]);
             board.undo();
             return true;
