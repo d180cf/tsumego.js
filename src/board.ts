@@ -342,7 +342,7 @@ module tsumego {
          * The block data can be read from blocks[id]. 
          */
         private getBlockId(x: number, y: number): block.id {
-            return +this._inBounds(x, y) && this.lift(this.table[y * this.size + x]);
+            return this._inBounds(x, y) ? this.lift(this.table[y * this.size + x]) : 0;
         }
 
         /** 
