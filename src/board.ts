@@ -869,6 +869,19 @@ module tsumego {
             return nbs;
         }
 
+        nblocks(color: number) {
+            let n = 0;
+
+            for (let i = 0; i < this.blocks.length; i++) {
+                const b = this.blocks[i];
+
+                if (b * color > 0 && block.size(b) > 0)
+                    n++;
+            }
+
+            return n;
+        }
+
         /** the sequence of moves that was given to .play(...) to get this position */
         get moves() {
             return this.history.added.map(x => stone.make(x & 15, x >> 4 & 15, x));
