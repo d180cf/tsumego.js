@@ -517,7 +517,7 @@ module tsumego {
 
             // new group id = min of neighboring group ids
 
-            let id_new = this.blocks.length;
+            let id_new: block.id = this.blocks.length;
             let is_new = true;
 
             for (let i = 0; i < 4; i++) {
@@ -539,10 +539,10 @@ module tsumego {
                     throw Error('Too many blocks: ' + id_new);
 
                 const n =
-                    /* L */ +(!nbs[0] && x > 0) +
-                    /* R */ +(!nbs[1] && x < size - 1) +
-                    /* T */ +(!nbs[2] && y > 0) +
-                    /* B */ +(!nbs[3] && y < size - 1);
+                    /* L */ (0 == nbs[0] && x > 0 ? 1 : 0) +
+                    /* R */ (0 == nbs[1] && x < size - 1 ? 1 : 0) +
+                    /* T */ (0 == nbs[2] && y > 0 ? 1 : 0) +
+                    /* B */ (0 == nbs[3] && y < size - 1 ? 1 : 0);
 
                 this.change(id_new, block.make(x, x, y, y, n, 1, color));
             } else {
