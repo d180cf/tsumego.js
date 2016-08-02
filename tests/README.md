@@ -42,3 +42,5 @@ console.tree.ts  logs.json    src           tsconfig.json
 There is a `debugger` statement before each test, so it's safe to let it run, load all the js files and stop at that breakpoint.
 
 > If you see a "connection refused" error in the launched Chrome, then it's likely because `tests.js` was built in a wrong way and `node-debug` doesn't like some of its syntax. Note the `jake` command: it builds `tests.js` properly. 
+
+The same can be done with `jake test[debug:d35258]`
