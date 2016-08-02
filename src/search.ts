@@ -7,6 +7,9 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
+    export var _n_solve = 0;
+    export var _n_expand = 0;
+
     /**
      * The problem's description is given as an SGF string:
      *
@@ -150,6 +153,7 @@ module tsumego {
             function* solve(color: number, km: number) {
                 remaining--;
                 ntcalls++;
+                _n_solve++;
 
                 if (time && !remaining) {
                     yield ntcalls;
@@ -186,6 +190,8 @@ module tsumego {
                 let mindepth = infdepth;
 
                 const nodes = sa.reset();
+
+                _n_expand++;
 
                 for (const move of expand(color)) {
                     board.play(move);
