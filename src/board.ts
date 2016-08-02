@@ -326,9 +326,7 @@ module tsumego {
          * The block data can be read from blocks[id]. 
          */
         private getBlockId(x: number, y: number): block.id {
-            return this.isInBounds(x, y) ?
-                this.lift(this.table[y * this.size + x]) :
-                0;
+            return +this._inBounds(x, y) && this.lift(this.table[y * this.size + x]);
         }
 
         /** 
@@ -375,11 +373,14 @@ module tsumego {
             const hasht = bd > 0 ? this.hashtb : this.hashtw;
             const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
-            for (let y = ymin; y <= ymax; y++)
-                for (let x = xmin; x <= xmax; x++)
-                    if (this.getBlockId(x, y) == id)
-                        this.hash ^= hasht[y * this.size + x],
-                            this.adjust(x, y, -bd, +1);
+            for (let y = ymin; y <= ymax; y++) {
+                for (let x = xmin; x <= xmax; x++) {
+                    if (this.getBlockId(x, y) == id) {
+                        this.hash ^= hasht[y * this.size + x];
+                        this.adjust(x, y, -bd, +1);
+                    }
+                }
+            }
 
             this.change(id, 0);
         }
@@ -406,10 +407,10 @@ module tsumego {
                 [x, y] = stone.coords(x);
             }
 
-            return this.isInBounds(x, y);
+            return this._inBounds(x, y);
         }
 
-        private isInBounds(x: number, y: number) {
+        private _inBounds(x: number, y: number) {
             const n = this.size;
             return x >= 0 && x < n && y >= 0 && y < n;
         }
@@ -430,7 +431,7 @@ module tsumego {
             const x = stone.x(move);
             const y = stone.y(move);
 
-            if (!color || !stone.hascoords(move) || !this.isInBounds(x, y) || this.getBlockId(x, y))
+            if (!color || !stone.hascoords(move) || !this._inBounds(x, y) || this.getBlockId(x, y))
                 return 0;
 
             const size = this.size;
@@ -442,9 +443,10 @@ module tsumego {
             const nbs: block[] = [0, 0, 0, 0];
             const lib = [0, 0, 0, 0];
 
-            for (let i = 0; i < 4; i++)
-                nbs[i] = this.blocks[ids[i]],
-                    lib[i] = block.libs(nbs[i]);
+            for (let i = 0; i < 4; i++) {
+                nbs[i] = this.blocks[ids[i]];
+                lib[i] = block.libs(nbs[i]);
+            }
 
             // remove captured blocks            
 
@@ -491,10 +493,12 @@ module tsumego {
             let id_new = this.blocks.length;
             let is_new = true;
 
-            for (let i = 0; i < 4; i++)
-                if (nbs[i] * color > 0 && ids[i] < id_new)
-                    id_new = ids[i],
-                        is_new = false;
+            for (let i = 0; i < 4; i++) {
+                if (nbs[i] * color > 0 && ids[i] < id_new) {
+                    id_new = ids[i];
+                    is_new = false;
+                }
+            }
 
             const id_old = this.table[y * size + x];
 
