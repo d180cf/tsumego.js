@@ -5,6 +5,7 @@
 
     "isnode.ts",
     "colors.ts",
+    "pad.ts",
     "argv.ts",
     "infra.ts",
     "console.tree.ts",

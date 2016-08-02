@@ -64,12 +64,18 @@ namespace tests {
     console.log('args:', args);
     console.log('argv:', argv);
 
+    let maxnamelen = 0;
+
+    for (const name in defs)
+        if (name.length > maxnamelen)
+            maxnamelen = name.length;
+
     for (const name in defs) {
         const fn = defs[name];
         const s = /[/]{3}([^\n]+)/.exec(fn)[1].trim();
         const dv = fn(undefined);
 
-        console.log(' ', name.cyan(), '-', s, dv === undefined ? 'required'.white() : 'default'.white() + ' = ' + dv);
+        console.log(' ', name.pad(maxnamelen).white(), '-', s, dv === undefined ? 'required'.white() : 'default'.white() + ' = ' + dv);
     }
 
     for (const name in args) {

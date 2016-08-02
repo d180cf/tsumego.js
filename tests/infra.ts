@@ -38,7 +38,9 @@ namespace tests.ut {
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
 
     let indent = '';
+
     export let failed = false;
+    export let ntests = 0;
 
     declare const process;
     declare const location;
@@ -62,6 +64,8 @@ namespace tests.ut {
                 if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
                     return;
 
+                ntests++;
+
                 const logs = [];
 
                 try {
@@ -77,9 +81,9 @@ namespace tests.ut {
                     if (isNode)
                         process.title = tname + ' @ ' + started.toLocaleTimeString();
 
-                    try {
+                    try {                        
                         debugger;
-                        comment = test(expect);
+                        comment = test(expect);                        
                     } finally {
                         console.log = _console_log;
                     }

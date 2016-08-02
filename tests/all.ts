@@ -1,5 +1,5 @@
 namespace tests {
-    console.log('\nTotal:', ((Date.now() - _dt0) / 1000).toFixed(1).white() + 's');
+    console.log('\nTotal:', ut.ntests.toString().white(), 'tests in', ((Date.now() - _dt0) / 1000).toFixed(1).white() + 's');
 
     tsumego.profile.log();
 
