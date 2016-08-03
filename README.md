@@ -24,10 +24,13 @@ var sgf4 = '(;FF[4]'
 var move = tsumego.solve(sgf4); // "W[bf]"
 ```
 
-The current implementation has a few limitations:
+The group in question must be surrounded by a thick wall: even diagonal connections aren't allowed. The solver determines the set of available moves (aka the R-zone) by filling the area inside that thick wall. The R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
 
- - The max board size is 16x16. This is because internally coordinates are stored as pairs of 4 bit integers: this allows to pack enough data in 32 bit integers and speed up things quite a bit. Allocating 5 bits per coordinate, and thus extending the max board size up to 32x32, is not feasible because then some stuff won't fit into 32 bits and JS doesn't support 64 bit numbers.
- - The group in question must be surrounded by a thick wall: even diagonal connections aren't allowed. The solver determines the set of available moves (aka the R-zone) by filling the area inside that thick wall. The R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
+Luckily, pretty much any enclosed tsumego can be easily converted to a tsumego with a thick wall:
+
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/1.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/2.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/3.svg" height="200pt" title="goproblems.com/15283" />
+
+First, spot the holes in the outer wall. TODO
 
 The solver uses internally es6 [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) which allows to suspend and resume the search at any moment. This is very useful when debugging the solver, as the process of solving can be rendered in the UI step by step, but this can also be useful to let the user stop the search if it runs for too long. In the es5 build generators are transpiled into state machines with [Babel](https://github.com/babel/babel).
 

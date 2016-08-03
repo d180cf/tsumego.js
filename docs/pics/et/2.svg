@@ -1,0 +1,72 @@
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" viewBox="-1.5 -1.5 11 11">
+              <defs>
+                <pattern id="svg-goban-grid" x="0" y="0" width="1" height="1" patternUnits="userSpaceOnUse">
+                  <path d="M 1 0 L 0 0 0 1" fill="none" stroke="black" stroke-width="0.05"></path>
+                </pattern>
+              <circle id="AB" r="0.475" fill="black" stroke="black" stroke-width="0.05"></circle>
+  <circle id="AW" r="0.475" fill="white" stroke="black" stroke-width="0.05"></circle>
+  <circle id="CR" r="0.25" stroke-width="0.05"></circle>
+  <path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" stroke-width="0.05"></path>
+  <path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" stroke-width="0.05"></path>
+  <path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" stroke-width="0.05"></path>
+  <rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect></defs>
+
+              <rect x="0" y="0" width="8" height="8" fill="url(#svg-goban-grid)" stroke="black" stroke-width="0.1"></rect>
+            <use x="3" y="4" xlink:href="#AB"></use>
+  <use x="4" y="0" xlink:href="#AB"></use>
+  <use x="4" y="1" xlink:href="#AB"></use>
+  <use x="4" y="2" xlink:href="#AB"></use>
+  <use x="4" y="3" xlink:href="#AB"></use>
+  <use x="4" y="4" xlink:href="#AB"></use>
+  <use x="5" y="2" xlink:href="#AW"></use>
+  <use x="5" y="4" xlink:href="#AB"></use>
+  <use x="5" y="5" xlink:href="#AB"></use>
+  <use x="6" y="2" xlink:href="#AW"></use>
+  <use x="6" y="3" xlink:href="#AW"></use>
+  <use x="6" y="4" xlink:href="#AW"></use>
+  <use x="6" y="5" xlink:href="#AB"></use>
+  <use x="6" y="6" xlink:href="#AB"></use>
+  <use x="7" y="0" xlink:href="#AB"></use>
+  <use x="7" y="1" xlink:href="#AW"></use>
+  <use x="7" y="5" xlink:href="#AW"></use>
+  <use x="7" y="6" xlink:href="#AB"></use>
+  <use x="7" y="7" xlink:href="#AB"></use>
+  <use x="7" y="8" xlink:href="#AB"></use>
+  <use x="8" y="4" xlink:href="#AW"></use>
+  <use x="8" y="8" xlink:href="#AB"></use>
+  <text x="0" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">A</text>
+  <text x="1" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">B</text>
+  <text x="2" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">C</text>
+  <text x="3" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">D</text>
+  <text x="4" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">E</text>
+  <text x="5" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">F</text>
+  <text x="6" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">G</text>
+  <text x="7" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">H</text>
+  <text x="8" y="-0.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">J</text>
+  <text x="-0.7" y="0" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">9</text>
+  <text x="-0.7" y="1" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">8</text>
+  <text x="-0.7" y="2" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">7</text>
+  <text x="-0.7" y="3" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">6</text>
+  <text x="-0.7" y="4" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">5</text>
+  <text x="-0.7" y="5" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">4</text>
+  <text x="-0.7" y="6" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">3</text>
+  <text x="-0.7" y="7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">2</text>
+  <text x="-0.7" y="8" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">1</text>
+  <text x="0" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">a</text>
+  <text x="1" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">b</text>
+  <text x="2" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">c</text>
+  <text x="3" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">d</text>
+  <text x="4" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">e</text>
+  <text x="5" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">f</text>
+  <text x="6" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">g</text>
+  <text x="7" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">h</text>
+  <text x="8" y="8.7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">i</text>
+  <text x="8.7" y="0" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">a</text>
+  <text x="8.7" y="1" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">b</text>
+  <text x="8.7" y="2" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">c</text>
+  <text x="8.7" y="3" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">d</text>
+  <text x="8.7" y="4" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">e</text>
+  <text x="8.7" y="5" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">f</text>
+  <text x="8.7" y="6" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">g</text>
+  <text x="8.7" y="7" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">h</text>
+  <text x="8.7" y="8" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0" stroke="black" fill="black">i</text></svg>
