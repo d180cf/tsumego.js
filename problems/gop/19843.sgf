@@ -3,6 +3,10 @@
   AW[bf][bg][ah][ch][dh][eh]
   MA[ch]
   (;B[bi]
-    (;W[ci];B[bh];W[ai];B[af];W[ei];B[bh];W[bi];B[ag])
+    (;W[ci];B[bh];W[ai]
+      (;B[bh];W[ei]
+        (;B[af];W[bi];B[ag])
+        (;B[bh];W[bi];B[af]))
+      (;B[af];W[ei];B[bh];W[bi];B[ag]))
     (;W[bh];B[af];W[ei];B[ci])
     (;W[af];B[bh])))

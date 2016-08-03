@@ -28,6 +28,7 @@ namespace tests {
     export const argv: {
         [index: number]: string;
         mode: 'es5' | 'es6';
+        repeat: number;
         log: boolean;
         benson: boolean;
         logsgf: boolean;
@@ -35,6 +36,11 @@ namespace tests {
     } = vals as any;
 
     const defs = {
+        repeat(s) {
+            /// runs every test multiple times
+            return s ? JSON.parse(s) : 1;
+        },
+
         benson(s) {
             /// uses the benson's test in the solver
             return s ? !!JSON.parse(s) : false;

@@ -58,7 +58,7 @@ namespace tests.ut {
         indent += '  ';
 
         init({
-            test: (test, tname = fname(test)) => {
+            test(test, tname = fname(test)) {
                 tname = md5(tname).slice(0, 6) + ' ' + tname;
 
                 if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
@@ -66,46 +66,48 @@ namespace tests.ut {
 
                 ntests++;
 
-                const logs = [];
+                for (let i = 0; i < argv.repeat; i++) {
+                    const logs = [];
 
-                try {
-                    const _console_log = console.log;
+                    try {
+                        const _console_log = console.log;
 
-                    console.log = (...args) => {
-                        logs.push(args.map(<any>JSON.stringify));
-                    };
+                        console.log = (...args) => {
+                            logs.push(args.map(<any>JSON.stringify));
+                        };
 
-                    const started = new Date;
-                    let comment;
+                        const started = new Date;
+                        let comment;
 
-                    if (isNode)
-                        process.title = tname + ' @ ' + started.toLocaleTimeString();
+                        if (isNode)
+                            process.title = tname + ' @ ' + started.toLocaleTimeString();
 
-                    try {                        
-                        debugger;
-                        comment = test(expect);                        
-                    } finally {
-                        console.log = _console_log;
-                    }
+                        try {
+                            debugger;
+                            comment = test(expect);
+                        } finally {
+                            console.log = _console_log;
+                        }
 
-                    const duration = (Date.now() - +started) / 1000;
+                        const duration = (Date.now() - +started) / 1000;
 
-                    const note = duration < 1 ? '' :
-                        duration < 3 ? duration.toFixed(1).white() + 's' :
-                            duration < 10 ? duration.toFixed(1).yellow() + 's' :
-                                duration.toFixed(1).magenta() + 's';
+                        const note = duration < 1 ? '' :
+                            duration < 3 ? duration.toFixed(1).white() + 's' :
+                                duration < 10 ? duration.toFixed(1).yellow() + 's' :
+                                    duration.toFixed(1).magenta() + 's';
 
-                    console.log(indent + tname, note, comment || '');
-                } catch (err) {
-                    failed = true;
-                    console.log(indent + tname.red());
+                        console.log(indent + tname, note, comment || '');
+                    } catch (err) {
+                        failed = true;
+                        console.log(indent + tname.red());
 
-                    for (const args of logs)
-                        console.log.apply(console, args.map(JSON.parse));
+                        for (const args of logs)
+                            console.log.apply(console, args.map(JSON.parse));
 
-                    while (err) {
-                        console.log(err && err.stack || err);
-                        err = err.reason;
+                        while (err) {
+                            console.log(err && err.stack || err);
+                            err = err.reason;
+                        }
                     }
                 }
             }
