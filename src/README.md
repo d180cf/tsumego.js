@@ -14,7 +14,7 @@ The transposition table is just a fancy name for the cache of solved positions. 
 
 The TT is just a hash table where the key is the hash of the position (one position actually corresponds to 2 entires: when black plays first and when white plays first). In JS integer numbers are 32 bits, so these hashes are also 32 bit. This might seem good enough for typical tsumegos with 10-25 available points, but in fact the expected number of collisions in a hash table is
 
-![](http://latex.codecogs.com/gif.latex?E(n,m)=n-m+m(1-\frac{1}{m})\sim%20\frac{n^2}{2m})
+<img src="http://latex.codecogs.com/gif.latex?E(n,m)=n-m+m(1-\frac{1}{m})^n\sim\frac{n^2}{2m}" />
 
 where `n` is the number of entires (the solver typically explores 1M positions) and `m` is the capacity of the hash table, which is simply `2**32` or `2**64`, depending on the key size. This gives 125 collisions for 1M positions and 32 bit keys and one collision per 32 million tsumegos if 64 bit keys are used.
 
