@@ -29,9 +29,7 @@ module tsumego.mgen {
 
             if (!r) return false; // the move is not playable
 
-            const t = board.get(this.target);
-            const n = block.libs(t);
-            const v = this.eval(color);
+            const v = this.eval(-color);
 
             // v == -1 indicates a sure loss
             if (v > -1)
