@@ -176,10 +176,8 @@ module tsumego {
                 debug && (debug.km = km);
 
                 // due to collisions, tt may give a result for a different position
-                if (ttres && !board.get(ttres)) {
-                    //debug && (yield 'reusing cached solution: ' + stone.toString(ttres));
+                if (ttres && !board.get(ttres))
                     return repd.set(ttres, infdepth);
-                }
 
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
@@ -193,6 +191,15 @@ module tsumego {
 
                 _n_expand++;
 
+                // 75% of the time the solver spends in this loop;
+                // also, it's funny that in pretty much all cases
+                // a for-of is slower than the plain for loop, but
+                // in this case it's the opposite: for-of is way
+                // faster for some mysterious reason; also v8 jit
+                // doesn't optimize functions with yield, so it's
+                // profitable to move out this chunk of code into
+                // a plain function without yield/yield* stuff, but
+                // this gives only a marginal profit
                 for (const move of expand(color)) {
                     board.play(move);
                     const hash = board.hash;
