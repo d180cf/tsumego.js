@@ -232,7 +232,8 @@ module tests {
                         const move = stone.toString(r);
 
                         if (!root[move])
-                            throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves + '\n' + b);
+                            throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves + '\n'
+                                + b.toString().replace(/X/img, s => s.green()).replace(/O/img, s => s.white()));
 
                         if (!b.play(r))
                             throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + b);
