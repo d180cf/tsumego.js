@@ -628,10 +628,12 @@ module testbench {
         vm.note = 'Solving...';
 
         const started = Date.now();
+        const elapsed = () => (Date.now() - started) / 1000 | 0;
 
-        const comment = () => ((Date.now() - started) / 1000 | 0) + 's'
+        const comment = () => elapsed() + ' s'
             + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-            + '; playouts = ' + (op.ntcalls / 1000 | 0) + 'K';
+            + '; nodes = ' + (op.ntcalls / 1000 | 0) + 'K'
+            + '; speed = ' + (op.ntcalls / (Date.now() - started) | 0) + 'K/s';
 
         const op = solving = {
             ntcalls: 0,
@@ -654,8 +656,9 @@ module testbench {
             } else {
                 board.play(move);
                 renderBoard();
-                vm.note = stone.toString(move) + ' in ' + comment();
+                vm.note = stone.toString(move) + ' in ' + elapsed() + 's';
                 console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
+                console.log(comment());
             }
 
             return move;
