@@ -12,7 +12,13 @@ There are a few known ways to make the solver more intelligent: [static](https:/
 
 The transposition table is just a fancy name for the cache of solved positions. In a typical tsumego the solver creates about 200k TT entires and these are just unconditional results, i.e. those that don't depend on the sequence of moves that lead to them. Solved intermediate positions have to be cached because otherwise the search will become ~100x slower.
 
-The TT is just a hash table where the key is the hash of the position (one position actually corresponds to 2 entires: when black plays first and when white plays first). In JS integer numbers are 32 bits, so these hashes are also 32 bit. This might seem good enough for typical tsumegos with 10-25 available points, but in fact these 32 bits are good enough only to encode about 16 points: a bitmask for black stones + a bitmask for white stones. This is why there are quite a few collisions that are not even addressed in the solver at the moment. In many cases the result extracted from TT is for a different position that has the same hash and despite that result is used, the solver still finds the correct move in maybe 99% of cases. This actually puzzles me. These collisions are the source of occasional failures in unit tests. A proper approach to deal with this problem would be to implement [simulation](http://library.msri.org/books/Book29/files/kawano.pdf), but so far my attempts have  
+The TT is just a hash table where the key is the hash of the position (one position actually corresponds to 2 entires: when black plays first and when white plays first). In JS integer numbers are 32 bits, so these hashes are also 32 bit. This might seem good enough for typical tsumegos with 10-25 available points, but in fact the expected number of collisions in a hash table is
+
+![](http://latex.codecogs.com/gif.latex?E(n,m)=n-m+m(1-\frac{1}{m})\sim%20\frac{n^2}{2m})
+
+where `n` is the number of entires (the solver typically explores 1M positions) and `m` is the capacity of the hash table, which is simply `2**32` or `2**64`, depending on the key size. This gives 125 collisions for 1M positions and 32 bit keys and one collision per 32 million tsumegos if 64 bit keys are used.
+
+This is why there are quite a few collisions that are not even addressed in the solver at the moment. In many cases the result extracted from TT is for a different position that has the same hash and despite that result is used, the solver still finds the correct move in maybe 99% of cases. This actually puzzles me. These collisions are the source of occasional failures in unit tests. A proper approach to deal with this problem would be to implement [simulation](http://library.msri.org/books/Book29/files/kawano.pdf).  
 
 # Repetitions
 
