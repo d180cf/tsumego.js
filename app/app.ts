@@ -45,7 +45,6 @@ module testbench {
     export var tt: tsumego.TT;
 
     interface AsyncOperation {
-        ntcalls: number;
         notify(): void;
         cancelled?: string;
     }
@@ -81,7 +80,6 @@ module testbench {
                     } else if (s.done) {
                         resolve(s.value);
                     } else {
-                        if (op) op.ntcalls = s.value;
                         s = g.next();
                         setTimeout(fn);
                     }
@@ -626,17 +624,18 @@ module testbench {
 
     function solveAndRender(color: number, km: number) {
         vm.note = 'Solving...';
+        tsumego._n_nodes = 0;
+        tsumego._n_calls = 0;
 
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
 
         const comment = () => elapsed() + ' s'
             + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-            + '; nodes = ' + (op.ntcalls / 1000 | 0) + 'K'
-            + '; speed = ' + (op.ntcalls / (Date.now() - started) | 0) + 'K/s';
+            + '; calls = ' + (tsumego._n_calls / (Date.now() - started) | 0) + 'K/s'
+            + '; nodes = ' + (tsumego._n_nodes / (Date.now() - started) | 0) + 'K/s';
 
         const op = solving = {
-            ntcalls: 0,
             notify() {
                 vm.note = 'Solving... elapsed ' + comment();
             }

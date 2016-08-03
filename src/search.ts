@@ -7,7 +7,8 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    export var _n_solve = 0;
+    export var _n_calls = 0;
+    export var _n_nodes = 0;
     export var _n_expand = 0;
 
     /**
@@ -133,7 +134,7 @@ module tsumego {
             // cache results from static analysis as it's quite slow
             alive = memoized(alive, board => board.hash);
 
-            let started = Date.now(), yieldin = 100, remaining = yieldin, ntcalls = 0;
+            let started = Date.now(), yieldin = 100, remaining = yieldin;
 
             if (!stone.hascoords(target))
                 throw Error('The target stone is not set');
@@ -145,6 +146,7 @@ module tsumego {
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
             const sa = new SortedArray<stone>();
+            const visited = new HashMap<boolean>(); // visited nodes (board + color -> true|false)
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -152,11 +154,10 @@ module tsumego {
 
             function* solve(color: number, km: number) {
                 remaining--;
-                ntcalls++;
-                _n_solve++;
+                _n_calls++;
 
                 if (time && !remaining) {
-                    yield ntcalls;
+                    yield;
                     const current = Date.now();
                     const speed = yieldin / (current - started);
                     started = current;
@@ -174,6 +175,11 @@ module tsumego {
                 debug && (debug.moves = hist);
                 debug && (debug.path = path);
                 debug && (debug.km = km);
+
+                if (!visited.get(hashb ^ color)) {
+                    visited.set(hashb ^ color, true);
+                    _n_nodes++;
+                }
 
                 // due to collisions, tt may give a result for a different position
                 if (ttres && !board.get(ttres))
