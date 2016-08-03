@@ -36,7 +36,7 @@ The group in question must be surrounded by a thick wall: even diagonal connecti
 
 Luckily, pretty much any enclosed tsumego can be easily converted to a tsumego with a thick wall:
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/1.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/2.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/3.svg" height="200pt" title="goproblems.com/15283" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/1.svg" height="280pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/2.svg" height="280pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/3.svg" height="280pt" title="goproblems.com/15283" />
 
 First, spot the holes in the outer wall.
 
