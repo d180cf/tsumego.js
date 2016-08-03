@@ -8,6 +8,8 @@ Here are a few problems that this solver can handle in a few seconds:
 
 <img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/15197.svg" height="200pt" title="goproblems.com/15197" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/13083.svg" height="200pt" title="goproblems.com/13083" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg" height="200pt" title="goproblems.com/21185" />
 
+They are all rated as 7-9 dan on goproblems.
+
 ## API
 
 To get this solution first take a [release](https://github.com/d180cf/tsumego.js/releases) of the solver and then invoke `tsumego.solve`:
