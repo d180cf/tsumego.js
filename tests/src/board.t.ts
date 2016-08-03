@@ -1,8 +1,9 @@
 ﻿module tests {
     import stone = tsumego.stone;
     import block = tsumego.block;
-    import sumlibs = tsumego.mgen.sumlibs;
     import Board = tsumego.Board;
+
+    const sumlibs = (b: Board, c: number) => b.sumlibs(c);
 
     ut.group($ => {
         /// board.redo

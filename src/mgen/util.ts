@@ -3,16 +3,6 @@ module tsumego.mgen {
         (color: number): stone[];
     }
 
-    export function sumlibs(board: Board, color: number) {
-        let n = 0;
-
-        for (const b of board.blocks)
-            if (b * color > 0)
-                n += block.libs(b);
-
-        return n;
-    }
-
     export function eulern(board: Board, color: number, q: number = 2) {
         let n1 = 0, n2 = 0, n3 = 0;
 

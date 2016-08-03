@@ -59,13 +59,13 @@ module tsumego.mgen {
                 + w[2] * S(n * color * sign(t))
 
                 // maximize the number of own liberties
-                + w[3] * S(sumlibs(board, +color))
+                + w[3] * S(board.sumlibs(+color))
 
                 // maximize the number of the opponent's blocks in atari
                 + w[4] * S(board.natari(-color))
 
                 // minimize the number of the opponent's liberties
-                + w[5] * S(sumlibs(board, -color))
+                + w[5] * S(board.sumlibs(-color))
 
                 // if everything above is the same, pick a random move
                 + w[6] * S(random() - 0.5);

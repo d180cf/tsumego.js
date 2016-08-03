@@ -895,6 +895,19 @@ module tsumego {
             return n;
         }
 
+        sumlibs(color: number) {
+            let n = 0;
+
+            for (let i = 0; i < this.blocks.length; i++) {
+                const b = this.blocks[i];
+
+                if (b * color > 0 && block.size(b) > 0)
+                    n += block.libs(b);
+            }
+
+            return n;
+        }
+
         natari(color: number) {
             let n = 0;
 
