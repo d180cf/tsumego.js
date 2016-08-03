@@ -30,7 +30,7 @@ var sgf4 = '(;FF[4]'
 var move = tsumego.solve(sgf4); // "W[bf]"
 ```
 
-## Enclosing tsumegos
+## Prepairing a tsumego
 
 The group in question must be surrounded by a thick wall: even diagonal connections aren't allowed. The solver determines the set of available moves (aka the R-zone) by filling the area inside that thick wall. The R-zone problem is probably the hardest problem in tsumego solving algorithms, especially for open boundary tsumegos. A theoretical solution exists - the T. Thompsen's lamda search - but that solution is hard to adopt in a JS solver due to performance reasons.
 
@@ -38,7 +38,15 @@ Luckily, pretty much any enclosed tsumego can be easily converted to a tsumego w
 
 <img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/1.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/2.svg" height="200pt" title="goproblems.com/15283" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/et/3.svg" height="200pt" title="goproblems.com/15283" />
 
-First, spot the holes in the outer wall. TODO
+First, spot the holes in the outer wall.
+
+Some holes are trivial, like `G3`, and can be fixed easily.
+
+Holes like `J3` can be fixed by leaving one or two spaces: the idea is to leave as little space as possible, while not affecting the tsumego. For instance, placing a black stone on `J3` would fix the wall, but also make the white group much weaker, because now black can atari with `F4` and do many other tricks. Placing a black stone on `H2` is better, but still is likely to alter the tsumego: with `H2` black can start a ko with `F4` - something that wasn't possible in the original problem. However leaving white two spaces is good enough: the two spaces do not help black, but make the wall complete. 
+
+Outer liberties like `F6` can be fixed the same way in most cases: by adding missing stones to the wall while leaving those liberties for the inner group. The basic idea of those outer holes is that they give the inner group some extra liberties, but do not let the group escape. If it was possible to escape thru those holes, the problem would be on a completely different level - something that this solver cannot handle. The `F6` hole in the problem above is a bit tricky: it not only gives a liberty to the group, but also presents another tsumego as white can try to capture a piece of the wall at `E8`. The solver cannot see if white can really do anything there, so it needs that hole to be fixed. We see, though, that with a proper defense black can seal white in and thus the hole can be simply fixed while leaving white one liberty - this liberty might help white to live inside.
+
+Finally, mark the target. In theory, the solver can safely assume that black needs to capture all the white stones inside, however this would make the solver considerably slower as targeting one block is easier than targeting all of them. It's likely that in the near future the need to mark the target will be removed. 
 
 ## Notes
 
