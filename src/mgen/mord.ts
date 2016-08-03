@@ -1,20 +1,13 @@
+/// <reference path="eval.ts" />
+
 module tsumego.mgen {
-    // this is something like the sigmoid function
-    // to map values to [-1, +1] range, but it's
-    // considerably faster; it's derivative is
-    // dS / dx = (S / x)**2
-    const S = (x: number) => x / (1 + sign(x) * x);
-
-    // weights for these parameters were guessed there must be better ones, but
-    // so far my attempts to gradient descent to optimal weights haven't succeeded
-    const w = [1e-0, -1e-1, 1e-2, 1e-3, 1e-4, -1e-5, 1e-6];
-
     export class MvsOrd {
         /** Defines the order in which the solver considers moves. */
         private sa = new SortedArray<stone>();
+        private eval: (color: number) => number;
 
         constructor(private board: Board, private target: stone, private safe?: (s: stone) => boolean) {
-
+            this.eval = evaluate(board, target);
         }
 
         reset() {
@@ -38,39 +31,12 @@ module tsumego.mgen {
 
             const t = board.get(this.target);
             const n = block.libs(t);
+            const v = this.eval(color);
 
-            // there is no point to play self atari moves
-            if (t * color > 0 && n < 2) {
-                board.undo();
-                return false;
-            }
+            // v == -1 indicates a sure loss
+            if (v > -1)
+                this.sa.insert(s, [v]);
 
-            // it's surprising, that with this dumb moves ordering
-            // and with the cached tt results, the 1-st move appears
-            // to be wrong only in 2% of cases
-            const v =
-                // maximize the number of captured stones first
-                + w[0] * S(board.nstones(+color) - board.nstones(-color))
-
-                // minimize the number of own blocks in atari
-                + w[1] * S(board.natari(+color))
-
-                // minimize/maximize the number of libs of the target
-                + w[2] * S(n * color * sign(t))
-
-                // maximize the number of own liberties
-                + w[3] * S(board.sumlibs(+color))
-
-                // maximize the number of the opponent's blocks in atari
-                + w[4] * S(board.natari(-color))
-
-                // minimize the number of the opponent's liberties
-                + w[5] * S(board.sumlibs(-color))
-
-                // if everything above is the same, pick a random move
-                + w[6] * S(random() - 0.5);
-            
-            this.sa.insert(s, [v]);
             board.undo();
             return true;
         }

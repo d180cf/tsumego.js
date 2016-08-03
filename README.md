@@ -12,9 +12,9 @@ They are all rated as 7-9 dan on goproblems.
 
 ## What it cannot solve
 
-<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/2022.svg" height="200pt" title="goproblems.com/2022" />
+<img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/20222.svg" height="200pt" title="goproblems.com/20222" />
 
-It cannot solve this problem because there is no easy way to complete the outer wall, or rather it can be completed, but the inner space will have 40-50 points - way beyond the capability of the solver.
+It cannot solve problems with unclear boundaries: if a problem cannot be easily reduced to a problem with a thick outer wall that cannot be captured with 10-25 points inside the wall, then it's an open boundary problem.
 
 ## API
 
