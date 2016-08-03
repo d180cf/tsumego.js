@@ -50,7 +50,7 @@ module tsumego.mgen {
             // to be wrong only in 2% of cases
             const v =
                 // maximize the number of captured stones first
-                + w[0] * S(r)
+                + w[0] * S(board.nstones(+color) - board.nstones(-color))
 
                 // minimize the number of own blocks in atari
                 + w[1] * S(ninatari(board, +color))
