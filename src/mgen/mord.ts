@@ -53,7 +53,7 @@ module tsumego.mgen {
                 + w[0] * S(board.nstones(+color) - board.nstones(-color))
 
                 // minimize the number of own blocks in atari
-                + w[1] * S(ninatari(board, +color))
+                + w[1] * S(board.natari(+color))
 
                 // minimize/maximize the number of libs of the target
                 + w[2] * S(n * color * sign(t))
@@ -62,7 +62,7 @@ module tsumego.mgen {
                 + w[3] * S(sumlibs(board, +color))
 
                 // maximize the number of the opponent's blocks in atari
-                + w[4] * S(ninatari(board, -color))
+                + w[4] * S(board.natari(-color))
 
                 // minimize the number of the opponent's liberties
                 + w[5] * S(sumlibs(board, -color))
