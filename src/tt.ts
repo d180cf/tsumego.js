@@ -1,4 +1,4 @@
-/// <reference path="i32ht.ts" />
+/// <reference path="hashmap.ts" />
 
 module tsumego {
     /**
@@ -43,12 +43,12 @@ module tsumego {
     /** Transposition Table */
     export class TT {
         size = 0;
-        move = new Int32HashTable; // node -> stone
+        move = new HashMap; // node -> stone
 
         private data = [
-            new Int32HashTable, // node -> entry, if b plays first
+            new HashMap, // node -> entry, if b plays first
             null,
-            new Int32HashTable, // node -> entry, if w plays first
+            new HashMap, // node -> entry, if w plays first
         ];
 
         get(hash: number, color: number, km: number) {
