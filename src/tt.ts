@@ -43,12 +43,12 @@ module tsumego {
     /** Transposition Table */
     export class TT {
         size = 0;
-        move = new HashMap; // node -> stone
+        move = new HashMap<stone>(); // node -> stone
 
         private data = [
-            new HashMap, // node -> entry, if b plays first
+            new HashMap<entry>(), // node -> entry, if b plays first
             null,
-            new HashMap, // node -> entry, if w plays first
+            new HashMap<entry>(), // node -> entry, if w plays first
         ];
 
         get(hash: number, color: number, km: number) {

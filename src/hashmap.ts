@@ -12,7 +12,7 @@ module tsumego {
     // If a 64 bit key is used, then a collision will appear
     // only once in 2**25 tsumegos. 53 bits give one collision
     // per 2**14 tsumegos, correspondingly.
-    export class HashMap {
+    export class HashMap<T> {
         private data = [];
 
         constructor() {
@@ -26,7 +26,7 @@ module tsumego {
             return this.data[key >>> 28][key & 0x0FFFFFFF] || 0;
         }
 
-        set(key: number, val: number) {
+        set(key: number, val: T) {
             this.data[key >>> 28][key & 0x0FFFFFFF] = val;
         }
     }
