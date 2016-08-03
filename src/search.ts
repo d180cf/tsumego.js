@@ -7,8 +7,7 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    export var _n_calls = 0;
-    export var _n_nodes = 0;
+    export var _n_calls = 0;    
     export var _n_expand = 0;
 
     /**
@@ -146,7 +145,6 @@ module tsumego {
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
             const sa = new SortedArray<stone>();
-            const visited = new HashMap<boolean>(); // visited nodes (board + color -> true|false)
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -175,11 +173,6 @@ module tsumego {
                 debug && (debug.moves = hist);
                 debug && (debug.path = path);
                 debug && (debug.km = km);
-
-                if (!visited.get(hashb ^ color)) {
-                    visited.set(hashb ^ color, true);
-                    _n_nodes++;
-                }
 
                 // due to collisions, tt may give a result for a different position
                 if (ttres && !board.get(ttres))
