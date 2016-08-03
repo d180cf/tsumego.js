@@ -11,8 +11,6 @@ module tsumego {
      * Returns a number in the [-1, +1] range.
      */
     export function evaluate(board: Board, target: stone) {
-        target = stone.make(stone.x(target), stone.y(target), board.get(target)); // add color
-
         const values = new HashMap<number>();
 
         // evaluates the node = (board, color) where color

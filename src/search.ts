@@ -7,7 +7,7 @@
 /// <reference path="gf2.ts" />
 
 module tsumego {
-    export var _n_calls = 0;    
+    export var _n_calls = 0;
     export var _n_expand = 0;
 
     /**
@@ -145,6 +145,7 @@ module tsumego {
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
             const sa = new SortedArray<stone>();
+            const evalnode = evaluate(board, target);
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -200,9 +201,17 @@ module tsumego {
                 // a plain function without yield/yield* stuff, but
                 // this gives only a marginal profit
                 for (const move of expand(color)) {
-                    board.play(move);
+                    if (!board.play(move))
+                        continue;
+
+                    const value = evalnode(-color);
                     const hash = board.hash;
+
                     board.undo();
+
+                    // v == -1 indicates a sure loss
+                    if (value <= -1)
+                        continue;
 
                     // skip moves that are known to be losing
                     if (tt.get(hash, -color, km) * color < 0)
@@ -233,11 +242,16 @@ module tsumego {
                         // moves that require a ko treat are considered last
                         // that's not just perf optimization: the search depends on this
                         + 1e-0 * d
+
                         // tt guesses the correct winning move in 83% of cases
                         + 1e-1 * sign(guess * color)
+
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint
                         + 1e-2 * sign(tt.move.get(hash ^ -color) * color)
+
+                        // now consider the evaluation of this position
+                        + 1e-3 * value
                     ]);
                 }
 

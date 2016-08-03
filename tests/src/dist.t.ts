@@ -107,7 +107,7 @@ module tests {
             const _b = g(+1).map(s => s & 0xFFFF).sort();
             const _w = g(-1).map(s => s & 0xFFFF).sort();
 
-            $(_b).equal([0x24]);
+            $(_b).equal([0x24, 0x04]);
             $(_w).equal([0x24, 0x04]);
         });
 
@@ -130,7 +130,7 @@ module tests {
 
             console.log(_b, _w);
 
-            $(_b).equal([0x02]);
+            $(_b).equal([0x02, 0x24]);
             $(_w).equal([0x02, 0x24]);
         });
 
@@ -153,7 +153,7 @@ module tests {
 
             console.log(_b, _w);
 
-            $(_b).equal([]);
+            $(_b).equal([0x04]);
             $(_w).equal([0x04]);
         });
 
@@ -176,7 +176,7 @@ module tests {
 
             console.log(_b, _w);
 
-            $(_b).equal([0x01]);
+            $(_b).equal([0x01, 0x04]);
             $(_w).equal([0x01, 0x04]);
         });
 
@@ -229,7 +229,7 @@ module tests {
         ], 'd=2 connect 2');
 
         _test(+1, 'cc', 2, [
-            '- X + + - - -',
+            '+ X + + - - -',
             'X X X O - - -',
             'O O X O - - -',
             '+ + O + - - -',
@@ -239,7 +239,7 @@ module tests {
         ], 'd=2 holes in the wall');
 
         _test(+1, 'cc', 2, [
-            '- X + + - - -',
+            '+ X + + - - -',
             'X X X O - - -',
             'O O X O - - -',
             '- + O O - - -',

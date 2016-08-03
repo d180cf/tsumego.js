@@ -61,35 +61,27 @@ module tsumego.mgen {
         // remove the target block from the rzone
         rzone.remove(s => board.get(s) == ts);
 
-        const sa = new MvsOrd(board, target, s => {
+        function safe(s: stone) {
             for (let i = 0; i < safeb.length; i++)
                 if (safeb[i] * s > 0 && board.get(safeb[i]) == board.get(s))
                     return true;
 
             return false;
-        });
+        }
 
-        // [...rzone] is better, but babel incorrectly
-        // converts it to [].concat(rzone)
-        const mzone: stone[] = [];
+        const moves_b: stone[] = [];
+        const moves_w: stone[] = [];
 
-        for (const s of rzone)
-            mzone.push(s);
+        for (const s of rzone) {
+            const x = stone.x(s);
+            const y = stone.y(s);
+
+            moves_b.push(stone.make(x, y, +1));
+            moves_w.push(stone.make(x, y, -1));
+        }
 
         return function expand(color: number) {
-            const moves = sa.reset();
-
-            // for..of here would be too expensive
-            for (let i = 0; i < mzone.length; i++) {
-                const move = mzone[i];
-
-                const x = stone.x(move);
-                const y = stone.y(move);
-
-                sa.insert(x, y, color);
-            }
-
-            return moves;
+            return color > 0 ? moves_b : moves_w;
         };
     }
 }

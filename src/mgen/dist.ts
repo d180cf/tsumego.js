@@ -46,11 +46,14 @@ module tsumego.mgen {
             if (!color)
                 return nocolor;
 
-            const ord = new MvsOrd(board, target);
-            const moves = ord.reset();
+            const moves: stone[] = [];
 
-            for (const s of nocolor)
-                ord.insert(stone.x(s), stone.y(s), color);
+            for (const s of nocolor) {
+                const x = stone.x(s);
+                const y = stone.y(s);
+
+                moves.push(stone.make(x, y, color));
+            }
 
             return moves;
         }
