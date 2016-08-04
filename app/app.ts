@@ -624,16 +624,14 @@ module testbench {
 
     function solveAndRender(color: number, km: number) {
         vm.note = 'Solving...';
-        tsumego._n_nodes = 0;
-        tsumego._n_calls = 0;
 
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
 
         const comment = () => elapsed() + ' s'
             + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-            + '; calls = ' + (tsumego._n_calls / (Date.now() - started) | 0) + 'K/s'
-            + '; nodes = ' + (tsumego._n_nodes / (Date.now() - started) | 0) + 'K/s';
+            + '; calls = ' + (tsumego.stat.calls / (Date.now() - started) | 0) + 'K/s'
+            + '; nodes = ' + (tsumego.stat.nodes / (Date.now() - started) | 0) + 'K/s';
 
         const op = solving = {
             notify() {
@@ -658,6 +656,7 @@ module testbench {
                 vm.note = stone.toString(move) + ' in ' + elapsed() + 's';
                 console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
                 console.log(comment());
+                console.log(tsumego.stat.summarizxe().join('\n'));
             }
 
             return move;

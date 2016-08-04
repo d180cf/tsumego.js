@@ -1,4 +1,5 @@
-﻿/// <reference path="pattern.ts" />
+﻿/// <reference path="stat.ts" />
+/// <reference path="pattern.ts" />
 /// <reference path="dumb.ts" />
 /// <reference path="movegen.ts" />
 /// <reference path="tt.ts" />
@@ -6,10 +7,18 @@
 /// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
 
-module tsumego {
-    export var _n_calls = 0;
-    export var _n_expand = 0;
+module tsumego.stat {
+    export var ttinvalid = 0;
+    logv.push(() => `wrong tt entires = ${ttinvalid}`);
 
+    export var calls = 0;
+    logv.push(() => `calls to solve = ${calls}`);
+
+    export var expand = 0;
+    logv.push(() => `calls to expand = ${expand} = ${expand / calls * 100 | 0} %`);
+}
+
+module tsumego {
     /**
      * The problem's description is given as an SGF string:
      *
@@ -153,7 +162,7 @@ module tsumego {
 
             function* solve(color: number, km: number) {
                 remaining--;
-                _n_calls++;
+                stat.calls++;
 
                 if (time && !remaining) {
                     yield;
@@ -166,8 +175,10 @@ module tsumego {
 
                 const depth = path.length;
                 const prevb = depth < 1 ? 0 : path[depth - 1];
-                const hashb = board.hash;
-                const ttres = tt.get(hashb, color, km);
+                const hash32 = board.hash;
+                const hash_b = board.hash_b;
+                const hash_w = board.hash_w;
+                const ttres = tt.get(hash_b, hash_w, color, km);
 
                 debug && (debug.color = color);
                 debug && (debug.depth = depth);
@@ -175,21 +186,27 @@ module tsumego {
                 debug && (debug.path = path);
                 debug && (debug.km = km);
 
-                // due to collisions, tt may give a result for a different position
-                if (ttres && !board.get(ttres))
-                    return repd.set(ttres, infdepth);
+                if (ttres) {
+                    // due to collisions, tt may give a result for a different position;
+                    // however with 64 bit hashes, there expected to be just one collision
+                    // per sqrt(2 * 2**64) = 6 billions positions = 12 billion w/b nodes
+                    if (!board.get(ttres))
+                        return repd.set(ttres, infdepth);
+
+                    stat.ttinvalid++;
+                }
 
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
 
-                const guess = tt.move.get(hashb ^ color);
+                const guess = tt.move.get(color > 0 ? 1 : 0, hash32);
 
                 let result: stone;
                 let mindepth = infdepth;
 
                 const nodes = sa.reset();
 
-                _n_expand++;
+                stat.expand++;
 
                 // 75% of the time the solver spends in this loop;
                 // also, it's funny that in pretty much all cases
@@ -205,7 +222,9 @@ module tsumego {
                         continue;
 
                     const value = -evalnode(-color);
-                    const hash = board.hash;
+                    const hash_b = board.hash_b;
+                    const hash_w = board.hash_w;
+                    const hash32 = board.hash;
 
                     board.undo();
 
@@ -214,12 +233,12 @@ module tsumego {
                         continue;
 
                     // skip moves that are known to be losing
-                    if (tt.get(hash, -color, km) * color < 0)
+                    if (tt.get(hash_b, hash_w, -color, km) * color < 0)
                         continue;
 
                     let d = depth - 1;
 
-                    while (d >= 0 && path[d] != hash)
+                    while (d >= 0 && path[d] != hash32)
                         d = d > 0 && path[d] == path[d - 1] ? -1 : d - 1;
 
                     d++;
@@ -248,7 +267,7 @@ module tsumego {
 
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint
-                        + 1e-2 * sign(tt.move.get(hash ^ -color) * color)
+                        + 1e-2 * sign(tt.move.get(color < 0 ? 1 : 0, hash32) * color)
 
                         // now consider the evaluation of this position
                         + 1e-3 * value
@@ -273,15 +292,15 @@ module tsumego {
                     const d = !move ? infdepth : repd.get(move);
                     let s: stone;
 
-                    path.push(hashb);
+                    path.push(hash32);
                     hist.push(move || stone.nocoords(color));
                     move && board.play(move);
                     debug && (yield stone.toString(move || stone.nocoords(color)));
 
 
                     if (!move) {
-                        const nextkm = prevb == hashb && color * km < 0 ? 0 : km;
-                        const tag = hashb & ~15 | (-color & 3) << 2 | nextkm & 3; // tells which position, who plays and who is the km
+                        const nextkm = prevb == hash32 && color * km < 0 ? 0 : km;
+                        const tag = hash32 & ~15 | (-color & 3) << 2 | nextkm & 3; // tells which position, who plays and who is the km
                         const isloop = tags.lastIndexOf(tag) >= 0;
 
                         if (isloop) {
@@ -374,9 +393,9 @@ module tsumego {
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
                 if (repd.get(result) > depth + 1)
-                    tt.set(hashb, color, result, km);
+                    tt.set(hash_b, hash_w, color, result, km);
 
-                tt.move.set(hashb ^ color, result);
+                tt.move.set(color > 0 ? 1 : 0, hash32, result);
 
                 log && log.write({
                     color: color,

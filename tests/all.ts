@@ -6,6 +6,8 @@ namespace tests {
     declare const require;
 
     log.stream.end('{}]', () => {
+        console.log('Stats:' + tsumego.stat.summarizxe().map(s => '\n   ' + s).join(''));
+
         // skip analysis if all tests are selected
         if (!argv.log) return;
 

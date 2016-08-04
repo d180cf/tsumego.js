@@ -1,6 +1,10 @@
-module tsumego {
-    export var _n_nodes = 0;
+module tsumego.stat {
+    export var nodes = 0;
 
+    logv.push(() => `evaluated nodes = ${nodes}`);
+}
+
+module tsumego {
     // this is something like the sigmoid function
     // to map values to [-1, +1] range, but it's
     // considerably faster; it's derivative is
@@ -30,10 +34,13 @@ module tsumego {
             if (t * color < 0 && n < 2)
                 return +1;
 
+            const hash_b = board.hash_b ^ color;
+            const hash_w = board.hash_w ^ color;
+
             // it's surprising, that with this dumb moves ordering
             // and with the cached tt results, the 1-st move appears
             // correct in 98 % cases
-            const v = values.get(board.hash ^ color) || ++_n_nodes &&
+            const v = values.get(hash_b, hash_w) || ++stat.nodes &&
 
                 // maximize the number of captured stones first
                 + 1e-0 * sigmoid(board.nstones(color) - board.nstones(-color))
@@ -56,7 +63,7 @@ module tsumego {
                 // if everything above is the same, pick a random move
                 + 1e-6 * sigmoid(random() - 0.5);
 
-            values.set(board.hash ^ color, v);
+            values.set(hash_b, hash_w, v);
             return v / 2; // abs(v) < 1 + 1/10
         }
     }

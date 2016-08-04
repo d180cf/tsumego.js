@@ -23,15 +23,16 @@ function babel(args) {
 
     var tsconfig = require(path.resolve('tsconfig.json'));
 
+    var sourceMaps = args.sourceMaps === undefined ? true : !!args.sourceMaps;
     var srcPath = args.srcPath || tsconfig.compilerOptions.out;
     var outPath = args.outPath || srcPath;
 
     var es6src = fs.readFileSync(srcPath, 'utf8');
-    var es6map = fs.readFileSync(srcPath + '.map', 'utf8');
+    var es6map = sourceMaps && fs.readFileSync(srcPath + '.map', 'utf8');
 
     var es5 = babel.transform(es6src, {
-        inputSourceMap: JSON.parse(es6map),
-        sourceMaps: true,
+        inputSourceMap: sourceMaps && JSON.parse(es6map),
+        sourceMaps: sourceMaps,
         loose: 'all',
         compact: false,
         blacklist: args.blacklist || [
@@ -43,10 +44,12 @@ function babel(args) {
         ]
     });
 
-    es5.code = es5.code.replace(/(\r?\n\/\/# sourceMappingURL=)(.+)$/img, '$1' + outPath + '.map');
+    es5.code = es5.code.replace(
+        /(\r?\n\/\/# sourceMappingURL=)(.+)$/img,
+        sourceMaps ? '$1' + outPath + '.map' : '$1(removed; see jakefile.js)');
 
     fs.writeFileSync(outPath, es5.code, 'utf8');
-    fs.writeFileSync(outPath + '.map', JSON.stringify(es5.map, null, '\t'), 'utf8');
+    sourceMaps && fs.writeFileSync(outPath + '.map', JSON.stringify(es5.map, null, '\t'), 'utf8');
 }
 
 desc('Builds the tsumego.js library.');
@@ -54,11 +57,13 @@ task('lib', { async: true }, () => {
     console.log('building tsumego.js...');
     exec('node ./node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         babel({
+            sourceMaps: false, // babel 5.8.23 screws source maps
             outPath: 'tsumego.es5.js',
             blacklist: []
         });
 
         babel({
+            sourceMaps: false, // babel 5.8.23 screws source maps
             outPath: 'tsumego.es6.js'
         });
     }).then(complete);

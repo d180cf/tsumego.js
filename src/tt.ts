@@ -1,5 +1,15 @@
 /// <reference path="hashmap.ts" />
 
+module tsumego.stat {
+    export var ttread = 0;
+    export var ttwrite = 0;
+    export var ttmiss = 0;
+
+    logv.push(() => `tt reads = ${ttread}`);
+    logv.push(() => `tt misses = ${ttmiss} = ${ttmiss / ttread * 100 | 0} %`);
+    logv.push(() => `tt writes = ${ttwrite} = ${ttwrite / ttread * 100 | 0} %`);
+}
+
 module tsumego {
     /**
      * 0               1               2               3
@@ -43,6 +53,13 @@ module tsumego {
     /** Transposition Table */
     export class TT {
         size = 0;
+
+        // this is a cache of found solutions
+        // and is used only for move ordering;
+        // it makes a huge impact on the perf:
+        // reducing the number of entries to 1M
+        // for example will make the solver 3-4x
+        // slower
         move = new HashMap<stone>(); // node -> stone
 
         private data = [
@@ -51,10 +68,14 @@ module tsumego {
             new HashMap<entry>(), // node -> entry, if w plays first
         ];
 
-        get(hash: number, color: number, km: number) {
-            const e = this.data[color & 2].get(hash);
+        get(hash_0: number, hash_1: number, color: number, km: number) {
+            const e = this.data[color & 2].get(hash_0, hash_1);
+
+            stat.ttread++;
 
             if (!e) return 0;
+
+            stat.ttmiss++;
 
             const winner =
                 km >= entry.b(e) ? +1 : // enough ko treats for black
@@ -74,8 +95,10 @@ module tsumego {
          * @param move The outcome. Must have a color and may have coordinates.
          * @param km Must be either-1, +1 or 0.
          */
-        set(hash: number, color: number, move: stone, km: number) {
-            const e = this.data[color & 2].get(hash) || ++this.size && entry.base;
+        set(hash_0: number, hash_1: number, color: number, move: stone, km: number) {
+            const e = this.data[color & 2].get(hash_0, hash_1) || ++this.size && entry.base;
+
+            stat.ttwrite++;
 
             // The idea here is to not override the winning move.
             // A typical case is the bent 4 shape: B wins if there are
@@ -93,7 +116,7 @@ module tsumego {
                 move < 0 && km > w ? entry.make(x, y, b, km, hc) :
                     e;
 
-            this.data[color & 2].set(hash, e2);
+            this.data[color & 2].set(hash_0, hash_1, e2);
         }
     }
 }

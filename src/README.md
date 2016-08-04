@@ -1,12 +1,38 @@
 # Search
 
-The core of the solver is the plain depth-first search. It took quite a bit of effort to make it work with repetitions (aka "ko") and identical positions (aka "transpositions"). Currently it explores ~10k/s nodes, which is not hopelessly far from Java/C++ solvers that do ~40k/s. Despite this solver uses neither static analysis (e.g. the benson's test) nor advaced search strategies (e.g. lambda depth-first proof-number search), it can quickly solve most of tsumegos on goproblems.com (once they are properly enclosed):
+The core of the solver is the plain depth-first search. It took quite a bit of effort to make it work with repetitions (aka "ko") and identical positions (aka "transpositions"). Despite this solver uses neither static analysis (e.g. the benson's test) nor advaced search strategies, it can quickly solve most of enclosed tsumegos on goproblems.com (once they are properly enclosed):
 
 <img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/12354.svg#1" height="200pt" /><img src="https://rawgit.com/d180cf/tsumego.js/master/docs/pics/21185.svg#1" height="200pt" />
 
-The 1-st problem (white to live) is solved in 3s (123k nodes) and is [rated](http://www.goproblems.com/12354) as 6 dan. The 2-nd one (white to live) needs 26s (690k nodes) and is [rated](http://www.goproblems.com/21185) as 8 dan. This is a surprisingly good result for such a dumb solver that doesn't even bother to resolve collisions in the transposition table and just blindly reuses results that are not even playable (e.g. the TT suggests to play at an occupied point).
+The 1-st problem (white to live) is solved in 3s (168K nodes) and is [rated](http://www.goproblems.com/12354) as 6 dan. The 2-nd one (white to live) needs 21s (1.2M nodes) and is [rated](http://www.goproblems.com/21185) as 8 dan.
 
-There are a few known ways to make the solver more intelligent: [static](https://github.com/d180cf/tsumego.js/tree/incremental-benson-test) analysis, [df-pn](https://github.com/d180cf/tsumego.js/tree/dfpn) search, [lambda](https://github.com/d180cf/tsumego.js/tree/wls) search and so on. So far I have found that it's surprisingly hard to make it faster. For instance, the benson's test that recognizes some of the alive groups reduces the number of nodes that need to be explored by quite a bit, but it comes with a price because the analyser needs to be invoked frequently and it slows down search, so the net result is: when the analyser is on, the search is 1.5x slower. Same for df-pn and lambda search.
+There are two ways to make the solver faster: make it spend less time on each node and make it explore less nodes. Obviously, once the solver is made smarter and starts exploring less nodes, it naturally starts spending more time on each node. It often happens that some tricky optimization lets it explore 1.3 less nodes, but also makes it spend 1.5x more time in each node, thus making a negative effect overall.
+
+#### Optimizing code
+
+This reduces the time spent in each node, while leavs the overall number of nodes to be explored unchanged. I've made a few surprising discoveries about performance in the v8 js engine:
+
+- bool to int coercion `+b` on a hot path can slow down search by 10-20% - I'm wondering what kind of asm is generated for this simple operation
+- a common `t && t[x] || 0` trick in a hash map implementation can screw performance
+- such a trivial function, though on a hot path, eats up 10% of the time if `lift` and `_inBounds` together need only 0.17%:
+
+    ```js
+    Board.prototype.getBlockId = function getBlockId(x, y) {
+        return this._inBounds(x, y) ? this.lift(this.table[y * this.size + x]) : 0;
+    };
+    ```
+
+  hard to believe that one multiplication, additon and a lookup in a small array need to much time.
+
+#### Advanced search strategies
+
+Perhaps the biggest problem with the plain depth-first search is that if it picks a wrong move at the top of the search tree, it won't return until it proves that this move is wrong. This is why it cannot solve tsumegos bigger than 20 points: it picks a wrong move and then spends the rest of the time disproving that dumb move.
+
+Advanced search algorithms, like alpha-beta or df-pn, are aiming at this problem: they discover at some point that the chosen branch of the tree is likely to be wrong and back up to try another one. As a result, they explore less nodes to find a solution, but they explore the same nodes multiple times.
+
+#### Static analysis
+
+It can be used to quickly recognize surely dead or alive groups. The key word here is "quickly" - if such static analysis allows to explore 5x less nodes, but in return makes exploring each node 7x slower, the net effect will be negative. It's appeared that even the simplest static analysis techniques, such as the benson's test or the Euler heuristics, is very hard to squeeze into that narrow window, e.g. the benson's test allows to explore 1.2x less nodes, but makes exploring each node 1.6x slower.
 
 # Transpositions
 

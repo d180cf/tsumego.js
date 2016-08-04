@@ -46,7 +46,10 @@ module tsumego {
          * each cell contains either block id or 0, if the intersection
          * is unoccupied. This is why block ids start with 1.
          */
-        export const enum id { }
+        export const enum id {
+            min = 1,
+            max = 255,
+        }
 
         export const xmin = (b: block) => b & 15;
         export const xmax = (b: block) => b >> 4 & 15;
@@ -90,7 +93,12 @@ module tsumego {
          * The 32 bit hash of the board. It's efficiently
          * recomputed after each move.
          */
-        hash = 0;
+        get hash() {
+            return this.hash_b & 0x0000FFFF | this.hash_w & 0xFFFF0000;
+        }
+
+        hash_b = 0; // low 32 bits of the 64 bit hash
+        hash_w = 0; //  hi 32 bits of the 64 bit hash
 
         /** 
          * blocks[id] = a block descriptor with this block.id
@@ -115,7 +123,7 @@ module tsumego {
         blocks: block[] = [0];
 
         /** 
-         * table[y * size + x] contains a block id or 0.
+         * table[y << 4 | x] contains a block id or 0.
          *
          * When a block is merged with another block,
          * this table isn't changed, but the corresponding
@@ -131,7 +139,7 @@ module tsumego {
          * lifted first before it can be said whether it even
          * exists.
          */
-        private table: block.id[];
+        private table: { [offset: number]: block.id };
 
         /**
          * Every time a stone is added, changes in the list of blocks
@@ -177,7 +185,8 @@ module tsumego {
         private _redo_data: {
             // x: 4 bits, y: 4 bits, color: 1 bit (9 bits total)
             [move: number]: {
-                hash: number; // the board hash is this move is played
+                hash_b: number; // the board hash is this move is played
+                hash_w: number; // the board hash is this move is played
                 cell: block.id; // the block id to be set at that move location
                 list: number[]; // [block.id, block] pairs that tell what blocks to change
             }
@@ -192,8 +201,8 @@ module tsumego {
          *
          * This is also known as Zobrist hashing.
          */
-        private hashtb = sequence(256, rand).map(x => x & 0x0000FFFF);
-        private hashtw = sequence(256, rand).map(x => x & 0xFFFF0000);
+        private hasht_b = sequence(256, rand);
+        private hasht_w = sequence(256, rand);
 
         get sgf() {
             return this.toStringSGF();
@@ -230,11 +239,8 @@ module tsumego {
                 throw Error(`Board ${size}x${size} is too big. Up to 16x16 boards are supported.`);
 
             this.size = size;
-            this.table = new Array(size * size);
+            this.table = sequence(256, () => 0);
             this.drop();
-
-            for (let i = 0; i < size * size; i++)
-                this.table[i] = 0;
         }
 
         private initFromTXT(rows: string[]) {
@@ -289,7 +295,7 @@ module tsumego {
         drop() {
             this.history = { added: [], hashes: [], changed: [] };
 
-            for (let i = 0; i < this.table.length; i++)
+            for (let i = 0; i < 256; i++)
                 this.table[i] = this.lift(this.table[i]);
 
             this._redo_data = null;
@@ -304,9 +310,12 @@ module tsumego {
             const b = new Board(0);
 
             b.size = this.size;
-            b.hash = this.hash;
-            b.table = this.table.slice(0);
+            b.hash_b = this.hash_b;
+            b.hash_w = this.hash_w;
             b.blocks = this.blocks.slice(0);
+
+            for (let i = 0; i < 256; i++)
+                b.table[i] = this.table[i];
 
             b.drop();
             return b;
@@ -342,7 +351,7 @@ module tsumego {
          * The block data can be read from blocks[id]. 
          */
         private getBlockId(x: number, y: number): block.id {
-            return this._inBounds(x, y) ? this.lift(this.table[y * this.size + x]) : 0;
+            return this._inBounds(x, y) ? this.lift(this.table[y << 4 | x]) : 0;
         }
 
         /** 
@@ -386,13 +395,16 @@ module tsumego {
          */
         private remove(id: block.id) {
             const bd = this.blocks[id];
-            const hasht = bd > 0 ? this.hashtb : this.hashtw;
             const [xmin, xmax, ymin, ymax] = block.dims(bd);
 
             for (let y = ymin; y <= ymax; y++) {
                 for (let x = xmin; x <= xmax; x++) {
                     if (this.getBlockId(x, y) == id) {
-                        this.hash ^= hasht[y * this.size + x];
+                        if (bd > 0)
+                            this.hash_b ^= this.hasht_b[y << 4 | x];
+                        else
+                            this.hash_w ^= this.hasht_w[y << 4 | x];
+
                         this.adjust(x, y, -bd, +1);
                     }
                 }
@@ -462,7 +474,8 @@ module tsumego {
             _n_play++;
 
             const size = this.size;
-            const hash = this.hash;
+            const hash_b = this.hash_b;
+            const hash_w = this.hash_w;
 
             const n_changed = this.history.changed.length / 2; // id1, bd1, id2, bd2, ...
 
@@ -527,10 +540,14 @@ module tsumego {
                 }
             }
 
-            const id_old = this.table[y * size + x];
+            const id_old = this.table[y << 4 | x];
 
-            this.table[y * size + x] = id_new;
-            this.hash ^= (color > 0 ? this.hashtb : this.hashtw)[y * size + x];
+            this.table[y << 4 | x] = id_new;
+
+            if (color > 0)
+                this.hash_b ^= this.hasht_b[y << 4 | x];
+            else
+                this.hash_w ^= this.hasht_w[y << 4 | x];
 
             if (is_new) {
                 // create a new block if the new stone has no neighbors
@@ -608,7 +625,7 @@ module tsumego {
                 | id_old << 16
                 | color & 0x80000000);
 
-            this.history.hashes.push(hash);
+            this.history.hashes.push(hash_b, hash_w);
 
             return result + 1;
         }
@@ -629,19 +646,22 @@ module tsumego {
 
             const x = move & 15;
             const y = move >> 4 & 15;
-            const k = y * this.size + x;
+            const k = y << 4 | x;
             const c = move & 0x80000000 ? -1 : +1;
             const n = move >> 8 & 255;
             const b = move >> 16 & 255;
 
             const next = {
-                hash: this.hash,
+                hash_b: this.hash_b,
+                hash_w: this.hash_w,
                 cell: this.table[k],
                 list: [],
             };
 
             this.table[k] = b;
-            this.hash = this.history.hashes.pop();
+
+            this.hash_w = this.history.hashes.pop();
+            this.hash_b = this.history.hashes.pop();
 
             for (let i = 0; i < n; i++) {
                 const bd = this.history.changed.pop();
@@ -681,7 +701,7 @@ module tsumego {
          */
         private redo(move: stone): number {
             const [x, y] = stone.coords(move);
-            const k = x + y * this.size;
+            const k = y << 4 | x;
             const c = move > 0 ? +1 : -1;
             const next = this._redo_data[x | y << 4 | c & 256];
 
@@ -690,13 +710,16 @@ module tsumego {
 
             _n_redo++;
 
-            this.history.hashes.push(this.hash);
+            this.history.hashes.push(this.hash_b, this.hash_w);
+
             this.history.added.push(x | y << 4
                 | next.list.length / 2 << 8
                 | this.table[k] << 16
                 | c & 0x80000000);
 
-            this.hash = next.hash;
+            this.hash_b = next.hash_b;
+            this.hash_w = next.hash_w;
+
             this.table[k] = next.cell;
 
             let nres = 0;

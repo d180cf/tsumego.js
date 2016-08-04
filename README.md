@@ -58,8 +58,6 @@ Finally, mark the target. In theory, the solver can safely assume that black nee
 
 The solver uses internally es6 [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) which allows to suspend and resume the search at any moment. This is very useful when debugging the solver, as the process of solving can be rendered in the UI step by step, but this can also be useful to let the user stop the search if it runs for too long. In the es5 build generators are transpiled into state machines with [Babel](https://github.com/babel/babel).
 
-The solver explores about 10k positions per second, despite it uses es6 generators and other advanced features. Solvers written in Java/C++ are [said](http://www.is.titech.ac.jp/~kishi//pdf_file/kishi_phd_thesis.pdf) to explore around 40k/s positions.
-
 As far as I know, there are very few tsumego solving software:
 
 - Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
