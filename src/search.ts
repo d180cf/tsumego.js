@@ -204,12 +204,12 @@ module tsumego {
                     if (!board.play(move))
                         continue;
 
-                    const value = evalnode(-color);
+                    const value = -evalnode(-color);
                     const hash = board.hash;
 
                     board.undo();
 
-                    // v == -1 indicates a sure loss
+                    // -1 indicates a sure loss
                     if (value <= -1)
                         continue;
 

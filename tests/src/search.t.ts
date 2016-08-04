@@ -149,8 +149,7 @@ module tests {
             const color = stone.label.color(setup['PL'][0]); // who plays first
             const target = stone.fromString(setup['MA'][0]); // what to capture/save
             const board = new Board(sgf);
-            const tblock = board.get(target);
-            const tt = new TT; // shared by all variations
+            const tblock = board.get(target);            
 
             $.test($ => {
                 // moves marked as possible solutions in the problem
@@ -180,6 +179,7 @@ module tests {
                 //console.log('mtree:');
                 //console.tree(tree);
 
+                const tt = new TT; // shared by all variations
                 const b = board.fork(); // not necessary, but doesn't harm either
                 const seq: string[] = []; // e.g. [W[ef], B[ab], W[cc]]
 
