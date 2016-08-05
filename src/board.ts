@@ -1,5 +1,5 @@
 ﻿/// <reference path="utils.ts" />
-/// <reference path="move.ts" />
+/// <reference path="stone.ts" />
 /// <reference path="rand.ts" />
 /// <reference path="prof.ts" />
 /// <reference path="sgf.ts" />
