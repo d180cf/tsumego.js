@@ -129,10 +129,10 @@ namespace testbench {
             Object.assign(svg, {
                 AB: new Marks(svg, '<circle id="AB" r="0.475" fill="black" stroke="black" stroke-width="0.05"></circle>'),
                 AW: new Marks(svg, '<circle id="AW" r="0.475" fill="white" stroke="black" stroke-width="0.05"></circle>'),
-                CR: new Marks(svg, '<circle id="CR" r="0.25" stroke-width="0.05"></circle>'),
-                TR: new Marks(svg, '<path id="TR" d="M 0 -0.25 L -0.217 0.125 L 0.217 0.125 Z" stroke-width="0.05"></path>'),
-                MA: new Marks(svg, '<path id="MA" d="M -0.25 -0.25 L 0.25 0.25 M 0.25 -0.25 L -0.25 0.25" stroke-width="0.05"></path>'),
-                SQ: new Marks(svg, '<path id="SQ" d="M -0.25 -0.25 L 0.25 -0.25 L 0.25 0.25 L -0.25 0.25 Z" stroke-width="0.05"></path>'),
+                CR: new Marks(svg, '<circle id="CR" r="0.5" stroke="none" transform="scale(0.4)"></circle>'),
+                TR: new Marks(svg, '<path id="TR" d="M 0 -0.5 L -0.433 0.25 L 0.433 0.25 Z" stroke="none" transform="scale(0.5)"></path>'),
+                MA: new Marks(svg, '<path id="MA" d="M -0.2 -0.2 L 0.2 0.2 M 0.2 -0.2 L -0.2 0.2" stroke-width="0.05"></path>'),
+                SQ: new Marks(svg, '<rect id="SQ" x="-0.5" y="-0.5" width="1" height="1" stroke="none" transform="scale(0.4)"></path>'),
                 SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>'),
                 LB: new Marks(svg, `<text x="" y="" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0"></text>`),
 
