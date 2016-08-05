@@ -9,6 +9,7 @@
 // this is useful when debugging
 window['board'] = null;
 window['$s'] = tsumego.stone.toString;
+window['$b'] = tsumego.block.toString;
 window['$x'] = tsumego.hex;
 window['ui'] = null;
 
