@@ -62,7 +62,7 @@ module testbench {
                 board: board,
                 color: color,
                 km: km,
-                time: 250,
+                time: 300,
                 tt: tt,
                 target: aim,
                 expand: tsumego.mgen.fixed(board, aim),
@@ -625,23 +625,30 @@ module testbench {
     function solveAndRender(color: number, km: number) {
         vm.note = 'Solving...';
 
+        let _calls: number;
+        let _nodes: number;
+        let _size: number;
+        let _time: number;
+
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
 
         const comment = () => elapsed() + ' s'
-            + '; tt size = ' + (tt.size / 1000 | 0) + 'K'
-            + '; calls = ' + (tsumego.stat.calls / (Date.now() - started) | 0) + 'K/s'
-            + '; nodes = ' + (tsumego.stat.nodes / (Date.now() - started) | 0) + 'K/s';
+            + '; calls = ' + ((tsumego.stat.calls - _calls) / (Date.now() - _time) | 0) + 'K/s'
+            + '; tt.size = ' + ((tt.size - _size) / (Date.now() - _time) | 0) + 'K/s'
+            + '; nodes = ' + ((tsumego.stat.nodes - _nodes) / (Date.now() - _time) | 0) + 'K/s';
 
         const op = solving = {
             notify() {
                 vm.note = 'Solving... elapsed ' + comment();
+                _calls = tsumego.stat.calls;
+                _size = tt.size;
+                _nodes = tsumego.stat.nodes;
+                _time = Date.now();
             }
         };
 
         return solve(op, board, color, km).then(move => {
-            const duration = Date.now() - started;
-
             solving = null;
 
             if (move * color < 0) {
