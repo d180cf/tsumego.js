@@ -30,7 +30,7 @@ namespace tsumego {
         process.stdout.write('\n' + (0x100000000 + board.hash).toString(16).slice(-8) + ': ');
     }
 
-    function xsolve<Move>(args: solve.Args) {
+    function xsolve<Move>(args: tsumego.Args) {
         return new Promise<stone>((resolve, reject) => {
             let callback: (r: stone) => void;
 

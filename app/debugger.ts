@@ -1,7 +1,7 @@
 module testbench {
     import stone = tsumego.stone;
     import Board = tsumego.Board;
-    import DebugState = tsumego.solve.DebugState;
+    import DebugState = tsumego.DebugState;
     import solve = tsumego.solve;
     import benson = tsumego.benson;
     import mgen = tsumego.mgen;

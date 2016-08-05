@@ -19,6 +19,69 @@ module tsumego.stat {
 }
 
 module tsumego {
+    export interface DebugState {
+        km?: number;
+        path?: number[];
+        moves?: stone[];
+        color?: number;
+        depth?: number;
+    }
+
+    export interface Args {
+        board: Board;
+        color: number;
+        km?: number;
+        tt?: TT;
+        expand(color: number): stone[];
+        target: stone;
+        alive?(node: Board): boolean;
+        debug?: DebugState;
+        time?: number;
+        log?: {
+            sgf?: boolean; // logs SGF for every solved node; 1.5x slower
+            write(data): void;
+        };
+    }
+
+    function parse(data: string): Args {
+        const sgf = SGF.parse(data);
+        if (!sgf) throw SyntaxError('Invalid SGF.');
+
+        const errors = [];
+
+        const exec = <T>(fn: () => T, em?: string) => {
+            try {
+                return fn();
+            } catch (e) {
+                errors.push(em || e && e.message);
+            }
+        };
+
+        const board = exec(
+            () => new Board(sgf));
+
+        const color = exec(
+            () => sgf.get('PL')[0] == 'W' ? -1 : +1,
+            'PL[W] or PL[B] must tell who plays first.');
+
+        const target = exec(
+            () => stone.fromString(sgf.get('MA')[0]),
+            'MA[xy] must specify the target white stone.');
+
+        if (errors.length)
+            throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
+
+        const tb = board.get(target);
+
+        return {
+            board: board,
+            color: color,
+            expand: mgen.fixed(board, target),
+            target: target,
+            alive: (b: Board) => tsumego.benson.alive(b, target)
+        };
+    }
+
     /**
      * The problem's description is given as an SGF string:
      *
@@ -43,7 +106,7 @@ module tsumego {
      *      B       White doesn't have a winning move in the R-zone.
      */
     export function solve(sgf: string): string;
-    export function solve(args: solve.Args): stone;
+    export function solve(args: Args): stone;
 
     export function solve(args) {
         const g = solve.start(args);
@@ -57,69 +120,6 @@ module tsumego {
     }
 
     export namespace solve {
-        export interface DebugState {
-            km?: number;
-            path?: number[];
-            moves?: stone[];
-            color?: number;
-            depth?: number;
-        }
-
-        export interface Args {
-            board: Board;
-            color: number;
-            km?: number;
-            tt?: TT;
-            expand(color: number): stone[];
-            target: stone;
-            alive?(node: Board): boolean;
-            debug?: DebugState;
-            time?: number;
-            log?: {
-                sgf?: boolean; // logs SGF for every solved node; 1.5x slower
-                write(data): void;
-            };
-        }
-
-        function parse(data: string): Args {
-            const sgf = SGF.parse(data);
-            if (!sgf) throw SyntaxError('Invalid SGF.');
-
-            const errors = [];
-
-            const exec = <T>(fn: () => T, em?: string) => {
-                try {
-                    return fn();
-                } catch (e) {
-                    errors.push(em || e && e.message);
-                }
-            };
-
-            const board = exec(
-                () => new Board(sgf));
-
-            const color = exec(
-                () => sgf.get('PL')[0] == 'W' ? -1 : +1,
-                'PL[W] or PL[B] must tell who plays first.');
-
-            const target = exec(
-                () => stone.fromString(sgf.get('MA')[0]),
-                'MA[xy] must specify the target white stone.');
-
-            if (errors.length)
-                throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
-
-            const tb = board.get(target);
-
-            return {
-                board: board,
-                color: color,
-                expand: mgen.fixed(board, target),
-                target: target,
-                alive: (b: Board) => tsumego.benson.alive(b, target)
-            };
-        }
-
         export function* start(args: Args | string) {
             let {board, color, km, tt = new TT, log, expand, target, alive, debug, time} =
                 typeof args === 'string' ? parse(args) : args;
