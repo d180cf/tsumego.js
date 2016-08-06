@@ -60,6 +60,10 @@ html, body {
         outline: none;
     }
 
+#right-panel > * {
+    margin-bottom: 2em;
+}
+
 #tutorial-hint {
     position: fixed;
     right: 0;

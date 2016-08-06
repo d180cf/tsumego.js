@@ -81,7 +81,7 @@
                 <div class="ui inverted vertical menu"></div>
             </div>
         </div>
-        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 18.5em);padding:0 2pt">
+        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 17.6em);padding:0 2pt">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
@@ -100,8 +100,8 @@
                 <pre contenteditable="true" id="svg"></pre>
             </div>
         </div>
-        <div class="ui column" style="background:rgb(224, 225, 226);height:calc(100% - 2em);width:3.5em">
-            <div class="ui big icon vertical buttons" id="dbg-panel">
+        <div id="right-panel" class="ui column" style="background:rgb(224, 225, 226);height:calc(100% - 2em);width:2.6em">
+            <div class="ui small icon vertical buttons" id="dbg-panel">
                 <button class="ui icon button" id="dbg-run" title="Run" style="color:#21BA45">
                     <i class="play icon"></i>
                 </button>
@@ -128,9 +128,7 @@
             </div>
 
             <div id="solver-panel">
-                <div class="ui divider"></div>
-
-                <div class="ui big icon vertical buttons">
+                <div class="ui small icon vertical buttons">
                     <button class="ui icon button" id="solve-b" title="Find the best move for black">
                         <i class="play icon"></i>
                     </button>
@@ -150,9 +148,7 @@
             </div>
 
             <div id="tool">
-                <div class="ui divider"></div>
-
-                <div class="ui big icon vertical buttons toggle">
+                <div class="ui small icon vertical buttons toggle">
                     <button data-value="AB" class="ui icon button" title="Add a black stone (B+click)">
                         <i class="ui circle icon"></i>
                     </button>
@@ -168,9 +164,7 @@
             </div>
 
             <div id="km">
-                <div class="ui divider"></div>
-
-                <div class="ui big vertical buttons toggle">
+                <div class="ui small vertical buttons toggle">
                     <button data-value="-1" class="ui icon button" title="W is the ko master">
                         <i class="ui thin circle icon"></i>
                     </button>
