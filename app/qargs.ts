@@ -6,6 +6,9 @@ module testbench {
         /** Used to init the RNG. */
         rs: number;
 
+        /** proof tree depth */
+        ptd: number;
+
         /** Sets the ko master. */
         km: 'B' | 'W' | 'none';
 

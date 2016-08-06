@@ -19,9 +19,19 @@ if (typeof Promise === 'undefined') {
 if (typeof Object.assign === 'undefined') {
     console.warn('polyfilling Object.assign...');
 
-    Object.assign = function (lhs, rhs) {
-        for (var key in rhs)
-            lhs[key] = rhs[key];
+    Object.assign = function (lhs /* ...rhs */) {
+        for (var i = 1; i < arguments.length; i++) {
+            var rhs = arguments[i];
+
+            if (rhs) {
+                for (var key in rhs) {
+                    lhs = lhs || {};
+                    lhs[key] = rhs[key];
+                }
+            }
+        }
+
+        return lhs;
     };
 }
 

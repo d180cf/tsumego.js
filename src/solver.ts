@@ -154,9 +154,9 @@ module tsumego {
         }
 
         /**
-         * Finds all possible treats for the specified player.
-         * A treat is a move that doesn't work by itself, but
-         * if the opponent ignores it, the next move will work.
+         * Finds all possible threats for the specified player.
+         * A threat is a move that doesn't work by itself, but
+         * if the opponent ignores it, the next move does work.
          *
          * If solve(...) finds that there is no solution, this
          * method can tell what are the strongest, but not working,
@@ -164,11 +164,11 @@ module tsumego {
          *
          * @example
          *
-         *  for (const move of treats("W")) {
+         *  for (const move of threats("W")) {
          *    move; // "W[ea]"
          *  }
          */
-        *treats(color: string | color) {
+        *threats(color: string | color) {
             if (typeof color === 'string') {
                 color = stone.label.color(color);
 
@@ -178,16 +178,228 @@ module tsumego {
 
             for (const move of this.args.expand(color)) {
                 if (this.args.board.play(move)) {
-                    try {
-                        const resp = this.solve(color);
+                    const resp = this.solve(color);
+                    this.args.board.undo();
 
-                        if (stone.fromString(resp) * color > 0)
-                            yield stone.toString(move);
-                    } finally {
-                        this.args.board.undo();
+                    if (stone.fromString(resp) * color > 0)
+                        yield stone.toString(move);
+                }
+            }
+        }
+
+        /**
+         * Constructs a proof tree:
+         *
+         *  - for every wrong move the tree has a disproof
+         *  - for every correct move the tree has a strongest response
+         *
+         * Returns the tree of moves in the SGF format.
+         *
+         * @example
+         *
+         *  tree('W', 2) == `
+         *      (;W[ea];B[cb]
+         *          (;W[gg];B[aa])
+         *          (;W[ge];B[ad]))
+         *      (;W[fc];B[dd]
+         *          (;W[gc];B[ac])))
+         *      (;W[ae];B[gh])
+         *  `;
+         */
+        *tree(color: string | color, depth: number) {
+            if (typeof color === 'string') {
+                color = stone.label.color(color);
+
+                if (!color)
+                    throw Error('Invalid color value. Consider W or B.');
+            }
+
+            interface Tree {
+                [move: string]: Tree;
+            }
+
+            const self = this;
+            const cache = {}; // contuations chosen by the user
+            const board = this.args.board;
+            const target = this.args.target;
+            const expand = this.args.expand;
+            const correct = new WeakMap<Tree, boolean>();
+            const terminal = new WeakMap<Tree, boolean>();
+
+            // adds a disproof for every wrong move and
+            // a strongest response for every correct move
+            function* deepen(this: void, tree: Tree, color: color) {
+                const sgf = board.sgf;
+
+                for (const move of expand(color)) {
+                    if (board.play(move)) {
+                        const subtree = tree[stone.toString(move)] = {};
+                        const dead = !board.get(target);
+                        const resp = dead ? '' : self.solve(-color);
+
+                        if (!resp) {
+                            // this is a correct move: add strongest responses                            
+                            correct.set(subtree, true);
+
+                            if (!dead) {
+                                let hasThreats = false;
+
+                                // check if there are any threats before
+                                // bothering the user to pick one
+                                for (const threat of self.threats(-color)) {
+                                    hasThreats = true;
+                                    break;
+                                }
+
+                                if (hasThreats) {
+                                    // ask the UI to give the best response;
+                                    // another option would be to somehow rank
+                                    // moves returned by threats(-color) and
+                                    // pick the stongest one
+                                    const threat = board.hash in cache ?
+                                        cache[board.hash] : // don't bother the user twice for the same position
+                                        yield stone.label.string(-color);
+
+                                    cache[board.hash] = threat;
+
+                                    // the UI gives null if the variation needs to end here
+                                    if (threat)
+                                        subtree[threat] = {};
+                                }
+                            }
+
+                            // now this player can ignore any next move:
+                            // no need to deepen further this branch
+                            if (leaf(subtree))
+                                terminal.set(subtree, true);
+                        } else if (resp.indexOf('[]') >= 0) {
+                            // hmm.. the opponent needs to pass; this usually happens
+                            // when the result is seki, but also might happen when the
+                            // opponent needs to drop external ko treats and recapture
+                            terminal.set(subtree, true);
+                        } else {
+                            // this is wrong move: add the found disproof;
+                            // but before that check if the opponent even
+                            // needed a response: maybe this move is so wrong
+                            // that doesn't do anything at all
+                            const pass = self.solve(color);
+
+                            if (stone.fromString(pass) * color > 0) {
+                                subtree[resp] = {};
+                                board.play(stone.fromString(resp));
+
+                                // detect a basic ko and stop the variation
+                                if (sgf == board.sgf)
+                                    terminal.set(subtree[resp], true);
+
+                                board.undo();
+                            } else {
+                                // the move is dumb and can be ignored
+                                terminal.set(subtree, true);
+                            }
+                        }
+
+                        board.undo();
                     }
                 }
             }
+
+            function* leaves(this: void, tree: Tree): Iterable<Tree> {
+                for (const move in tree) {
+                    if (board.play(stone.fromString(move))) {
+                        yield* leaves(tree[move]);
+                        board.undo();
+                    } else {
+                        debugger;
+                    }
+                }
+
+                // danger: this should be at the end,
+                // as otherwise the caller may insert
+                // subnodes and for-in above will happily
+                // list them as well
+                if (leaf(tree))
+                    yield tree;
+            }
+
+            const root: Tree = {};
+
+            for (let d = 0; d < depth; d++) {
+                console.log('working on level ' + d);
+
+                let changed = false;
+
+                for (const leaf of leaves(root)) {
+                    if (terminal.get(leaf))
+                        continue;
+
+                    const n = width(leaf);
+
+                    yield* deepen(leaf, color);
+
+                    if (width(leaf) > n)
+                        changed = true;
+                }
+
+                // nothing has been added: no need to proceed;
+                // usually, variations end at depth 14-15, if
+                // no static analysis is applied
+                if (!changed) {
+                    console.log('variations ended here');
+                    break;
+                }
+            }
+
+            function width(tree: Tree) {
+                return Object.keys(tree).length;
+            }
+
+            function leaf(tree: Tree) {
+                return width(tree) < 1;
+            }
+
+            // the idea is to detect branches like (;B[ef]C[RIGHT];W[fg])
+            // the W[fg] move is really not needed there
+            function final(tree: Tree) {
+                for (const move in tree)
+                    if (!leaf(tree[move]))
+                        return false;
+
+                return true;
+            }
+
+            return (function stringify(tree: Tree, d = 0) {
+                const vars: string[] = [];
+
+                for (const move in tree) {
+                    const subtree = tree[move];
+
+                    // there is no point to explicitly list wrong moves, e.g. ;B[ef];W[cc];B[df]C[WRONG]
+                    if (stone.fromString(move) * color > 0 && !correct.has(subtree) && leaf(subtree))
+                        continue;
+
+                    let line = ';' + move;
+
+                    if (correct.get(subtree)) {
+                        line += 'ZZ[+]'; // simplifies debugging
+
+                        if (leaf(subtree) || final(subtree))
+                            line += 'C[RIGHT]';
+                    }
+
+                    // a correct line should end with a correct move;
+                    // a wrong line should end with a disproving move
+                    if (!correct.has(subtree) || !final(subtree))
+                        line += stringify(subtree, d + 1);
+
+                    vars.push(line);
+                }
+
+                if (vars.length < 2)
+                    return vars.join('');
+
+                return vars.map(s => '\n' + '  '.repeat(d) + '(' + s + ')').join('');
+            })(root);
         }
     }
 }

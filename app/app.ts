@@ -160,7 +160,7 @@ module testbench {
                     directory.select(path);
 
                     if (qargs.debug) {
-                        vm.dbg.enabled = true;
+                        vm.mode = 'debugger';
                         lspath = null;
                         solvingFor = +1;
                         solvingFor = stone.label.color(qargs.debug);
@@ -217,21 +217,64 @@ module testbench {
                     ls.set(path, null);
                 });
 
-                $('#solve-b, #solve-w').click(function () {
+                $('#solve-b, #solve-w').click(function (event) {
                     const color = { 'solve-b': +1, 'solve-w': -1 }[this.id];
 
                     if (!color)
                         return;
 
+                    vm.mode = 'solver';
                     lspath = null;
                     solvingFor = color;
                     problem = problem || new tsumego.Solver(vm.sgf);
                     board = problem.board;
 
-                    solveAndRender(solvingFor, vm.km).then(move => {
-                        if (move * solvingFor < 0)
-                            solvingFor = -solvingFor;
-                    });
+                    if (event.ctrlKey) {
+                        vm.note = 'Building a proof tree...';
+                        vm.mode = 'proof-tree';
+
+                        const g = problem.tree(color, qargs.ptd || 2);
+
+                        // every call to next() creates its own instance of goban element
+                        (function next(move: stone) {
+                            // let the UI update some stuf...
+                            setTimeout(() => {
+                                const { value, done } = g.next(move && stone.toString(move));
+
+                                if (done) {
+                                    const tree = value;
+                                    send('POST', '/proof-tree', tree);
+                                    vm.note = 'Proof tree ready: ' + (tree.length >> 10) + 'KB';
+                                    vm.sgf = vm.sgf.trim().replace(/\)$/, tree + ')');
+                                    return;
+                                }
+
+                                vm.note = 'Pick the strongest response for ' + value;
+                                const svg = renderBoard();
+
+                                svg.addEventListener('click', event => {
+                                    const x = event.cellX;
+                                    const y = event.cellY;
+                                    const c = stone.label.color(value);
+                                    const s = stone.make(x, y, c);
+
+                                    if (!board.play(s)) {
+                                        next(null); // tell to end the variation here
+                                    } else {
+                                        renderBoard();
+                                        vm.note = 'Ok, proceeding with this variation...';
+                                        board.undo();
+                                        next(s); // tell to continue the variation with this move
+                                    }
+                                });
+                            }, 200);
+                        })(null);
+                    } else {
+                        solveAndRender(solvingFor, vm.km).then(move => {
+                            if (move * color < 0)
+                                solvingFor = -color;
+                        });
+                    }
                 });
 
                 document.querySelector('#flipc').addEventListener('click', e => {
@@ -311,6 +354,8 @@ module testbench {
         board = new Board(sgfdata, nvar);
         aim = setup['MA'] ? stone.fromString(setup['MA'][0]) : 0;
         selection = null;
+        problem = null;
+        solvingFor = 0;
 
         board = board.fork(); // drop the history of moves
         renderBoard();
@@ -453,7 +498,7 @@ module testbench {
         // manages the selection area
         //
 
-        if (!qargs.debug) {
+        if (vm.mode == 'editor') {
             let selecting = false;
             let dragging = false;
             let dragged = false;
@@ -548,7 +593,7 @@ module testbench {
         // the main click handler
         //
 
-        if (!qargs.debug) {
+        if (vm.mode == 'editor' || vm.mode == 'solver') {
             ui.addEventListener('click', event => {
                 const [x, y] = [event.cellX, event.cellY];
                 const c = board.get(x, y);
@@ -589,13 +634,15 @@ module testbench {
         wrapper.innerHTML = '';
         wrapper.appendChild(ui);
 
-        const sgf = getProblemSGF();
+        if (vm.mode == 'editor') {
+            const sgf = getProblemSGF();
 
-        vm.sgf = sgf;
-        vm.svg = wrapper.innerHTML;
+            vm.sgf = sgf;
+            vm.svg = wrapper.innerHTML;
 
-        if (lspath)
-            ls.set(lspath, sgf);
+            if (lspath && vm.mode == 'editor')
+                ls.set(lspath, sgf);
+        }
 
         return ui;
     }
@@ -649,15 +696,15 @@ module testbench {
                 return Promise.resolve().then(() => {
                     let n = 0;
 
-                    for (const move of problem.treats(color)) {
-                        const [x, y] = stone.coords(stone.fromString(move));
+                    for (const threat of problem.threats(color)) {
+                        const [x, y] = stone.coords(stone.fromString(threat));
 
                         n++;
                         ui.SQ.add(x, y);
                     }
 
                     if (n > 0)
-                        vm.note = note + ', but here are moves that require response';
+                        vm.note = note + ', but here are moves that require response from ' + stone.label.string(-color);
                     else
                         vm.note = note;
 
@@ -676,8 +723,10 @@ module testbench {
 
             return move;
         }).catch(err => {
+            debugger;
             solving = null;
             vm.note = err;
+            console.error(err);
             throw err;
         });
     }
