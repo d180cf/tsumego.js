@@ -229,14 +229,22 @@ module testbench {
                     lspath = null;
                     solvingFor = +1;
                     tblock = board.get(aim);
-                    solveAndRender(solvingFor, vm.km);
+
+                    solveAndRender(solvingFor, vm.km).then(move => {
+                        if (move * solvingFor < 0)
+                            solvingFor = -solvingFor;
+                    });
                 });
 
                 document.querySelector('#solve-w').addEventListener('click', e => {
                     lspath = null;
                     solvingFor = -1;
                     tblock = board.get(aim);
-                    solveAndRender(solvingFor, vm.km);
+
+                    solveAndRender(solvingFor, vm.km).then(move => {
+                        if (move * solvingFor < 0)
+                            solvingFor = -solvingFor;
+                    });
                 });
 
                 document.querySelector('#flipc').addEventListener('click', e => {
@@ -653,9 +661,44 @@ module testbench {
             solving = null;
 
             if (move * color < 0) {
-                vm.note = color * board.get(aim) < 0 ?
+                const note = color * board.get(aim) < 0 ?
                     stone.label.string(color) + ' cannot capture the group' :
                     stone.label.string(color) + ' cannot save the group';
+
+                vm.note = note + ', searching for treats...';
+
+                return Promise.resolve().then(() => {
+                    const treats: stone[] = [];
+                    const expand = tsumego.mgen.fixed(board, aim);
+
+                    for (const move of expand(color)) {
+                        if (board.play(move)) {
+                            const resp = tsumego.solve({
+                                board: board,
+                                color: color,
+                                km: km,
+                                tt: tt,
+                                target: aim,
+                                expand: expand,
+                                alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
+                            });
+
+                            if (resp * color > 0) {
+                                treats.push(move);
+                                ui.SQ.add(stone.x(move), stone.y(move));
+                            }
+
+                            board.undo();
+                        }
+                    }
+
+                    if (treats.length > 0)
+                        vm.note = note + ', but here are moves that require response';
+                    else
+                        vm.note = note;
+
+                    return move;
+                });
             } else if (!stone.hascoords(move)) {
                 vm.note = stone.label.string(color) + ' passes';
             } else {
