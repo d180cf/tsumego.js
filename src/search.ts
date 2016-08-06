@@ -16,6 +16,9 @@ module tsumego.stat {
 
     export var expand = 0;
     logv.push(() => `calls to expand = ${expand} = ${expand / calls * 100 | 0} %`);
+
+    export var first = 0;
+    logv.push(() => `the 1-st move is correct = ${first / expand * 100 | 0} %`);
 }
 
 module tsumego {
@@ -287,8 +290,8 @@ module tsumego {
 
                 let trials = 0;
 
-                for (const move of nodes) {
-                    trials++;
+                while (trials < nodes.length) {
+                    const move = nodes[trials++];
                     const d = !move ? infdepth : repd.get(move);
                     let s: stone;
 
@@ -378,6 +381,10 @@ module tsumego {
                             d > depth && move ?
                                 repd.get(s) :
                                 d);
+
+                        if (trials == 1 && nodes.length > 1)
+                            stat.first++;
+
                         break;
                     }
                 }
