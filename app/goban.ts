@@ -9,7 +9,13 @@ namespace testbench {
             try {
                 this.tag = /\bid="(\w+)"/.exec(def)[1];
                 const defs = svg.querySelector('defs');
-                defs.innerHTML += def;
+
+                // IE doesn't support innerHTML for SVG elements, hence this hack
+                const g = <HTMLElement>document.createElementNS(this.svg.getAttribute('xmlns'), 'g');
+                g.innerHTML = def;
+                const m = <HTMLElement>g.firstChild;
+                g.removeChild(m);
+                defs.appendChild(m);
             } catch (_) {
                 // the svg element cannot be referred to with <use>
             }
@@ -132,7 +138,7 @@ namespace testbench {
                 CR: new Marks(svg, '<circle id="CR" r="0.5" stroke="none" transform="scale(0.4)"></circle>'),
                 TR: new Marks(svg, '<path id="TR" d="M 0 -0.5 L -0.433 0.25 L 0.433 0.25 Z" stroke="none" transform="scale(0.5)"></path>'),
                 MA: new Marks(svg, '<path id="MA" d="M -0.2 -0.2 L 0.2 0.2 M 0.2 -0.2 L -0.2 0.2" stroke-width="0.05"></path>'),
-                SQ: new Marks(svg, '<rect id="SQ" x="-0.5" y="-0.5" width="1" height="1" stroke="none" transform="scale(0.4)"></path>'),
+                SQ: new Marks(svg, '<rect id="SQ" x="-0.5" y="-0.5" width="1" height="1" stroke="none" transform="scale(0.4)"></rect>'),
                 SL: new Marks(svg, '<rect id="SL" x="-0.5" y="-0.5" width="1" height="1" fill-opacity="0.5" stroke="none"></rect>'),
                 LB: new Marks(svg, `<text x="" y="" font-size="0.3" text-anchor="middle" dominant-baseline="middle" stroke-width="0"></text>`),
 

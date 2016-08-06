@@ -7,7 +7,7 @@ module tsumego {
      * 0               1               2               3
      *  0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-     * |   x   |   y   |              data             |         |h|c|w|
+     * |   x   |   y   |        r       |                    | k |h|c|w|
      * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      *
      *  x - the x coord (valid only if h = 1)
@@ -15,10 +15,8 @@ module tsumego {
      *  h - whether the stone has coordinates
      *  c - whether the stone has a color
      *  w - whether the stone is white (valid if c = 1)
-     *
-     * The 2-nd and the 3-rd bytes can be used to store arbitrary data.
-     * The remaining 5 bits of the 4-th byte are reserved for future use.
-     *
+     *  r - depth at which repetition occurs
+     *  k - who is the ko master: +1, 0, -1
      */
     export enum stone { }
 
@@ -133,9 +131,14 @@ module tsumego {
         export const set = (move, repd) => move & ~0xFF00 | repd << 8;
     }
 
+    export module stone.km {
+        export const get = (s: stone): color => s << 3 >> 30; // the signed shift
+        export const set = (s: stone, km: color) => s & ~0x18000000 | (km & 3) << 27;
+    }
+
     export module stone.label {
         /** W -> -1, B -> +1 */
-        export function color(label: string) {
+        export function color(label: string): color {
             if (label == 'B') return +1;
             if (label == 'W') return -1;
 

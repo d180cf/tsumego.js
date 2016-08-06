@@ -370,13 +370,18 @@ module tsumego {
 
             let move = yield* solve(color, km || 0);
 
+            move = stone.km.set(move, km || 0);
+
             if (!Number.isFinite(km)) {
                 // if it's a loss, see what happens if there are ko treats;
                 // if it's a win, try to find a stronger move, when the opponent has ko treats
-                const move2 = yield* solve(color, move * color > 0 ? -color : color);
+                const km2 = move * color > 0 ? -color : color;
+                const move2 = yield* solve(color, km2);
 
-                if (move2 * color > 0 && stone.hascoords(move2))
+                if (move2 * color > 0 && stone.hascoords(move2)) {
                     move = move2;
+                    move = stone.km.set(move, km2);
+                }
             }
 
             move = repd.set(move, 0);

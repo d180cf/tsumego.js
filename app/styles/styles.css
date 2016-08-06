@@ -18,6 +18,21 @@ html, body {
     color: white;
     vertical-align: middle;
     line-height: 2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+body.debugger #footer {
+    background-color: #a7691c;
+}
+
+body.solver #footer {
+    background-color: green;
+}
+
+body.proof-tree #footer {
+    background-color: black;
 }
 
 #comment {
@@ -122,5 +137,29 @@ html, body {
         }
 
 #dbg-panel {
+    display: none;
+}
+
+body.debugger #dbg-panel {
+    display: inherit;
+}
+
+body.debugger #solver-panel {
+    display: none;
+}
+
+body.proof-tree #solver-panel {
+    display: none;
+}
+
+body.debugger #tool {
+    display: none;
+}
+
+body.proof-tree #tool {
+    display: none;
+}
+
+body.proof-tree #km {
     display: none;
 }

@@ -6,11 +6,17 @@ module testbench {
         /** Used to init the RNG. */
         rs: number;
 
+        /** proof tree depth */
+        ptd: number;
+
         /** Sets the ko master. */
         km: 'B' | 'W' | 'none';
 
         /** Enables the Benson's test. */
         benson: boolean;
+
+        /** Delays in ms between iterations when building a proof tree. */
+        delay: number;
 
         /** Draws moves that are being explored by the solver. Defaults to 4. */
         depth: number;

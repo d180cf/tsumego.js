@@ -17,6 +17,10 @@ module testbench {
     hookToolToKey('AB', 'B'); // B = black
     hookToolToKey('AW', 'W'); // W = white
 
+    // "editor" is the initial state; from there it can go to
+    // eitehr of the three states and cannot go back
+    type Mode = 'editor' | 'proof-tree' | 'solver' | 'debugger';
+
     export const vm = new class VM {
         constructor() {
             $(window).on('load', () => {
@@ -24,6 +28,14 @@ module testbench {
                     this.sgfchanged.fire();
                 });
             });
+        }
+
+        set mode(value: Mode) {
+            document.body.className = value;
+        }
+
+        get mode(): Mode {
+            return document.body.className as Mode;
         }
 
         /** The currently selected editor tool: MA, AB, AW, etc. */
@@ -95,17 +107,6 @@ module testbench {
         }
 
         dbg = new class DbgVM {
-            set enabled(value: boolean) {
-                if (value) {
-                    $('#footer').css('background-color', '#a7691c');
-                    $('#dbg-panel').show();
-                    $('#solver-panel').hide();
-                    $('#tool').hide();
-                } else {
-                    debugger;
-                }
-            }
-
             set inactive(value: boolean) {
                 $('#dbg-panel button').toggleClass('disabled', value);
             }
