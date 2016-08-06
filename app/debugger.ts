@@ -8,7 +8,7 @@ module testbench {
     import TT = tsumego.TT;
     import hex = tsumego.hex;
 
-    export function dbgsolve(board: Board, color: number, km: number, aim: stone, tt: TT, refresh: () => SVGGobanElement) {
+    export function dbgsolve(board: Board, color: number, km: number, aim: stone, refresh: () => SVGGobanElement) {
         const debug: DebugState = {};
 
         const solver = solve.start({
@@ -16,7 +16,7 @@ module testbench {
             board: board,
             color: color,
             km: km,
-            tt: tt,
+            tt: new TT,
             expand: mgen.fixed(board, aim),
             target: aim,
             alive: qargs.benson && ((b: Board) => benson.alive(b, aim))
@@ -48,7 +48,6 @@ module testbench {
                 isdone = true;
                 vm.dbg.inactive = true;
                 console.log('result = ' + stone.toString(value));
-                console.log('tt.size = ' + tt.size);
             } else {
                 step++;
             }
@@ -118,7 +117,6 @@ module testbench {
             vm.note = [
                 comment,
                 '#' + step + ' @' + hex(board.hash),
-                'tt.size = ' + tt.size,
                 'color = ' + stone.label.string(debug.color),
                 'km = ' + (debug.km && stone.label.string(debug.km)),
                 'depth = ' + debug.depth,

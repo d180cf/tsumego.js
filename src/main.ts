@@ -1,4 +1,5 @@
 /// <reference path="search.ts" />
+/// <reference path="solver.ts" />
 
 module tsumego {
     declare const module, define, window;

@@ -165,12 +165,12 @@ module tsumego {
                 + (_nr ? ' depth=' + _nr : '');
         }
 
-        export function fromString(s: string) {
+        export function fromString(s: string): stone {
             if (s == 'B' || s == 'B[]') return stone.nocoords(+1);
             if (s == 'W' || s == 'W[]') return stone.nocoords(-1);
 
             if (!/^[BW]\[[a-z]{2}\]|[a-z]{2}$/.test(s))
-                throw SyntaxError('Invalid move: ' + s);
+                return 0;
 
             const c = { B: +1, W: -1 }[s[0]] || 0;
             if (c) s = s.slice(2);

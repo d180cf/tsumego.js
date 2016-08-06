@@ -3,117 +3,8 @@ module tests {
     import solve = tsumego.solve;
     import stone = tsumego.stone;
     import hex = tsumego.hex;
-    import TT = tsumego.TT;
     import SGF = tsumego.SGF;
-    import mgen = tsumego.mgen;
     import rand = tsumego.rand;
-
-    ut.group($ => {
-        /// the external interface
-
-        $.test($ => {
-            /// best move exists, black wins
-
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
-                AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('B[ba]');
-        });
-
-        $.test($ => {
-            /// best move exists, white wins
-
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
-                AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('W[ba]');
-        });
-
-        $.test($ => {
-            /// no best move exists, black wins
-
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
-                AW[ab][bb][cb][db][da]\
-                AB[ac][bc][cc][dc][ec][eb][ea][ba])');
-
-            $(move).equal('B[]');
-        });
-
-        $.test($ => {
-            /// no best move exists, white wins
-
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
-                AW[ab][bb][cb][db][da][ba]\
-                AB[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('W[]');
-        });
-
-        $.test($ => {
-            /// black is captured
-
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
-                AB[ab][bb][cb][db][da]\
-                AW[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('W[ba]');
-        });
-
-        $.test($ => {
-            /// black lives
-
-            const move = solve('(;FF[4]SZ[5]PL[B]MA[bb]\
-                AB[ab][bb][cb][db][da]\
-                AW[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('B[ba]');
-        });
-
-        $.test($ => {
-            /// black cannot be captured
-
-            const move = solve('(;FF[4]SZ[5]PL[W]MA[bb]\
-                AB[ab][bb][cb][db][da][ba]\
-                AW[ac][bc][cc][dc][ec][eb][ea])');
-
-            $(move).equal('B[]');
-        });
-
-        $.test($ => {
-            /// invalid format
-
-            const sgf = '(;FF[4]';
-            const error = $.error(() => solve(sgf));
-
-            $(error + '').equal('SyntaxError: Invalid SGF.');
-        });
-
-        $.test($ => {
-            /// missing tags
-
-            const sgf = '(;FF[4])';
-            const error = $.error(() => solve(sgf));
-
-            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
-                + '\n\tSZ[n] tag must specify the size of the board.'
-                + '\n\tPL[W] or PL[B] must tell who plays first.'
-                + '\n\tMA[xy] must specify the target white stone.');
-        });
-
-        $.test($ => {
-            /// too big board size
-
-            const sgf = '(;FF[4]SZ[19])';
-            const error = $.error(() => solve(sgf));
-
-            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
-                + '\n\tBoard 19x19 is too big. Up to 16x16 boards are supported.'
-                + '\n\tPL[W] or PL[B] must tell who plays first.'
-                + '\n\tMA[xy] must specify the target white stone.');
-        });
-    });
 
     ut.group($ => {
         /// tsumego samples
@@ -133,23 +24,16 @@ module tests {
 
             const setup = sgf.steps[0];
 
-            // PL[] is used to disable/skip problems
-            if (setup['PL'] && setup['PL'][0] == '')
+            if (!setup['PL'])
                 continue;
 
-            if (!setup['MA'])
-                throw 'MA[..] must tell what to capture';
+            const color = stone.label.color(setup['PL'][0]); // who plays first
 
-            if (!setup['PL'])
+            if (!color)
                 continue;
 
             if (sgf.vars.length < 1)
                 continue;
-
-            const color = stone.label.color(setup['PL'][0]); // who plays first
-            const target = stone.fromString(setup['MA'][0]); // what to capture/save
-            const board = new Board(sgf);
-            const tblock = board.get(target);            
 
             $.test($ => {
                 // moves marked as possible solutions in the problem
@@ -179,8 +63,7 @@ module tests {
                 //console.log('mtree:');
                 //console.tree(tree);
 
-                const tt = new TT; // shared by all variations
-                const b = board.fork(); // not necessary, but doesn't harm either
+                const p = new tsumego.Solver(data);
                 const seq: string[] = []; // e.g. [W[ef], B[ab], W[cc]]
 
                 (function playout(root) {
@@ -193,24 +76,19 @@ module tests {
                     // are either B[..] or W[..]
                     if (stone.fromString(moves[0]) * color < 0) {
                         for (const move of moves) {
-                            if (!b.play(stone.fromString(move)))
-                                throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + b);
+                            if (!p.play(stone.fromString(move)))
+                                throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + p);
 
                             seq.push(move);
                             playout(root[move]);
-                            b.undo();
+                            p.undo();
                             seq.pop();
                         }
                     } else {
-                        const g = solve.start({
-                            board: b,
-                            color: color,
-                            tt: tt,
+                        const g = p.g_solve(color, {
                             time: 1000,
                             log: argv.log && log,
-                            expand: mgen.fixed(b, target),
-                            target: target,
-                            alive: argv.benson && ((b: Board) => tsumego.benson.alive(b, target)),
+                            benson: argv.benson,
                         });
 
                         const t = Date.now();
@@ -233,14 +111,14 @@ module tests {
 
                         if (!root[move])
                             throw Error('Wrong move: ' + [...seq, move.white()].join(';') + '. Expected: ' + moves + '\n'
-                                + b.toString().replace(/X/img, s => s.green()).replace(/O/img, s => s.white()));
+                                + p.toString().replace(/X/img, s => s.green()).replace(/O/img, s => s.white()));
 
-                        if (!b.play(r))
-                            throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + b);
+                        if (!p.play(r))
+                            throw Error('Illegal move: ' + [...seq, move.white()].join(';') + move + '\n' + p);
 
                         seq.push(move);
                         playout(root[move]);
-                        b.undo();
+                        p.undo();
                         seq.pop();
                     }
                 })(tree);

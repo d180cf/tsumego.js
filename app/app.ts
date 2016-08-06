@@ -42,15 +42,13 @@ module testbench {
         return c2s(c) + ' ' + (isLoss ? 'loses' : (isDraw ? 'draws' : 'wins') + ' with ' + xy2s(s));
     }
 
-    /** shared transposition table for black and white */
-    export var tt: tsumego.TT;
-
     interface AsyncOperation {
         notify(): void;
         cancelled?: string;
     }
 
     let solving: AsyncOperation;
+    let problem: tsumego.Solver;
 
     // ?rs=123 sets the rand seed
     const rs = +qargs.rs || (Date.now() | 0);
@@ -59,15 +57,10 @@ module testbench {
 
     function solve(op: AsyncOperation, board: Board, color: number, km: number): Promise<stone> {
         return Promise.resolve().then(() => {
-            const g = tsumego.solve.start({
-                board: board,
-                color: color,
+            const g = problem.g_solve(color, {
                 km: km,
                 time: 300,
-                tt: tt,
-                target: aim,
-                expand: tsumego.mgen.fixed(board, aim),
-                alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
+                benson: qargs.benson,
             });
 
             let s = g.next();
@@ -99,7 +92,7 @@ module testbench {
 
     const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
 
-    var aim = 0, lspath = '', solvingFor, tblock: number;
+    var aim = 0, lspath = '', solvingFor;
 
     var selection: { x1: number, y1: number, x2: number, y2: number };
 
@@ -170,9 +163,8 @@ module testbench {
                         vm.dbg.enabled = true;
                         lspath = null;
                         solvingFor = +1;
-                        tblock = board.get(aim);
                         solvingFor = stone.label.color(qargs.debug);
-                        dbgsolve(board, solvingFor, vm.km, aim, tt, renderBoard);
+                        dbgsolve(board, solvingFor, vm.km, aim, renderBoard);
                         console.warn('debug mode is on');
                     }
                 }).catch(e => {
@@ -225,21 +217,16 @@ module testbench {
                     ls.set(path, null);
                 });
 
-                document.querySelector('#solve-b').addEventListener('click', e => {
-                    lspath = null;
-                    solvingFor = +1;
-                    tblock = board.get(aim);
+                $('#solve-b, #solve-w').click(function () {
+                    const color = { 'solve-b': +1, 'solve-w': -1 }[this.id];
 
-                    solveAndRender(solvingFor, vm.km).then(move => {
-                        if (move * solvingFor < 0)
-                            solvingFor = -solvingFor;
-                    });
-                });
+                    if (!color)
+                        return;
 
-                document.querySelector('#solve-w').addEventListener('click', e => {
                     lspath = null;
-                    solvingFor = -1;
-                    tblock = board.get(aim);
+                    solvingFor = color;
+                    problem = problem || new tsumego.Solver(vm.sgf);
+                    board = problem.board;
 
                     solveAndRender(solvingFor, vm.km).then(move => {
                         if (move * solvingFor < 0)
@@ -259,7 +246,6 @@ module testbench {
                     }
 
                     board = b.fork();
-                    tt = new tsumego.TT;
                     renderBoard();
                 });
 
@@ -327,7 +313,6 @@ module testbench {
         selection = null;
 
         board = board.fork(); // drop the history of moves
-        tt = new tsumego.TT;
         renderBoard();
     }
 
@@ -343,7 +328,6 @@ module testbench {
         }
 
         board = b.fork(); // drop history
-        tt = new tsumego.TT;
     }
 
     const enum KeyCode {
@@ -419,7 +403,6 @@ module testbench {
 
                 aim = t;
                 board = b;
-                tt = new tsumego.TT;
                 renderBoard();
         }
     });
@@ -441,7 +424,6 @@ module testbench {
                             throw Error(stone.toString(s) + ' does not fit the ' + b.size + 'x' + b.size + ' board');
 
                     board = b;
-                    tt = new tsumego.TT;
                     renderBoard();
             }
         } catch (err) {
@@ -636,7 +618,6 @@ module testbench {
 
         let _calls: number;
         let _nodes: number;
-        let _size: number;
         let _time: number;
 
         const started = Date.now();
@@ -644,14 +625,12 @@ module testbench {
 
         const comment = () => elapsed() + ' s'
             + '; calls = ' + ((tsumego.stat.calls - _calls) / (Date.now() - _time) | 0) + 'K/s'
-            + '; tt.size = ' + ((tt.size - _size) / (Date.now() - _time) | 0) + 'K/s'
             + '; nodes = ' + ((tsumego.stat.nodes - _nodes) / (Date.now() - _time) | 0) + 'K/s';
 
         const op = solving = {
             notify() {
                 vm.note = 'Solving... elapsed ' + comment();
                 _calls = tsumego.stat.calls;
-                _size = tt.size;
                 _nodes = tsumego.stat.nodes;
                 _time = Date.now();
             }
@@ -668,31 +647,16 @@ module testbench {
                 vm.note = note + ', searching for treats...';
 
                 return Promise.resolve().then(() => {
-                    const treats: stone[] = [];
-                    const expand = tsumego.mgen.fixed(board, aim);
+                    let n = 0;
 
-                    for (const move of expand(color)) {
-                        if (board.play(move)) {
-                            const resp = tsumego.solve({
-                                board: board,
-                                color: color,
-                                km: km,
-                                tt: tt,
-                                target: aim,
-                                expand: expand,
-                                alive: qargs.benson && ((b: Board) => tsumego.benson.alive(b, aim)),
-                            });
+                    for (const move of problem.treats(color)) {
+                        const [x, y] = stone.coords(stone.fromString(move));
 
-                            if (resp * color > 0) {
-                                treats.push(move);
-                                ui.SQ.add(stone.x(move), stone.y(move));
-                            }
-
-                            board.undo();
-                        }
+                        n++;
+                        ui.SQ.add(x, y);
                     }
 
-                    if (treats.length > 0)
+                    if (n > 0)
                         vm.note = note + ', but here are moves that require response';
                     else
                         vm.note = note;
@@ -702,7 +666,7 @@ module testbench {
             } else if (!stone.hascoords(move)) {
                 vm.note = stone.label.string(color) + ' passes';
             } else {
-                board.play(move);
+                problem.play(move);
                 renderBoard();
                 vm.note = stone.toString(move) + ' in ' + elapsed() + 's';
                 console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
