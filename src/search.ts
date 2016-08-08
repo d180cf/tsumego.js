@@ -100,53 +100,15 @@ module tsumego {
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
             const hist: stone[] = []; // the sequence of moves that leads to the current position
 
-            function* solve(color: number, km: number) {
-                remaining--;
-                stat.calls++;
-
-                if (time && !remaining) {
-                    yield;
-                    const current = Date.now();
-                    const speed = yieldin / (current - started);
-                    started = current;
-                    yieldin = max(speed * time | 0, 1);
-                    remaining = yieldin
-                }
-
-                const depth = path.length;
-                const prevb = depth < 1 ? 0 : path[depth - 1];
-                const hash32 = board.hash;
-                const hash_b = board.hash_b;
-                const hash_w = board.hash_w;
-                const ttres = tt.get(hash_b, hash_w, color, km);
-
-                debug && (debug.color = color);
-                debug && (debug.depth = depth);
-                debug && (debug.moves = hist);
-                debug && (debug.path = path);
-                debug && (debug.km = km);
-
-                if (ttres) {
-                    // due to collisions, tt may give a result for a different position;
-                    // however with 64 bit hashes, there expected to be just one collision
-                    // per sqrt(2 * 2**64) = 6 billions positions = 12 billion w/b nodes
-                    if (!board.get(ttres))
-                        return repd.set(ttres, infdepth);
-
-                    stat.ttinvalid++;
-                }
-
-                if (depth > infdepth / 2)
-                    return repd.set(stone.nocoords(-color), 0);
-
-                const guess = tt.move.get(color > 0 ? 1 : 0, hash32);
-
-                let result: stone;
-                let mindepth = infdepth;
+            function genmoves(color: color, km: color) {
+                stat.expand++;
 
                 const nodes = sa.reset();
+                const hash32 = board.hash;
+                const guess = tt.move.get(color > 0 ? 1 : 0, hash32);
+                const depth = path.length;
 
-                stat.expand++;
+                let rdmin = infdepth;
 
                 // 75% of the time the solver spends in this loop;
                 // also, it's funny that in pretty much all cases
@@ -181,12 +143,8 @@ module tsumego {
                     while (d >= 0 && path[d] != hash32)
                         d = d > 0 && path[d] == path[d - 1] ? -1 : d - 1;
 
-                    d++;
-
-                    if (!d) d = infdepth;
-
-                    if (d < mindepth)
-                        mindepth = d;
+                    d = d + 1 || infdepth;
+                    rdmin = min(rdmin, d);
 
                     // there are no ko treats to play this move,
                     // so play a random move elsewhere and yield
@@ -225,18 +183,64 @@ module tsumego {
                 if (block.libs(board.get(target)) > 1)
                     nodes.push(0);
 
+                return { nodes: nodes, rdmin: rdmin };
+            }
+
+            function* solve(color: color, km: color) {
+                remaining--;
+                stat.calls++;
+
+                if (time && !remaining) {
+                    yield;
+                    const current = Date.now();
+                    const speed = yieldin / (current - started);
+                    started = current;
+                    yieldin = max(speed * time | 0, 1);
+                    remaining = yieldin
+                }
+
+                const depth = path.length;
+                const prevb = depth < 1 ? 0 : path[depth - 1];
+                const hash32 = board.hash;
+                const hash_b = board.hash_b;
+                const hash_w = board.hash_w;
+                const ttres = tt.get(hash_b, hash_w, color, km);
+
+                debug && (debug.color = color);
+                debug && (debug.depth = depth);
+                debug && (debug.moves = hist);
+                debug && (debug.path = path);
+                debug && (debug.km = km);
+
+                if (ttres) {
+                    // due to collisions, tt may give a result for a different position;
+                    // however with 64 bit hashes, there expected to be just one collision
+                    // per sqrt(2 * 2**64) = 6 billions positions = 12 billion w/b nodes
+                    if (!board.get(ttres))
+                        return repd.set(ttres, infdepth);
+
+                    stat.ttinvalid++;
+                }
+
+                if (depth > infdepth / 2)
+                    return repd.set(stone.nocoords(-color), 0);
+
+                const {nodes, rdmin} = genmoves(color, km);
+
+                let mindepth = rdmin;
+                let result: stone;
                 let trials = 0;
 
                 while (trials < nodes.length) {
                     const move = nodes[trials++];
                     const d = !move ? infdepth : repd.get(move);
+
                     let s: stone;
 
                     path.push(hash32);
                     hist.push(move || stone.nocoords(color));
                     move && board.play(move);
                     debug && (yield stone.toString(move || stone.nocoords(color)));
-
 
                     if (!move) {
                         const nextkm = prevb == hash32 && color * km < 0 ? 0 : km;
@@ -346,7 +350,6 @@ module tsumego {
                     result: result,
                     target: target,
                     trials: trials,
-                    guess: guess,
                     board: board.hash,
                     sgf: log.sgf && board.toStringSGF(),
                 });
