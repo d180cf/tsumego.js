@@ -192,6 +192,8 @@ module tsumego {
             }
         };
 
+        private _area = sequence(256, () => 0);
+
         /** 
          * A random 32 bit number for each intersection in the 16x16 board. 
          * The hash of the board is then computed as H(B) = XOR Q(i, j) where
@@ -351,7 +353,10 @@ module tsumego {
          * The block data can be read from blocks[id]. 
          */
         private getBlockId(x: number, y: number): block.id {
-            return this._inBounds(x, y) ? this.lift(this.table[y << 4 | x]) : 0;
+            if (!this._inBounds(x, y))
+                return 0;
+
+            return this.lift(this.table[y << 4 | x]);
         }
 
         /** 
@@ -601,16 +606,28 @@ module tsumego {
 
                 let libs_new = 0;
 
-                for (let y = max(ymin_new - 1, 0); y <= min(ymax_new + 1, this.size - 1); y++) {
-                    for (let x = max(xmin_new - 1, 0); x <= min(xmax_new + 1, this.size - 1); x++) {
-                        if (this.getBlockId(x, y))
+                const xmin_1 = max(xmin_new - 1, 0);
+                const ymin_1 = max(ymin_new - 1, 0);
+
+                const xmax_1 = min(xmax_new + 1, size - 1);
+                const ymax_1 = min(ymax_new + 1, size - 1);
+
+                const area = this._area;
+
+                for (let y = ymin_1; y <= ymax_1; y++)
+                    for (let x = xmin_1; x <= xmax_1; x++)
+                        area[x | y << 4] = this.getBlockId(x, y);
+
+                for (let y = ymin_1; y <= ymax_1; y++) {
+                    for (let x = xmin_1; x <= xmax_1; x++) {
+                        if (area[x | y << 4])
                             continue;
 
                         const is_lib =
-                            this.getBlockId(x - 1, y) == id_new ||
-                            this.getBlockId(x + 1, y) == id_new ||
-                            this.getBlockId(x, y - 1) == id_new ||
-                            this.getBlockId(x, y + 1) == id_new;
+                            x > xmin_1 && area[x - 1 | y << 4] == id_new ||
+                            y > ymin_1 && area[x | y - 1 << 4] == id_new ||
+                            x < xmax_1 && area[x + 1 | y << 4] == id_new ||
+                            y < ymax_1 && area[x | y + 1 << 4] == id_new;
 
                         if (is_lib)
                             libs_new++;
