@@ -245,18 +245,25 @@ module tsumego {
          *
          * Returns the tree of moves in the SGF format.
          *
+         * @param depth The max number of wrong moves from a correct line.
+         *
          * @example
          *
-         *  tree('W', 2) == `
-         *      (;W[ea];B[cb]
-         *          (;W[gg];B[aa])
-         *          (;W[ge];B[ad]))
-         *      (;W[fc];B[dd]
-         *          (;W[gc];B[ac])))
-         *      (;W[ae];B[gh])
-         *  `;
+         *  (;B[ab];W[ba])
+         *  (;B[ba];W[ca])
+         *  (;B[ca];W[bb]
+         *      (;B[ab];W[ba])
+         *      (;B[ba];W[aa]
+         *          (;B[ab]C[RIGHT])
+         *          (;B[da];W[cb])
+         *          (;B[cb];W[da]))
+         *      (;B[da];W[aa])
+         *      (;B[cb];W[aa]))
+         *  (;B[cb];W[ca])
+         *  (;B[bb];W[ca])
+         *
          */
-        *tree(player: string | color, depth: number) {
+        *tree(player: string | color, depth: number, debuginfo = false) {
             const color = typeof player === 'string' ? stone.label.color(player) : player;
 
             if (!color)
@@ -312,7 +319,7 @@ module tsumego {
 
             // adds a disproof for every wrong move and
             // a strongest response for every correct move
-            function* deepen(this: void, tree: Tree, color: color) {
+            function* deepen(tree: Tree) {
                 const sgf = board.sgf;
 
                 for (const move of expand(color)) {
@@ -343,7 +350,11 @@ module tsumego {
                                     // ask the UI to give the best response;
                                     // another option would be to somehow rank
                                     // moves returned by threats(-color) and
-                                    // pick the stongest one
+                                    // pick the stongest one; a probably good
+                                    // heuristics is the max number of threatening,
+                                    // moves that the losing player can make; such
+                                    // moves are also called ko treats and it's
+                                    // better to maximize the number of ko treats
                                     const threat = board.hash in cache ?
                                         cache[board.hash] : // don't bother the user twice for the same position
                                         yield stone.label.string(-color);
@@ -367,23 +378,42 @@ module tsumego {
                             terminal.set(subtree, true);
                         } else {
                             // this is wrong move: add the found disproof;
-                            // but before that check if the opponent even
-                            // needed a response: maybe this move is so wrong
-                            // that doesn't do anything at all
-                            const pass = self.solve(color, km);
+                            // check first if this wrong line is not too long
+                            let d = 0;
 
-                            if (pass * color > 0) {
-                                add(subtree, resp);
-                                board.play(resp);
+                            for (let node = subtree; node; node = parent.get(node), d++)
+                                if (correct.has(node))
+                                    break;
 
-                                // detect a basic ko and stop the variation
-                                if (sgf == board.sgf)
-                                    terminal.set(subtree[stone.toString(resp)], true);
+                            // d is always even as it counts the number of black/white paired moves
+                            if (d & 1)
+                                debugger;
 
-                                board.undo();
-                            } else {
-                                // the move is dumb and can be ignored
+                            // in the simplest case, a wrong move is preceeded by a correct one:
+                            // ;W[ea];B[cd] and in this case d = 1; thus depth = 0 prevents adding
+                            // any disproofs to the tree, which can be useful, for instance, to generate
+                            // a the simplest proof tree for a unit test: the unit test just needs
+                            // to know correct lines
+                            if (d / 2 > depth) {
+                                // stop the varistion here
                                 terminal.set(subtree, true);
+                            } else {
+                                // check if the opponent even needs to answer
+                                const pass = self.solve(color, km);
+
+                                if (pass * color > 0) {
+                                    add(subtree, resp);
+                                    board.play(resp);
+
+                                    // detect a basic ko and stop the variation
+                                    if (sgf == board.sgf)
+                                        terminal.set(subtree[stone.toString(resp)], true);
+
+                                    board.undo();
+                                } else {
+                                    // the move is dumb and can be ignored
+                                    terminal.set(subtree, true);
+                                }
                             }
                         }
 
@@ -411,16 +441,15 @@ module tsumego {
 
             const root: Tree = {};
 
-            for (let d = 0; d < depth; d++) {
-                console.log('working on level ' + d);
-                const size = treesize.get(root);
+            while (true) {
+                const size = treesize.get(root) || 0;
 
                 for (const leaf of leaves(root)) {
                     if (terminal.get(leaf))
                         continue;
 
                     try {
-                        yield* deepen(leaf, color);
+                        yield* deepen(leaf);
                     } catch (err) {
                         if (err instanceof UserError)
                             break; // user has lost patience
@@ -432,10 +461,10 @@ module tsumego {
                 // nothing has been added: no need to proceed;
                 // usually, variations end at depth 14-15, if
                 // no static analysis is applied
-                if (treesize.get(root) == size) {
-                    console.log('variations ended here');
+                if (treesize.get(root) == size)
                     break;
-                }
+
+                console.log('added', treesize.get(root) - size, 'nodes');
             }
 
             function width(tree: Tree) {
@@ -467,22 +496,17 @@ module tsumego {
                         continue;
 
                     let line = ';' + move;
-                    let notes = [];
 
                     if (correct.get(subtree)) {
                         if (leaf(subtree) || final(subtree))
-                            notes.push('RIGHT'); // C[RIGHT] tells goproblems that this is a correct final move
-                        else
-                            notes.push('+'); // simplifies debugging
+                            line += 'C[RIGHT]'; // this tells goproblems that this is a correct final move
+                        else if (debuginfo)
+                            line += 'R{+]'; // simplifies debugging
                     }
 
-                    // attach the size of the subtree
-                    if (treesize.get(subtree))
-                        notes.push('size = ' + treesize.get(subtree));
-
-                    // e.g. C[comment #1][comment #2]...
-                    if (notes.length > 0)
-                        line += 'C' + notes.map(s => '[' + s + ']').join('');
+                    // attach the size of the subtree to discover heavy, but useless branches
+                    if (debuginfo && treesize.get(subtree))
+                        line += 'N[' + treesize.get(subtree) + ']';
 
                     // a correct line should end with a correct move;
                     // a wrong line should end with a disproving move
@@ -495,7 +519,7 @@ module tsumego {
                 if (vars.length < 2)
                     return vars.join('');
 
-                return vars.map(s => '\n' + '  '.repeat(d) + '(' + s + ')').join('');
+                return vars.map(s => '\n' + '  '.repeat(d + 1) + '(' + s + ')').join('');
             })(root);
         }
     }

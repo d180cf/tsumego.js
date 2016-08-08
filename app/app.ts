@@ -235,6 +235,7 @@ module testbench {
                         // let the UI update its stuff...
                         setTimeout(() => {
                             let n = 0;
+                            ui.SQ.clear();
 
                             for (const move of problem.proofs(color)) {
                                 const [x, y] = stone.coords(move);
@@ -252,7 +253,7 @@ module testbench {
                         vm.note = 'Building a proof tree...';
                         vm.mode = 'proof-tree';
 
-                        const g = problem.tree(color, qargs.ptd || 2);
+                        const g = problem.tree(color, qargs.ptd || 0, qargs.ptdi);
 
                         // every call to next() creates its own instance of goban element
                         (function next(move: stone) {
@@ -264,7 +265,7 @@ module testbench {
                                     const tree = value;
                                     send('POST', '/proof-tree', tree);
                                     vm.note = 'Proof tree ready: ' + (tree.length >> 10) + 'KB';
-                                    vm.sgf = vm.sgf.trim().replace(/\)$/, tree + ')');
+                                    vm.sgf = vm.sgf.trim().replace(/\)$/, '\n' + tree + ')');
                                     return;
                                 }
 
@@ -722,6 +723,7 @@ module testbench {
 
                 return Promise.resolve().then(() => {
                     let n = 0;
+                    ui.SQ.clear();
 
                     for (const threat of problem.threats(color)) {
                         const [x, y] = stone.coords(stone.fromString(threat));

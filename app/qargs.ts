@@ -9,14 +9,17 @@ module testbench {
         /** proof tree depth */
         ptd: number;
 
+        /** Delays in ms between iterations when building a proof tree. */
+        delay: number;
+
+        /** Adds debug info to proof trees. */
+        ptdi: boolean;
+
         /** Sets the ko master. */
         km: 'B' | 'W' | 'none';
 
         /** Enables the Benson's test. */
         benson: boolean;
-
-        /** Delays in ms between iterations when building a proof tree. */
-        delay: number;
 
         /** Draws moves that are being explored by the solver. Defaults to 4. */
         depth: number;
