@@ -20,7 +20,7 @@ module tsumego.profile {
     export function log() {
         if (started >= 0) {
             const total = now() - started;
-            console.log(`Total: ${(total / 1000).toFixed(2) }s`);
+            console.log(`Total: ${(total / 1000).toFixed(2)}s`);
             for (let name in timers)
                 console.log(`${name}: ${(timers[name] / total) * 100 | 0}%`);
         }
@@ -74,7 +74,7 @@ module tsumego.profile {
 
         timers[name] = 0;
 
-        return <any>function (...args) {
+        return <any>function (this: any, ...args) {
             const started = now();
 
             try {

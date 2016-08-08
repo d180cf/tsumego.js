@@ -4,6 +4,7 @@
     "declaration": true,
     "out": "tsumego.js",
     "target": "es6",
+    "noImplicitThis": true,
     "experimentalDecorators": true,
     "sourceMap": true
   }
