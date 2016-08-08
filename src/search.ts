@@ -60,7 +60,7 @@ module tsumego {
 
     export namespace solve {
         export function* start(args: Args) {
-            const {board, color, km, tt, log, expand, debug, time} = args;
+            const {board, tt, log, expand, debug, time} = args;
 
             let {target, alive} = args;
 
@@ -100,6 +100,15 @@ module tsumego {
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
             const hist: stone[] = []; // the sequence of moves that leads to the current position
 
+            // 75% of the time the solver spends in this loop;
+            // also, it's funny that in pretty much all cases
+            // a for-of is slower than the plain for loop, but
+            // in this case it's the opposite: for-of is way
+            // faster for some mysterious reason; also v8 jit
+            // doesn't optimize functions with yield, so it's
+            // profitable to move out this chunk of code into
+            // a plain function without yield/yield* stuff, but
+            // this gives only a marginal profit
             function genmoves(color: color, km: color) {
                 stat.expand++;
 
@@ -108,17 +117,8 @@ module tsumego {
                 const guess = tt.move.get(color > 0 ? 1 : 0, hash32);
                 const depth = path.length;
 
-                let rdmin = infdepth;
+                let rdmin = infdepth; // the earliest repetition
 
-                // 75% of the time the solver spends in this loop;
-                // also, it's funny that in pretty much all cases
-                // a for-of is slower than the plain for loop, but
-                // in this case it's the opposite: for-of is way
-                // faster for some mysterious reason; also v8 jit
-                // doesn't optimize functions with yield, so it's
-                // profitable to move out this chunk of code into
-                // a plain function without yield/yield* stuff, but
-                // this gives only a marginal profit
                 for (const move of expand(color)) {
                     if (!board.play(move))
                         continue;
@@ -225,6 +225,8 @@ module tsumego {
                 if (depth > infdepth / 2)
                     return repd.set(stone.nocoords(-color), 0);
 
+                // generate moves and find the earliest repetition;
+                // the move casuing that repetition will not be in this list
                 const {nodes, rdmin} = genmoves(color, km);
 
                 let mindepth = rdmin;
@@ -235,7 +237,7 @@ module tsumego {
                     const move = nodes[trials++];
                     const d = !move ? infdepth : repd.get(move);
 
-                    let s: stone;
+                    let resp: stone; // the best response
 
                     path.push(hash32);
                     hist.push(move || stone.nocoords(color));
@@ -250,7 +252,8 @@ module tsumego {
                         if (isloop) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            s = repd.set(stone.nocoords(target), depth - 1);
+                            resp = stone.nocoords(target);
+                            resp = repd.set(resp, depth - 1);
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -281,47 +284,47 @@ module tsumego {
                             // that if the two last moves were passes, the ko treats
                             // can be voided and the search can be resumed without them.
                             tags.push(tag);
-                            s = yield* solve(-color, nextkm);
+                            resp = yield* solve(-color, nextkm);
                             tags.pop();
                         }
                     } else {
-                        if (!board.get(target))
-                            s = repd.set(stone.nocoords(-target), infdepth);
-                        else if (color * target > 0 && alive && alive(board))
-                            s = repd.set(stone.nocoords(target), infdepth);
-                        else
-                            s = yield* solve(-color, km);
+                        if (!board.get(target)) {
+                            resp = stone.nocoords(-target);
+                            resp = repd.set(resp, infdepth);
+                        } else if (color * target > 0 && alive && alive(board)) {
+                            resp = stone.nocoords(target);
+                            resp = repd.set(resp, infdepth);
+                        } else {
+                            resp = yield* solve(-color, km);
+                        }
                     }
 
                     path.pop();
                     hist.pop();
                     move && board.undo();
-                    debug && (yield stone.toString(repd.set(move, 0) || stone.nocoords(color)) + ' \u27f6 ' + stone.toString(s));
+                    debug && (yield stone.toString(repd.set(move, 0) || stone.nocoords(color)) + ' \u27f6 ' + stone.toString(resp));
 
                     // the min value of repd is counted only for the case
                     // if all moves result in a loss; if this happens, then
                     // the current player can say that the loss was caused
                     // by the absence of ko treats and point to the earliest
                     // repetition in the path
-                    if (s * color < 0 && move)
-                        mindepth = min(mindepth, d > depth ? repd.get(s) : d);
+                    if (resp * color < 0 && move)
+                        mindepth = min(mindepth, d > depth ? repd.get(resp) : d);
 
                     // the winning move may depend on a repetition, while
                     // there can be another move that gives the same result
                     // uncondtiionally, so it might make sense to continue
                     // searching in such cases
-                    if (s * color > 0) {
+                    if (resp * color > 0) {
                         // if the board b was reached via path p has a winning
                         // move m that required to spend a ko treat and now b
                         // is reached via path q with at least one ko treat left,
                         // that ko treat can be spent to play m if it appears in q
                         // and then win the position again; this is why such moves
                         // are stored as unconditional (repd = infty)
-                        result = repd.set(
-                            move || stone.nocoords(color),
-                            d > depth && move ?
-                                repd.get(s) :
-                                d);
+                        result = move || stone.nocoords(color);
+                        result = repd.set(result, d > depth && move ? repd.get(resp) : d);
 
                         if (trials == 1 && nodes.length > 2)
                             stat.first++;
@@ -331,8 +334,10 @@ module tsumego {
                 }
 
                 // if there is no winning move, record a loss
-                if (!result)
-                    result = repd.set(stone.nocoords(-color), mindepth);
+                if (!result) {
+                    result = stone.nocoords(-color);
+                    result = repd.set(result, mindepth);
+                }
 
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
@@ -370,6 +375,8 @@ module tsumego {
                     board.play(move);
                 }
             }
+
+            const {color, km} = args;
 
             let move = yield* solve(color, km || 0);
 
