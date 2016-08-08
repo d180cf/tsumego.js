@@ -286,7 +286,7 @@ module tsumego {
                         else if (color * target > 0 && alive && alive(board))
                             s = repd.set(stone.nocoords(target), infdepth);
                         else
-                            s = yield* solve(-color, move && km);
+                            s = yield* solve(-color, km);
                     }
 
                     path.pop();
