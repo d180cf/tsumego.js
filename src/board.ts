@@ -425,7 +425,7 @@ module tsumego {
         private change(id: block.id, bd: block) {
             // adding a new block corresponds to a change from
             // blocks[blocks.length - 1] -> b
-            this.history.changed.push(id, this.blocks[id] | 0);
+            this.history.changed.push(id, id < this.blocks.length ? this.blocks[id] : 0);
             this.blocks[id] = bd;
         }
 
@@ -589,7 +589,10 @@ module tsumego {
 
                     size_new += block.size(bd);
 
-                    const [xmin, xmax, ymin, ymax] = block.dims(bd);
+                    const xmin = block.xmin(bd);
+                    const xmax = block.xmax(bd);
+                    const ymin = block.ymin(bd);
+                    const ymax = block.ymax(bd);
 
                     xmin_new = min(xmin_new, xmin);
                     ymin_new = min(ymin_new, ymin);
@@ -616,7 +619,7 @@ module tsumego {
 
                 for (let y = ymin_1; y <= ymax_1; y++)
                     for (let x = xmin_1; x <= xmax_1; x++)
-                        area[x | y << 4] = this.getBlockId(x, y);
+                        area[x | y << 4] = this.lift(this.table[x | y << 4]);
 
                 for (let y = ymin_1; y <= ymax_1; y++) {
                     for (let x = xmin_1; x <= xmax_1; x++) {
