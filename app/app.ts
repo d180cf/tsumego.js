@@ -281,6 +281,27 @@ module testbench {
                                 vm.note = 'Pick the strongest response for ' + (value == 'W' ? 'white' : 'black');
                                 const svg = renderBoard();
 
+                                // mark the basic ko move
+                                if (true) {
+                                    const move = board.undo();
+                                    const before = new stone.SmallSet(board.stones(-stone.color(move)));
+                                    const nres = board.play(move);
+
+                                    // a basic ko always captures one stone
+                                    if (nres == 2) {
+                                        const after = new stone.SmallSet(board.stones(-stone.color(move)));
+
+                                        for (const s of before) {
+                                            if (!after.has(s)) {
+                                                const x = stone.x(s);
+                                                const y = stone.y(s);
+
+                                                svg.SQ.add(x, y);
+                                            }
+                                        }
+                                    }
+                                }                                
+
                                 svg.addEventListener('click', event => {
                                     const x = event.cellX;
                                     const y = event.cellY;

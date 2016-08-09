@@ -65,8 +65,10 @@ module tsumego {
         export class SmallSet {
             private stones: stone[] = [];
 
-            constructor(private test = same) {
-
+            constructor(items?: Iterable<stone>) {
+                if (items)
+                    for (const s of items)
+                        this.stones.push(s);
             }
 
             toString() {
@@ -75,7 +77,7 @@ module tsumego {
 
             has(s: stone) {
                 for (const x of this.stones)
-                    if (this.test(x, s))
+                    if (same(x, s))
                         return true;
 
                 return false;

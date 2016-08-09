@@ -832,20 +832,24 @@ module tsumego {
          * stones() lists all the stones on the board
          * stones(b) lists only stones that belong to block b
          * stones(0) returns an ampty list
+         * stones(+1) returns all black stones
+         * stones(-1) returns all white stones
          */
-        *stones(b?: block) {
-            const all = b === undefined;
+        *stones(t?: block | color) {
+            const all = t === undefined;
 
-            if (!all && !b) return;
+            if (!all && !t) return;
 
-            const [xmin, xmax, ymin, ymax] = !all ? block.dims(b) : [0, this.size - 1, 0, this.size - 1];
+            const [xmin, xmax, ymin, ymax] = all || t == color.black || t == color.white ?
+                [0, this.size - 1, 0, this.size - 1] :
+                block.dims(<block>t);
 
             for (let x = xmin; x <= xmax; x++) {
                 for (let y = ymin; y <= ymax; y++) {
-                    const c = this.get(x, y);
+                    const b = this.get(x, y);
 
-                    if (!all ? c == b : c)
-                        yield stone.make(x, y, c);
+                    if (all ? b != 0 : t == +1 ? b > 0 : t == -1 ? b < 0 : b == t)
+                        yield stone.make(x, y, b);
                 }
             }
         }
