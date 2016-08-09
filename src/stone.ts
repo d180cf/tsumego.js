@@ -39,6 +39,7 @@ module tsumego {
 
         export const same = (a: stone, b: stone) => !((a ^ b) & 255);
         export const dist = (a: stone, b: stone) => Math.abs(x(a) - x(b)) + Math.abs(y(a) - y(b));
+        export const move = (s: stone, dx: number, dy: number) => x(s) + dx & 15 | (y(s) + dy & 15) << 4 | s & ~255;
 
         export const neighbors = (m: stone) => {
             const [x, y] = stone.coords(m);

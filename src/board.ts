@@ -758,6 +758,16 @@ module tsumego {
             return nres + 1;
         }
 
+        get rect() {
+            let r: block;
+
+            for (const b of this.blocks)
+                if (block.size(b) > 0)
+                    r = block.join(r || b, b);
+
+            return r;
+        }
+
         *range(color = 0) {
             for (let y = 0; y < this.size; y++)
                 for (let x = 0; x < this.size; x++)

@@ -15,6 +15,7 @@ window['ui'] = null;
 
 module testbench {
     import stone = tsumego.stone;
+    import block = tsumego.block;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
 
@@ -300,7 +301,7 @@ module testbench {
                                             }
                                         }
                                     }
-                                }                                
+                                }
 
                                 svg.addEventListener('click', event => {
                                     const x = event.cellX;
@@ -473,26 +474,16 @@ module testbench {
                 const b = new Board(board.size);
                 const t = aim && stone.make(stone.x(aim) + dx, stone.y(aim) + dy, 0);
 
-                try {
-                    if (t && !b.inBounds(t))
-                        throw aim;
+                if (t && !b.inBounds(t))
+                    return;
 
-                    for (const s1 of board.stones()) {
-                        const [x1, y1] = stone.coords(s1);
-                        const [x2, y2] = [x1 + dx, y1 + dy];
-                        const s2 = stone.make(x2, y2, stone.color(s1));
+                for (const s1 of board.stones()) {
+                    const [x1, y1] = stone.coords(s1);
+                    const [x2, y2] = [x1 + dx, y1 + dy];
+                    const s2 = stone.make(x2, y2, stone.color(s1));
 
-                        if (!b.inBounds(x2, y2) || !b.play(s2))
-                            throw s1;
-                    }
-                } catch (err) {
-                    if (typeof err === 'number' && board.inBounds(err)) {
-                        ui.SL.add(stone.x(err), stone.y(err));
-                        vm.note = 'Cannot move ' + stone.toString(err);
+                    if (!b.inBounds(x2, y2) || !b.play(s2))
                         return;
-                    }
-
-                    throw err;
                 }
 
                 aim = t;
@@ -510,13 +501,35 @@ module testbench {
             switch (event.keyCode) {
                 case KeyCode.ArrowL:
                 case KeyCode.ArrowR:
+                    const ds = event.keyCode == KeyCode.ArrowR ? +1 : -1;
+                    const b = new Board(board.size + ds)
 
-                    const b = new Board(board.size + (event.keyCode == KeyCode.ArrowR ? +1 : -1))
+                    const r = board.rect;
 
-                    for (const s of board.stones())
-                        if (!b.play(s))
-                            throw Error(stone.toString(s) + ' does not fit the ' + b.size + 'x' + b.size + ' board');
+                    let dx = 0;
+                    let dy = 0;
 
+                    if (block.xmax(r) == board.size - 1)
+                        dx = ds;
+
+                    if (block.ymax(r) == board.size - 1)
+                        dy = ds;
+
+                    if (block.xmin(r) == 0)
+                        dx = 0;
+
+                    if (block.ymin(r) == 0)
+                        dy = 0;
+
+                    for (const s of board.stones()) {
+                        const x = stone.x(s) + dx;
+                        const y = stone.y(s) + dy;
+
+                        if (!b.play(stone.make(x, y, s)))
+                            return;
+                    }
+
+                    aim = aim && stone.move(aim, dx, dy);
                     board = b;
                     renderBoard();
             }
