@@ -362,8 +362,19 @@ module tsumego {
                                     cache[board.hash] = threat;
 
                                     // the UI gives null if the variation needs to end here
-                                    if (threat)
-                                        add(subtree, threat);
+                                    if (threat) {
+                                        if (!self.play(threat)) {
+                                            terminal.set(subtree, true);
+                                        } else {
+                                            // detect basic ko
+                                            if (board.sgf == sgf)
+                                                terminal.set(subtree, true);
+                                            else
+                                                add(subtree, threat);
+
+                                            self.undo();
+                                        }
+                                    }
                                 }
                             }
 
@@ -402,6 +413,7 @@ module tsumego {
                                 const pass = self.solve(color, km);
 
                                 if (pass * color > 0) {
+                                    // the opponent needs to respond
                                     add(subtree, resp);
                                     board.play(resp);
 
