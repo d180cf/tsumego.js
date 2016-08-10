@@ -33,7 +33,7 @@ function babel(args) {
     var es5 = babel.transform(es6src, {
         inputSourceMap: sourceMaps && JSON.parse(es6map),
         sourceMaps: sourceMaps,
-        loose: 'all',
+        loose: args.loose === false ? undefined : 'all',
         compact: false,
         blacklist: args.blacklist || [
             'regenerator',
@@ -106,6 +106,7 @@ task('tb', ['lib'], { async: true }, mode => {
             console.log('skipping babel in the dev mode...');
         } else {
             return babel({
+                loose: false,
                 blacklist: [
                     //'regenerator', // doesn't work in IE/Edge
                     //'es6.forOf', // doesn't work in IE/Edge

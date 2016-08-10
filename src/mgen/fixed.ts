@@ -2,7 +2,7 @@ module tsumego.mgen {
     /** Basic moves generator. Tries to maximize libs. */
     export function fixed(board: Board, target: stone): Generator {
         const ts = board.get(target);
-        const rzone = new stone.SmallSet;
+        const rzone = new stone.Set;
         const same = (u, v) => board.inBounds(u) && board.inBounds(v) && board.get(u) * ts >= 0 && board.get(v) * ts >= 0;
         const neighbors = x => [...stone.diagonals(x), ...stone.neighbors(x)];
 
@@ -48,6 +48,9 @@ module tsumego.mgen {
 
             inner.push(b);
         }
+
+        if (safeb.length < 1)
+            throw Error('There must be a safe outer wall.');
 
         // and add those blocks to the rzone as they may be captured
         for (const b of inner) {

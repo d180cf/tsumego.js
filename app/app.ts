@@ -18,6 +18,7 @@ module testbench {
     import block = tsumego.block;
     import Board = tsumego.Board;
     import profile = tsumego.profile;
+    import SGF = tsumego.SGF;
 
     declare var board: tsumego.Board;
     declare var ui: SVGGobanElement;
@@ -91,9 +92,10 @@ module testbench {
         return new Promise<void>(resolve => setTimeout(resolve, ms));
     }
 
-    const sign = (x: number) => x > 0 ? +1 : x < 0 ? -1 : 0;
-
-    var aim = 0, lspath = '', solvingFor;
+    let aim: stone;
+    let lspath = '';
+    let solvingFor: tsumego.color;
+    let stubs = new stone.Set; // stubs in the outer wall to make it safe
 
     var selection: { x1: number, y1: number, x2: number, y2: number };
 
@@ -165,7 +167,7 @@ module testbench {
                         lspath = null;
                         solvingFor = +1;
                         solvingFor = stone.label.color(qargs.debug);
-                        dbgsolve(board, solvingFor, vm.km, aim, renderBoard);
+                        dbgsolve(board, solvingFor, vm.km, aim, stubs, renderBoard);
                         console.warn('debug mode is on');
                     }
                 }).catch(e => {
@@ -224,10 +226,17 @@ module testbench {
                     if (!color)
                         return;
 
+                    try {
+                        problem = problem || new tsumego.Solver(vm.sgf);
+                    } catch (err) {
+                        vm.note = err;
+                        console.warn(err);
+                        return;
+                    }
+
                     vm.mode = 'solver';
                     lspath = null;
                     solvingFor = color;
-                    problem = problem || new tsumego.Solver(vm.sgf);
                     board = problem.board;
 
                     if (event.shiftKey) {
@@ -285,12 +294,12 @@ module testbench {
                                 // mark the basic ko move
                                 if (true) {
                                     const move = board.undo();
-                                    const before = new stone.SmallSet(board.stones(-stone.color(move)));
+                                    const before = new stone.Set(board.stones(-stone.color(move)));
                                     const nres = board.play(move);
 
                                     // a basic ko always captures one stone
                                     if (nres == 2) {
-                                        const after = new stone.SmallSet(board.stones(-stone.color(move)));
+                                        const after = new stone.Set(board.stones(-stone.color(move)));
 
                                         for (const s of before) {
                                             if (!after.has(s)) {
@@ -407,6 +416,11 @@ module testbench {
         problem = null;
         solvingFor = 0;
 
+        stubs.empty();
+
+        for (const s of setup['SQ'] || [])
+            stubs.add(stone.fromString(s));
+
         board = board.fork(); // drop the history of moves
         renderBoard();
     }
@@ -472,20 +486,23 @@ module testbench {
                 }[event.keyCode];
 
                 const b = new Board(board.size);
-                const t = aim && stone.make(stone.x(aim) + dx, stone.y(aim) + dy, 0);
+                const shift = (s: stone, q = stone.move(s, dx, dy)) => b.inBounds(q) ? q : 0;
+                const t = aim && shift(aim);
 
-                if (t && !b.inBounds(t))
+                for (const s of board.stones())
+                    if (!b.play(shift(s)))
+                        return;
+
+                if (aim && !t)
                     return;
 
-                for (const s1 of board.stones()) {
-                    const [x1, y1] = stone.coords(s1);
-                    const [x2, y2] = [x1 + dx, y1 + dy];
-                    const s2 = stone.make(x2, y2, stone.color(s1));
+                const stubs2 = stubs.map(shift);
 
-                    if (!b.inBounds(x2, y2) || !b.play(s2))
-                        return;
-                }
+                if (!stubs2)
+                    return;
 
+                stubs.empty();
+                stubs.add(...stubs2);
                 aim = t;
                 board = b;
                 renderBoard();
@@ -503,11 +520,10 @@ module testbench {
                 case KeyCode.ArrowR:
                     const ds = event.keyCode == KeyCode.ArrowR ? +1 : -1;
                     const b = new Board(board.size + ds)
-
-                    const r = board.rect;
+                    const r = block.join(board.rect, stubs.rect);
 
                     let dx = 0;
-                    let dy = 0;
+                    let dy = 0;                    
 
                     if (block.xmax(r) == board.size - 1)
                         dx = ds;
@@ -521,20 +537,31 @@ module testbench {
                     if (block.ymin(r) == 0)
                         dy = 0;
 
-                    for (const s of board.stones()) {
-                        const x = stone.x(s) + dx;
-                        const y = stone.y(s) + dy;
+                    const shift = (s: stone, q = stone.move(s, dx, dy)) => b.inBounds(q) ? q : 0;
 
-                        if (!b.play(stone.make(x, y, s)))
+                    for (const s of board.stones())
+                        if (!b.play(shift(s)))
                             return;
-                    }
 
-                    aim = aim && stone.move(aim, dx, dy);
+                    const t = aim = aim && shift(aim);
+
+                    if (aim && !t)
+                        return;
+
+                    const stubs2 = stubs.map(shift);
+
+                    if (!stubs2)
+                        return;
+
+                    stubs.empty();
+                    stubs.add(...stubs2);
+                    aim = t;
                     board = b;
                     renderBoard();
             }
         } catch (err) {
             vm.note = err;
+            console.warn(err);
             throw err;
         }
     });
@@ -549,6 +576,9 @@ module testbench {
 
         if (stone.hascoords(move) && solvingFor)
             ui.TR.add(stone.x(move), stone.y(move));
+
+        for (const s of stubs)
+            ui.SQ.add(stone.x(s), stone.y(s));
 
         if (stone.hascoords(aim))
             ui.MA.add(stone.x(aim), stone.y(aim));
@@ -663,6 +693,8 @@ module testbench {
                 if (vm.tool == 'MA') {
                     if (!solvingFor)
                         aim = stone.make(x, y, 0);
+                } else if (vm.tool == 'SQ') {
+                    stubs.xor(stone.make(x, y, 0));
                 } else if (/AB|AW/.test(vm.tool) || solvingFor) {
                     if (c && !solvingFor)
                         removeStone(x, y);
@@ -699,20 +731,33 @@ module testbench {
         if (vm.mode == 'editor') {
             const sgf = getProblemSGF();
 
-            vm.sgf = sgf;
-            vm.svg = wrapper.innerHTML;
+            try {
+                SGF.parse(sgf);
 
-            if (lspath && vm.mode == 'editor')
-                ls.set(lspath, sgf);
+                vm.sgf = sgf;
+                vm.svg = wrapper.innerHTML;
+
+                if (lspath && vm.mode == 'editor')
+                    ls.set(lspath, sgf);
+            } catch (err) {
+                vm.note = err;
+                console.warn(err);
+            }
         }
 
         return ui;
     }
 
     function getProblemSGF() {
-        return board.toStringSGF('\n  ').replace(/\)$/,
-            (stone.hascoords(aim) ? '\n  MA' + stone.toString(aim) : '') +
-            ')');
+        let sgf = board.toStringSGF('\n  ').slice(+1, -1);
+
+        if (stone.hascoords(aim))
+            sgf += '\n  MA' + stone.toString(aim);
+
+        if (stubs.size > 0)
+            sgf += '\n  SQ' + [...stubs].map(s => stone.toString(s)).join('');
+
+        return '(' + sgf + ')';
     }
 
     function parse(si: string, size: number): stone {

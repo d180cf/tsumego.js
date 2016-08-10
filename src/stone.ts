@@ -63,7 +63,7 @@ module tsumego {
                 x >= 0xF || y >= 0xF ? 0 : stone.make(x + 1, y + 1, c)];
         }
 
-        export class SmallSet {
+        export class Set {
             private stones: stone[] = [];
 
             constructor(items?: Iterable<stone>) {
@@ -73,7 +73,7 @@ module tsumego {
             }
 
             toString() {
-                return '[' + this.stones.sort((a, b) => a - b).map(stone.toString).join(',') + ']';
+                return this.stones.sort((a, b) => a - b).map(stone.toString).join('');
             }
 
             has(s: stone) {
@@ -84,9 +84,10 @@ module tsumego {
                 return false;
             }
 
-            add(s: stone) {
-                if (!this.has(s))
-                    this.stones.push(s);
+            add(...stones: stone[]) {
+                for (const s of stones)
+                    if (!this.has(s))
+                        this.stones.push(s);
             }
 
             remove(p: ((s: stone) => boolean) | stone) {
@@ -96,6 +97,18 @@ module tsumego {
                     if (typeof p === 'function' ? p(q) : same(p, q))
                         this.stones.splice(i, 1);
                 }
+            }
+
+            map(mapping: (s: stone) => stone) {
+                const mapped = new Set;
+
+                for (const s of this) {
+                    const q = mapping(s);
+                    if (!q) return null;
+                    mapped.add(q);
+                }
+
+                return mapped;
             }
 
             /** Adds the item if it wasn't there or removes it otherwise. */
@@ -108,6 +121,15 @@ module tsumego {
 
             empty() {
                 this.stones = [];
+            }
+
+            get rect() {
+                let r = 0;
+
+                for (const s of this)
+                    r = block.join(r, block.just(s));
+
+                return r;
             }
 
             get size() {

@@ -48,10 +48,22 @@ module tsumego {
                     () => stone.fromString(sgf.get('MA')[0]),
                     'MA[xy] must specify the target white stone.');
 
-                if (errors.length)
-                    throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
+                // SQ fills in holes in the outer wall
+                const stubs = (sgf.get('SQ') || []).map(s => stone.fromString(s));
 
                 const tb = board.get(target);
+
+                if (!tb)
+                    throw Error('Invalid target: MA' + stone.toString(target));
+
+                for (const s of stubs)
+                    if (!board.play(stone.make(stone.x(s), stone.y(s), -tb)))
+                        throw Error('Invalid stub: SQ' + stone.toString(s));
+
+                board.drop();
+
+                if (errors.length)
+                    throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
 
                 args = {
                     color: null,

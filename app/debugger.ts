@@ -8,8 +8,15 @@ module testbench {
     import TT = tsumego.TT;
     import hex = tsumego.hex;
 
-    export function dbgsolve(board: Board, color: number, km: number, aim: stone, refresh: () => SVGGobanElement) {
+    export function dbgsolve(board: Board, color: number, km: number, aim: stone, stubs: stone.Set, refresh: () => SVGGobanElement) {
         const debug: DebugState = {};
+        const target = board.get(aim);
+
+        for (const s of stubs)
+            if (!board.play(stone.make(stone.x(s), stone.y(s), -target)))
+                throw Error('Invalid stub: ' + stone.toString(s));
+
+        board.drop();
 
         const solver = solve.start({
             debug: debug,

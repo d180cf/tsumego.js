@@ -59,12 +59,21 @@ module tsumego {
         export const libs = (b: block) => b >> 16 & 255;
         export const size = (b: block) => b >> 24 & 127;
 
-        export const join = (b1: block, b2: block) => block.make(
+        /** block.join(0, r) returns r */
+        export const join = (b1: block, b2: block) => !b1 ? b2 : block.make(
             min(block.xmin(b1), block.xmin(b2)),
             max(block.xmax(b1), block.xmax(b2)),
             min(block.ymin(b1), block.ymin(b2)),
             max(block.ymax(b1), block.ymax(b2)),
             0, 0, 0);
+
+        /** returns a 1 x 1 block */
+        export const just = (s: stone) => {
+            const x = stone.x(s);
+            const y = stone.y(s);
+
+            return block.make(x, x, y, y, 0, 0, s);
+        };
 
         /** A pseudo block descriptor with 1 liberty. */
         export const lib1 = block.make(0, 0, 0, 0, 1, 0, 0);

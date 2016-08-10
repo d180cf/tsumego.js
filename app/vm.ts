@@ -1,31 +1,31 @@
 /// <reference path="qargs.ts" />
 
 module testbench {
-    function hookToolToKey(tool: string, key: string) {
-        document.addEventListener('keydown', event => {
-            if (event.key.toUpperCase() == key.toUpperCase())
-                vm.tool = tool;
-        });
-
-        document.addEventListener('keyup', event => {
-            if (event.key.toUpperCase() == key.toUpperCase())
-                vm.tool = '';
-        });
-    }
-
-    hookToolToKey('MA', 'T'); // T = target
-    hookToolToKey('AB', 'B'); // B = black
-    hookToolToKey('AW', 'W'); // W = white
-
     // "editor" is the initial state; from there it can go to
     // eitehr of the three states and cannot go back
     type Mode = 'editor' | 'proof-tree' | 'solver' | 'debugger';
 
     export const vm = new class VM {
         constructor() {
-            $(window).on('load', () => {
+            $(() => {
                 $('#sgf').focusout(() => {
                     this.sgfchanged.fire();
+                });
+
+                document.addEventListener('keydown', event => {
+                    const key = event.key.toUpperCase();
+                    const tool = $('button[data-key=' + key + ']').attr('data-value');
+
+                    if (tool)
+                        vm.tool = tool;
+                });
+
+                document.addEventListener('keyup', event => {
+                    const key = event.key.toUpperCase();
+                    const tool = $('button[data-key=' + key + ']').attr('data-value');
+
+                    if (tool == vm.tool)
+                        vm.tool = null;
                 });
             });
         }
