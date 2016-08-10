@@ -1,6 +1,6 @@
 namespace testbench {
     import stone = tsumego.stone;
-    import Board = tsumego.Board;
+    import SGF = tsumego.SGF;
 
     class Marks {
         private tag: string; // can be null; the "id" attribute for <use xlink:href="#ID">
@@ -109,9 +109,9 @@ namespace testbench {
     }
 
     export module SVGGobanElement {
-        export function create(board: Board): SVGGobanElement {
-            const n = board.size;
-
+        export function create(sgf: string): SVGGobanElement {
+            const root = SGF.parse(sgf).steps[0];
+            const n = +root['SZ'][0];
             const div = document.createElement('div');
 
             div.innerHTML = `
@@ -163,12 +163,18 @@ namespace testbench {
                 }
             });
 
-            for (let x = 0; x < n; x++) {
-                for (let y = 0; y < n; y++) {
-                    const c = board.get(x, y);
+            for (const mark in root) {
+                const marks: Marks = svg[mark];
 
-                    if (c > 0) svg.AB.add(x, y);
-                    if (c < 0) svg.AW.add(x, y);
+                if (!marks)
+                    continue;
+
+                for (const text of root[mark]) {
+                    const s = stone.fromString(text.slice(0, 2));
+                    const m = marks.add(stone.x(s), stone.y(s));
+
+                    if (/:/.test(text))
+                        m.textContent = /:(.+)$/.exec(text)[1];
                 }
             }
 
@@ -210,7 +216,7 @@ namespace testbench {
                 const nx = Math.round(x * (n + 2) - 1.5);
                 const ny = Math.round(y * (n + 2) - 1.5);
 
-                return board.inBounds(nx, ny) && [nx, ny];
+                return nx >= 0 && nx < n && ny >= 0 && ny < n && [nx, ny];
             }
 
             function attachCellCoords(event: GobanMouseEvent) {

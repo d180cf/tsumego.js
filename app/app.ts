@@ -572,7 +572,7 @@ module testbench {
 
         vm.canUndo = !!move;
 
-        ui = SVGGobanElement.create(board);
+        ui = SVGGobanElement.create(board.sgf);
 
         if (stone.hascoords(move) && solvingFor)
             ui.TR.add(stone.x(move), stone.y(move));
