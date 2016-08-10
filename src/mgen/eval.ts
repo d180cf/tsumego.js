@@ -1,7 +1,7 @@
 module tsumego.stat {
     export var nodes = 0;
 
-    logv.push(() => `evaluated nodes = ${nodes}`);
+    logv.push(() => `evaluated nodes = ${(nodes / 1e6).toFixed(1)} M`);
 }
 
 module tsumego {
@@ -19,9 +19,7 @@ module tsumego {
      * -1 = the current player surely loses.
      *
      */
-    export function evaluate(board: Board, target: stone) {
-        const values = new HashMap<number>();
-
+    export function evaluate(board: Board, target: stone, values = new HashMap<number>()) {
         // evaluates the node = (board, color) where color
         // tells who is about to play on this board
         return function _eval(color: number) {

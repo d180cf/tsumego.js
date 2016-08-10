@@ -13,13 +13,28 @@ module tsumego.stat {
     logv.push(() => `wrong tt entires = ${ttinvalid}`);
 
     export var calls = 0;
-    logv.push(() => `calls to solve = ${calls}`);
+    logv.push(() => `calls to solve = ${(calls / 1e6).toFixed(1)} M`);
 
     export var expand = 0;
-    logv.push(() => `calls to expand = ${expand} = ${expand / calls * 100 | 0} %`);
+    logv.push(() => `calls to expand = ${expand / calls * 100 | 0} %`);
 
-    export var first = 0;
-    logv.push(() => `the 1-st move is correct = ${first / expand * 100 | 0} %`);
+    export var nwins = 0;
+    logv.push(() => `chances that a node is winning = ${nwins / expand * 100 | 0} %`);
+
+    export var nmoves = 0;
+    logv.push(() => `avg number of moves = ${(nmoves / expand).toFixed(1)}`);
+
+    export var nwmoves = 0;
+    logv.push(() => `avg number of moves when winning = ${(nwmoves / nwins).toFixed(1)}`);
+
+    export var nm2win = 0;
+    logv.push(() => `avg number of moves to win = ${(nm2win / nwins).toFixed(1)}`);
+
+    export var sdepth = 0;
+    logv.push(() => `avg depth at expand = ${sdepth / expand | 0}`);
+
+    export var maxdepth = 0;
+    logv.push(() => `max depth at expand = ${maxdepth}`);
 }
 
 module tsumego {
@@ -94,7 +109,8 @@ module tsumego {
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
             const sa = new SortedArray<stone>();
-            const evalnode = evaluate(board, target);
+            const values = new HashMap<number>();
+            const evalnode = evaluate(board, target, values);
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -232,6 +248,10 @@ module tsumego {
                 // the move casuing that repetition will not be in this list
                 const {nodes, rdmin} = genmoves(color, km);
 
+                stat.maxdepth = max(stat.maxdepth, depth);
+                stat.sdepth += depth;
+                stat.nmoves += nodes.length;
+
                 let mindepth = rdmin;
                 let result: stone;
                 let trials = 0;
@@ -329,9 +349,9 @@ module tsumego {
                         result = move || stone.nocoords(color);
                         result = repd.set(result, d > depth && move ? repd.get(resp) : d);
 
-                        if (trials == 1 && nodes.length > 2)
-                            stat.first++;
-
+                        stat.nwins++;
+                        stat.nwmoves += nodes.length;
+                        stat.nm2win += trials;
                         break;
                     }
                 }

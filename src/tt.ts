@@ -3,11 +3,13 @@
 module tsumego.stat {
     export var ttread = 0;
     export var ttwrite = 0;
+    export var ttnoops = 0;
     export var ttmiss = 0;
 
-    logv.push(() => `tt reads = ${ttread}`);
-    logv.push(() => `tt misses = ${ttmiss} = ${ttmiss / ttread * 100 | 0} %`);
-    logv.push(() => `tt writes = ${ttwrite} = ${ttwrite / ttread * 100 | 0} %`);
+    logv.push(() => `tt reads = ${(ttread / 1e6).toFixed(1)} M`);
+    logv.push(() => `tt writes = ${(ttwrite / 1e6).toFixed(1)} M`);
+    logv.push(() => `tt noop writes = ${ttnoops / ttwrite * 100 | 0} %`);
+    logv.push(() => `tt misses = ${ttmiss / ttread * 100 | 0} %`);
 }
 
 module tsumego {
@@ -70,9 +72,10 @@ module tsumego {
 
             stat.ttread++;
 
-            if (!e) return 0;
-
-            stat.ttmiss++;
+            if (!e) {
+                stat.ttmiss++;
+                return 0;
+            }       
 
             let winner: color;
 
@@ -82,8 +85,10 @@ module tsumego {
                 winner = +1; // enough ko treats for black
             else if (km <= entry.w(e))
                 winner = -1; // enough ko treats for white
-            else
+            else {
+                stat.ttmiss++;
                 return 0; // not solved for this km
+            }
 
             // the move must be dropped if the outcome is a loss
             return winner * color > 0 && entry.m(e) ?
@@ -120,10 +125,14 @@ module tsumego {
             if (km === null) {
                 if (b == +3 && w == -3) // checks that the entry was empty
                     t.set(hash_0, hash_1, entry.make(x, y, b, w, c, move));
+                else
+                    stat.ttnoops++;
             } else if (move > 0 && km < b) {
                 t.set(hash_0, hash_1, entry.make(x, y, km, w, c, move));
             } else if (move < 0 && km > w) {
                 t.set(hash_0, hash_1, entry.make(x, y, b, km, c, move));
+            } else {
+                stat.ttnoops++;
             }
         }
     }
