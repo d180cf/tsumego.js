@@ -15,12 +15,12 @@ module tests {
         const ls = require('glob').sync;
         const cat = require('fs').readFileSync;
 
-        for (const path of ls('../problems/**/*.sgf')) try {
+        for (const path of ls('../problems/**/*.sgf')) {
             const data = cat(path, 'utf8');
             const sgf = SGF.parse(data);
 
             if (!sgf)
-                throw 'Invalid SGF';
+                throw SyntaxError('Invalid SGF');
 
             const setup = sgf.steps[0];
 
@@ -123,8 +123,6 @@ module tests {
                     }
                 })(tree);
             }, /\/problems\/(.+)\.sgf$/.exec(path)[1]);
-        } catch (message) {
-            console.log(path, message);
         }
     });
 }
