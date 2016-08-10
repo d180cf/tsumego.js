@@ -96,14 +96,12 @@ module tests {
         });
 
         $.test($ => {
-            /// missing tags
+            /// missing size
 
             const sgf = '(;FF[4])';
             const error = $.error(() => new tsumego.Solver(sgf));
 
-            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
-                + '\n\tSZ[n] tag must specify the size of the board.'
-                + '\n\tMA[xy] must specify the target white stone.');
+            $(error + '').equal('SyntaxError: SZ[n] tag must specify the size of the board.');
         });
 
         $.test($ => {
@@ -112,9 +110,25 @@ module tests {
             const sgf = '(;FF[4]SZ[19])';
             const error = $.error(() => new tsumego.Solver(sgf));
 
-            $(error + '').equal('SyntaxError: The SGF does not correctly describe a tsumego:'
-                + '\n\tBoard 19x19 is too big. Up to 16x16 boards are supported.'
-                + '\n\tMA[xy] must specify the target white stone.');
+            $(error + '').equal('Error: Board 19x19 is too big. Up to 16x16 boards are supported.');
+        });
+
+        $.test($ => {
+            /// missing target
+
+            const sgf = '(;FF[4]SZ[7])';
+            const error = $.error(() => new tsumego.Solver(sgf));
+
+            $(error + '').equal('SyntaxError: MA[..] must specify the target.');
+        });
+
+        $.test($ => {
+            /// empty target
+
+            const sgf = '(;FF[4]SZ[7]MA[cb])';
+            const error = $.error(() => new tsumego.Solver(sgf));
+
+            $(error + '').equal('Error: The target MA[cb] cannot point to an empty intersection.');
         });
     });
 }

@@ -31,39 +31,25 @@ module tsumego {
                 if (!sgf)
                     throw SyntaxError('Invalid SGF.');
 
-                const errors = [];
+                const board = new Board(sgf);
 
-                const exec = <T>(fn: () => T, em?: string) => {
-                    try {
-                        return fn();
-                    } catch (e) {
-                        errors.push(em || e && e.message);
-                    }
-                };
+                if (!sgf.get('MA'))
+                    throw SyntaxError('MA[..] must specify the target.');
 
-                const board = exec(
-                    () => new Board(sgf));
-
-                const target = exec(
-                    () => stone.fromString(sgf.get('MA')[0]),
-                    'MA[xy] must specify the target white stone.');
-
-                // SQ fills in holes in the outer wall
-                const stubs = (sgf.get('SQ') || []).map(s => stone.fromString(s));
-
+                const target = stone.fromString(sgf.get('MA')[0]);
                 const tb = board.get(target);
 
                 if (!tb)
-                    throw Error('Invalid target: MA' + stone.toString(target));
+                    throw Error('The target MA' + stone.toString(target) + ' cannot point to an empty intersection.');
+
+                // SQ fills in holes in the outer wall
+                const stubs = (sgf.get('SQ') || []).map(s => stone.fromString(s));
 
                 for (const s of stubs)
                     if (!board.play(stone.make(stone.x(s), stone.y(s), -tb)))
                         throw Error('Invalid stub: SQ' + stone.toString(s));
 
                 board.drop();
-
-                if (errors.length)
-                    throw SyntaxError('The SGF does not correctly describe a tsumego:\n\t' + errors.join('\n\t'));
 
                 args = {
                     color: null,
