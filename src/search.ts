@@ -113,8 +113,9 @@ module tsumego {
                 stat.expand++;
 
                 const nodes = sa.reset();
-                const hash32 = board.hash;
-                const guess = tt.move.get(color > 0 ? 1 : 0, hash32);
+                const hash_b = board.hash_b;
+                const hash_w = board.hash_w;
+                const guess = tt.get(hash_b, hash_w, color, null);
                 const depth = path.length;
 
                 let rdmin = infdepth; // the earliest repetition
@@ -164,8 +165,10 @@ module tsumego {
                         + 1e-1 * sign(guess * color)
 
                         // first consider moves that lead to a winning position
-                        // use previously found solution as a hint
-                        + 1e-2 * sign(tt.move.get(color < 0 ? 1 : 0, hash32) * color)
+                        // use previously found solution as a hint; this makes
+                        // a huge impact on the perf: not using this trick
+                        // makes the search 3-4x slower
+                        + 1e-2 * sign(tt.get(hash_b, hash_w, -color, null) * color)
 
                         // now consider the evaluation of this position
                         + 1e-3 * value
@@ -345,10 +348,7 @@ module tsumego {
                 // such solutions are stored and never removed from the table; this
                 // can be proved by trying to construct a path from a node in the
                 // proof tree to the root node
-                if (repd.get(result) > depth + 1)
-                    tt.set(hash_b, hash_w, color, result, km);
-
-                tt.move.set(color > 0 ? 1 : 0, hash32, result);
+                tt.set(hash_b, hash_w, color, result, repd.get(result) > depth + 1 ? km : null);
 
                 log && log.write({
                     color: color,

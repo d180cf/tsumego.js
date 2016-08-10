@@ -15,6 +15,7 @@
     "es6aiter.ts",
     "ascii-board.ts",
 
+    "src/tt.t.ts",
     "src/solver.t.ts",
     "src/benson.t.ts",
     "src/board.t.ts",
