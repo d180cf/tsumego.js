@@ -29,6 +29,9 @@ module testbench {
 
         /** Once a tsumego is solved, the app can respond without clicking the solve button every time. */
         autorespond: boolean;
+
+        /** In the auto respond mode checks if a response is needed indeed. */
+        check: boolean;
     }
 
     export const qargs: QArgs = <any>{};
@@ -49,6 +52,9 @@ module testbench {
 
         if (qargs.autorespond === undefined)
             qargs.autorespond = true;
+
+        if (qargs.check === undefined)
+            qargs.check = true;
 
         console.log('qargs:', qargs);
     } catch (err) {

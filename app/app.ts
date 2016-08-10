@@ -263,7 +263,7 @@ module testbench {
                         vm.note = 'Building a proof tree...';
                         vm.mode = 'proof-tree';
 
-                        const g = problem.tree(color, qargs.ptd || 0, qargs.ptdi);
+                        const g = problem.tree(color, qargs.ptd || 1, qargs.ptdi);
 
                         // every call to next() creates its own instance of goban element
                         (function next(move: stone) {
@@ -706,21 +706,26 @@ module testbench {
                     board.play(stone.make(x, y, color));
 
                     if (color == -solvingFor && qargs.autorespond) {
-                        vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
+                        if (qargs.check) {
+                            vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
 
-                        solve(null, board, color, vm.km).then(move => {
-                            if (color * move < 0)
-                                vm.note = stone.label.string(-color) + ' does not need to respond';
-                            else
-                                return solveAndRender(-color, vm.km);
-                        });
+                            setTimeout(() => {
+                                solve(null, board, color, vm.km).then(move => {
+                                    if (color * move < 0)
+                                        vm.note = stone.label.string(-color) + ' does not need to respond';
+                                    else
+                                        solveAndRender(-color, vm.km);
+                                });
+                            });
+                        } else {
+                            solveAndRender(-color, vm.km);
+                        }
                     }
                 } else {
                     return;
                 }
 
                 renderBoard();
-                vm.note = stone.toString(stone.make(x, y, board.get(x, y)));
             });
         }
 
