@@ -5,9 +5,11 @@ module tsumego.stat {
     export var ttwrite = 0;
     export var ttnoops = 0;
     export var ttmiss = 0;
+    export var ttuc = 0;
 
     logv.push(() => `tt reads = ${(ttread / 1e6).toFixed(1)} M`);
     logv.push(() => `tt writes = ${(ttwrite / 1e6).toFixed(1)} M`);
+    logv.push(() => `tt uc writes = ${(ttuc / 1e6).toFixed(1)} M`);
     logv.push(() => `tt noop writes = ${ttnoops / ttwrite * 100 | 0} %`);
     logv.push(() => `tt misses = ${ttmiss / ttread * 100 | 0} %`);
 }
@@ -75,7 +77,7 @@ module tsumego {
             if (!e) {
                 stat.ttmiss++;
                 return 0;
-            }       
+            }
 
             let winner: color;
 
@@ -128,8 +130,10 @@ module tsumego {
                 else
                     stat.ttnoops++;
             } else if (move > 0 && km < b) {
+                stat.ttuc++;
                 t.set(hash_0, hash_1, entry.make(x, y, km, w, c, move));
             } else if (move < 0 && km > w) {
+                stat.ttuc++;
                 t.set(hash_0, hash_1, entry.make(x, y, b, km, c, move));
             } else {
                 stat.ttnoops++;
