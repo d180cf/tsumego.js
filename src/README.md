@@ -36,15 +36,13 @@ It can be used to quickly recognize surely dead or alive groups. The key word he
 
 # Transpositions
 
-The transposition table is just a fancy name for the cache of solved positions. In a typical tsumego the solver creates about 200k TT entires and these are just unconditional results, i.e. those that don't depend on the sequence of moves that lead to them. Solved intermediate positions have to be cached because otherwise the search will become ~100x slower.
+The transposition table is just a fancy name for the cache of solved positions. In a typical tsumego the solver creates about 800K TT entires and these are just unconditional results, i.e. those that don't depend on the sequence of moves that lead to them. Solved intermediate positions have to be cached because otherwise the search will become ~100x slower.
 
-The TT is just a hash table where the key is the hash of the position (one position actually corresponds to 2 entires: when black plays first and when white plays first). In JS integer numbers are 32 bits, so these hashes are also 32 bit. This might seem good enough for typical tsumegos with 10-25 available points, but in fact the expected number of collisions in a hash table is
+The TT is just a hash table where the key is the hash of the position (one position actually corresponds to 2 entires: when black plays first and when white plays first). In JS integer numbers are 32 bits and it might seem enough to use 32 bit keys as a typical tsumegos has 10-25 available points, but in fact the expected number of collisions in a hash table is
 
 <img src="http://latex.codecogs.com/gif.latex?E(n,m)=n-m+m(1-\frac{1}{m})^n\sim\frac{n^2}{2m}" />
 
-where `n` is the number of entires (the solver typically explores 1M positions) and `m` is the capacity of the hash table, which is simply `2**32` or `2**64`, depending on the key size. This gives 125 collisions for 1M positions and 32 bit keys and one collision per 32 million tsumegos if 64 bit keys are used.
-
-This is why there are quite a few collisions that are not even addressed in the solver at the moment. In many cases the result extracted from TT is for a different position that has the same hash and despite that result is used, the solver still finds the correct move in maybe 99% of cases. This actually puzzles me. These collisions are the source of occasional failures in unit tests. A proper approach to deal with this problem would be to implement [simulation](http://library.msri.org/books/Book29/files/kawano.pdf).  
+where `n` is the number of entires and `m` is the number of entries that the key can address, which is simply `2**32` or `2**64`, depending on the key size. This gives 125 collisions for 1M positions and 32 bit keys and one collision per 32 million tsumegos if 64 bit keys are used. This is why the solver uses 64 bit keys, despite it's so inconvenient in JS.
 
 # Repetitions
 
@@ -77,7 +75,7 @@ At `W1` white can now recapture the stone, finishing the long loop: `W1` → `B2
 
 The second most annoying problem is passing because it never appears when solving tsumegos manually, but appears pretty much always in the search.
 
-## Passing once
+#### Passing once
 
 In the simplest case when black passes, white has a chance to start the search from sctratch, without the need to look back at the history of moves. Normally, when considering the next move, there is a sequence of moves that leaded to the current  position and repeating any of the previous positions is not allowed unless the current player is the ko master. However when black passes locally, it can actually play a move elsewhere on the board: this changes the whole-board history of moves, but locally the position isn't affected. This is why when black passes, the local history of moves is reset and white might have more possible moves. In the search, once black passes, the solver adds a record to remind itself that here white started the search with no history and the ko master was black, for example. These records look like this:
 
@@ -89,7 +87,7 @@ In the simplest case when black passes, white has a chance to start the search f
 
 Once the solver is about to add a new such record, it checks if the same record was already added before: this would mean that white already started the search in the same exact situation and now it's about to start it again. This is how the solver detects long loops, such as the one in the 10,000-year ko position.
 
-## Passing twice
+#### Passing twice
 
 Passing one more time has an additional meaning. If black passed and then white passed too, black can in theory repeat these two passes as many times as needed. This can be useful if white is the ko master: every time black passes, it actually removes a ko treat elsewhere on the board, and once all ko treats are removed, black can play a move, now in assumption that neither side has ko treats.  
 
