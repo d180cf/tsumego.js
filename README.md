@@ -56,14 +56,12 @@ Finally, mark the target. In theory, the solver can safely assume that black nee
 
 ## Notes
 
-The solver uses internally es6 [generators](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/function*) which allows to suspend and resume the search at any moment. This is very useful when debugging the solver, as the process of solving can be rendered in the UI step by step, but this can also be useful to let the user stop the search if it runs for too long. In the es5 build generators are transpiled into state machines with [Babel](https://github.com/babel/babel).
-
 As far as I know, there are very few tsumego solving software:
 
-- Thomas Wolf's [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
-- Martin Muller's [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos and uses a quite advanced version of depth first proof number search, as far as I know. It can handle tsumegos with up to 40 points according to published papers.  
-- Erik van der Werf's [MIGOS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x6.
-- Thomas Thompsen's [MadLab](http://www.t-t.dk/madlab/) can solve open boundary tsumegos using the lambda proof number search. However it's not fast in enclosed ones.
-- Xiao's [XuanXuanGo](http://www.xuanxuango.com/solver.htm) does a stellar job on enclosed tsumegos and can handle many open boundary ones. I don't know what algorithms it uses, though.
+- [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
+- [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos and uses a quite advanced version of depth first proof number search, as far as I know. It can handle tsumegos with up to 40 points according to published papers.  
+- [MiGoS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x6.
+- [MadLab](http://www.t-t.dk/madlab/) can solve open boundary tsumegos using the lambda proof number search. However it's not fast in enclosed ones.
+- [XuanXuanGo](http://www.xuanxuango.com/solver.htm) does a stellar job on enclosed tsumegos and can handle many open boundary ones. I don't know what algorithms it uses, though.
 
 None of these are in JS, but some can be embedded in a website in a Java applet. Also, in theory, a C++ solver could be ported to JS with [Emcripten](https://en.wikipedia.org/wiki/Emscripten).
