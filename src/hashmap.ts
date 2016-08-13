@@ -13,7 +13,10 @@ module tsumego {
     // only once in 2**25 tsumegos. 53 bits give one collision
     // per 2**14 tsumegos, correspondingly.
     export class HashMap<T extends number> {
-        private data = []; // 16 x 2**30 x 2**30
+        // max size is 16 x 2**30 x 2**30, however
+        // the actual size is  16 x 5000 x 4 when
+        // 320 K entries are added
+        private data = [];
 
         constructor() {
             // this is a bit faster than a plain [] or {},

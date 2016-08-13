@@ -36,13 +36,13 @@ module tsumego {
 
     export const b_ = (b: number) => [b0(b), b1(b), b2(b), b3(b)];
 
-    export function sequence<T>(n: number, f: () => T) {
-        const x: T[] = [];
+    export function sequence<T>(length: number, item: ((index: number) => T) | T) {
+        const items: T[] = [];
 
-        while (n-- > 0)
-            x.push(f());
+        for (let i = 0; i < length; i++)
+            items[i] = item instanceof Function ? item(i) : item;
 
-        return x;
+        return items;
     }
 
     export const hex = (x: number) => (0x100000000 + x).toString(16).slice(-8);

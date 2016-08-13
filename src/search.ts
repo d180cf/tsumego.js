@@ -129,9 +129,9 @@ module tsumego {
                 stat.expand++;
 
                 const nodes = sa.reset();
-                const hash_b = board.hash_b;
-                const hash_w = board.hash_w;
-                const guess = tt.get(hash_b, hash_w, color, null);
+                //const hash_b = board.hash_b;
+                //const hash_w = board.hash_w;
+                //const guess = tt.get(hash_b, hash_w, color, null);
                 const depth = path.length;
 
                 let rdmin = infdepth; // the earliest repetition
@@ -177,17 +177,18 @@ module tsumego {
                         // that's not just perf optimization: the search depends on this
                         + 1e-0 * d
 
-                        // tt guesses the correct winning move in 83% of cases
-                        + 1e-1 * sign(guess * color)
+                        // tt guesses the correct winning move in 83% of cases,
+                        // but here this heuristics makes no difference at all
+                        // (guess * color > 0 && stone.same(guess, move) ? 1 : 0)
 
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint; this makes
                         // a huge impact on the perf: not using this trick
                         // makes the search 3-4x slower
-                        + 1e-2 * sign(tt.get(hash_b, hash_w, -color, null) * color)
+                        + 1e-1 * sign(tt.get(hash_b, hash_w, -color, null) * color)
 
                         // now consider the evaluation of this position
-                        + 1e-3 * value
+                        + 1e-2 * value
                     ]);
                 }
 
