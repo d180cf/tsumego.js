@@ -54,13 +54,13 @@ Outer liberties like `F6` can be fixed the same way in most cases: by adding mis
 
 Finally, mark the target. In theory, the solver can safely assume that black needs to capture all the white stones inside, however this would make the solver considerably slower as targeting one block is easier than targeting all of them. It's likely that in the near future the need to mark the target will be removed. 
 
-## Notes
+## Existing solvers
 
 As far as I know, there are very few tsumego solving software:
 
-- [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos.
-- [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos and uses a quite advanced version of depth first proof number search, as far as I know. It can handle tsumegos with up to 40 points according to published papers.  
-- [MiGoS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x6.
+- [GoTools](http://lie.math.brocku.ca/gotools/index.php?content=about) is good at fully enclosed tsumegos and can handle up to 14-15 points, as far as I know.
+- [Tsumego Explorer](http://webdocs.cs.ualberta.ca/~mmueller/ps/aaai05-tsumego.pdf) is probably the fastest solver for enclosed tsumegos and uses a quite advanced version of depth first proof number search. It can handle tsumegos with up to 22-29 points according to published papers.
+- [MiGoS](http://erikvanderwerf.tengen.nl/5x5/5x5solved.html) solves full boards up to 5x6. It uses alpha-beta search (PVS to be precise) with a good evaluation function.
 - [MadLab](http://www.t-t.dk/madlab/) can solve open boundary tsumegos using the lambda proof number search. However it's not fast in enclosed ones.
 - [XuanXuanGo](http://www.xuanxuango.com/solver.htm) does a stellar job on enclosed tsumegos and can handle many open boundary ones. I don't know what algorithms it uses, though.
 
