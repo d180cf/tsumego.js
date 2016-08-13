@@ -3,6 +3,7 @@
 /// <reference path="rand.ts" />
 /// <reference path="prof.ts" />
 /// <reference path="sgf.ts" />
+/// <reference path="stack.ts" />
 
 module tsumego {
     export var _n_play = 0;
@@ -173,21 +174,21 @@ module tsumego {
              * The block id replaced by this move in the table is stored in the 3rd byte.
              * The color of the stone is stored in the sign bit.
              */
-            added: number[];
+            added: Stack<number>;
 
             /**
              * Before a stone is added, the board's hash is recorded here.
              * It's possible to restore the hash without introducing an extra
              * array in the history, but that solution would be less efficient.
              */
-            hashes: number[];
+            hashes: Stack<number>;
 
             /**
              * Every time a block is modified, its id and its previous descriptor
              * from blocks[id] is stored in this list. When a block is removed,
              * its descriptor is nulled.
              */
-            changed: number[];
+            changed: Stack<number>;
         };
 
         private _redo_hist = 0; // tells when the cache is valid
@@ -300,11 +301,13 @@ module tsumego {
             this.drop();
         }
 
-        /**
-         * Drops all the history.
-         */
+        /** Drops the history of moves. */
         drop() {
-            this.history = { added: [], hashes: [], changed: [] };
+            this.history = {
+                added: new Stack<number>(),
+                hashes: new Stack<number>(),
+                changed: new Stack<number>(),
+            };
 
             for (let i = 0; i < 256; i++)
                 this.table[i] = this.lift(this.table[i]);
@@ -434,7 +437,8 @@ module tsumego {
         private change(id: block.id, bd: block) {
             // adding a new block corresponds to a change from
             // blocks[blocks.length - 1] -> b
-            this.history.changed.push(id, id < this.blocks.length ? this.blocks[id] : 0);
+            this.history.changed.push(id);
+            this.history.changed.push(id < this.blocks.length ? this.blocks[id] : 0);
             this.blocks[id] = bd;
         }
 
@@ -654,7 +658,8 @@ module tsumego {
                 | id_old << 16
                 | color & 0x80000000);
 
-            this.history.hashes.push(hash_b, hash_w);
+            this.history.hashes.push(hash_b);
+            this.history.hashes.push(hash_w);
 
             return result + 1;
         }
@@ -739,7 +744,8 @@ module tsumego {
 
             _n_redo++;
 
-            this.history.hashes.push(this.hash_b, this.hash_w);
+            this.history.hashes.push(this.hash_b);
+            this.history.hashes.push(this.hash_w);
 
             this.history.added.push(x | y << 4
                 | next.list.length / 2 << 8
@@ -760,7 +766,8 @@ module tsumego {
                 if (!bd)
                     nres += block.size(this.blocks[id]);
 
-                this.history.changed.push(id, this.blocks[id]);
+                this.history.changed.push(id);
+                this.history.changed.push(this.blocks[id]);
                 this.blocks[id] = bd;
             }
 
@@ -989,7 +996,12 @@ module tsumego {
 
         /** the sequence of moves that was given to .play(...) to get this position */
         get moves() {
-            return this.history.added.map(x => stone.make(x & 15, x >> 4 & 15, x));
+            const moves: stone[] = [];
+
+            for (const x of this.history.added)
+                moves.push(stone.make(x & 15, x >> 4 & 15, x));
+
+            return moves;
         }
     }
 }

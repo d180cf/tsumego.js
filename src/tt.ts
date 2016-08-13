@@ -45,8 +45,8 @@ module tsumego {
     module entry {
         export const x = (e: entry) => e & 15;
         export const y = (e: entry) => e >> 4 & 15;
-        export const b = (e: entry) => (e >> 8 & 7) << 29 >> 29;
-        export const w = (e: entry) => (e >> 11 & 7) << 29 >> 29;
+        export const b = (e: entry) => e << 21 >> 29;
+        export const w = (e: entry) => e << 18 >> 29;
         export const m = (e: entry) => !!(e & 0x8000);
         export const c = (e: entry) => e & 0x4000 ? +1 : -1;
 
@@ -64,12 +64,11 @@ module tsumego {
 
         private data = [
             new HashMap<entry>(), // node -> entry, if b plays first
-            null,
             new HashMap<entry>(), // node -> entry, if w plays first
         ];
 
         get(hash_0: number, hash_1: number, color: number, km: number) {
-            const t = this.data[color & 2];
+            const t = this.data[color > 0 ? 0 : 1];
             const e = t.get(hash_0, hash_1);
 
             stat.ttread++;
@@ -99,7 +98,7 @@ module tsumego {
         }
 
         set(hash_0: number, hash_1: number, color: number, move: stone, km: number) {
-            const t = this.data[color & 2];
+            const t = this.data[color > 0 ? 0 : 1];
             const e = t.get(hash_0, hash_1) || (++this.size, entry.base);
 
             stat.ttwrite++;

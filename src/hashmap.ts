@@ -14,8 +14,8 @@ module tsumego {
     // per 2**14 tsumegos, correspondingly.
     export class HashMap<T extends number> {
         // max size is 16 x 2**30 x 2**30, however
-        // the actual size is  16 x 5000 x 4 when
-        // 320 K entries are added
+        // the actual size is  16 x 5000 x N, e.g.
+        // if there are 1.6 M entries, then N = 20
         private data = [];
 
         constructor() {
