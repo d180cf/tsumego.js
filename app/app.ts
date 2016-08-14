@@ -520,7 +520,7 @@ module testbench {
                 case KeyCode.ArrowR:
                     const ds = event.keyCode == KeyCode.ArrowR ? +1 : -1;
                     const b = new Board(board.size + ds)
-                    const r = block.join(board.rect, stubs.rect);
+                    const r = block.join(board.rect(0), stubs.rect);
 
                     let dx = 0;
                     let dy = 0;                    

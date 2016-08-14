@@ -100,7 +100,7 @@ module tests {
         const started = Date.now();
 
         tsumego.rand.seed(started | 0);
-        console.log('rand seed:', started | 0);
+        console.log('rand seed:', '0x' + (2 ** 32 + (started | 0)).toString(16).slice(-8));
 
         const {npassed, nfailed} = run(tdir, filter);
 

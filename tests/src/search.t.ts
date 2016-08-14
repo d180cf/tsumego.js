@@ -88,6 +88,7 @@ module tests {
                         const g = p.g_solve(color, {
                             time: 1000,
                             log: argv.log && log,
+                            eulern: argv.eulern,
                             benson: argv.benson,
                         });
 

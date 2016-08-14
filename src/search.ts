@@ -7,10 +7,11 @@
 /// <reference path="benson.ts" />
 /// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
+/// <reference path="eulern.ts" />
 
 module tsumego.stat {
     export var ttinvalid = 0;
-    logv.push(() => `wrong tt entires = ${ttinvalid}`);
+    logv.push(() => `invalid tt entires = ${ttinvalid}`);
 
     export var calls = 0;
     logv.push(() => `calls to solve = ${(calls / 1e6).toFixed(1)} M`);
@@ -52,6 +53,7 @@ module tsumego {
         km?: number;
         tt: TT;
         expand(color: number): stone[];
+        eulern?: boolean;
         target: stone;
         alive?(node: Board): boolean;
         debug?: DebugState;
@@ -75,7 +77,7 @@ module tsumego {
 
     export namespace solve {
         export function* start(args: Args) {
-            const {board, tt, log, expand, debug, time} = args;
+            const {board, tt, log, expand, debug, time, eulern} = args;
 
             let {target, alive} = args;
 
@@ -111,6 +113,7 @@ module tsumego {
             const sa = new SortedArray<stone>();
             const values = new HashMap<number>();
             const evalnode = evaluate(board, target, values);
+            const eulerval = new EulerN(board, sign(target));
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -129,18 +132,31 @@ module tsumego {
                 stat.expand++;
 
                 const nodes = sa.reset();
-                //const hash_b = board.hash_b;
-                //const hash_w = board.hash_w;
-                //const guess = tt.get(hash_b, hash_w, color, null);
                 const depth = path.length;
+                const hash_b = board.hash_b;
+                const hash_w = board.hash_w;
 
                 let rdmin = infdepth; // the earliest repetition
 
-                for (const move of expand(color)) {
-                    if (!board.play(move))
+                const moves: stone[] = [];
+
+                for (const move of expand(color))
+                    if (!board.get(move))
+                        moves.push(move);
+
+                if (eulern && color * target > 0 && moves.length > 3)
+                    eulerval.reset();
+
+                const guess = moves.length > 7 ? tt.get(hash_b, hash_w, color, null) : 0;
+
+                for (const move of moves) {
+                    const nres = board.play(move);
+
+                    if (!nres)
                         continue;
 
                     const value = -evalnode(-color);
+                    const eulerv = eulern && color * target > 0 && moves.length > 3 ? eulerval.value(move, nres) : 0;
                     const hash_b = board.hash_b;
                     const hash_w = board.hash_w;
                     const hash32 = board.hash;
@@ -175,20 +191,28 @@ module tsumego {
                     sa.insert(repd.set(move, d), [
                         // moves that require a ko treat are considered last
                         // that's not just perf optimization: the search depends on this
-                        + 1e-0 * d
+                        - 1 / d
 
                         // tt guesses the correct winning move in 83% of cases,
                         // but here this heuristics makes no difference at all
-                        // (guess * color > 0 && stone.same(guess, move) ? 1 : 0)
+                        + 8 ** -1 * (guess * color > 0 && stone.same(guess, move) ? 1 : 0)
 
                         // first consider moves that lead to a winning position
                         // use previously found solution as a hint; this makes
                         // a huge impact on the perf: not using this trick
                         // makes the search 3-4x slower
-                        + 1e-1 * sign(tt.get(hash_b, hash_w, -color, null) * color)
+                        + 8 ** -2 * sign(moves.length > 3 ? tt.get(hash_b, hash_w, -color, null) * color : 0)
 
                         // now consider the evaluation of this position
-                        + 1e-2 * value
+                        + 8 ** -3 * value
+
+                        // the euler number is the number of objects
+                        // minus the number of holes; it pretty much
+                        // estimates the eyeness of the target group;
+                        // however as of now this heuristics doesn't
+                        // do much; maybe it'll be useful once iterative
+                        // deepening search is implemented
+                        + 8 ** -6 * sigmoid(eulerv * color * sign(target))
                     ]);
                 }
 

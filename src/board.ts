@@ -774,14 +774,40 @@ module tsumego {
             return nres + 1;
         }
 
-        get rect() {
-            let r: block;
+        rect(color: number) {
+            let rect: block = 0;
 
-            for (const b of this.blocks)
-                if (block.size(b) > 0)
-                    r = block.join(r || b, b);
+            for (let i = 0; i < this.blocks.length; i++) {
+                const b = this.blocks[i];
 
-            return r;
+                if (!block.size(b))
+                    continue;
+
+                if (b * color >= 0)
+                    rect = block.join(rect, b);
+            }
+
+            return rect;
+        }
+
+        getRemovedBlocks() {
+            const moves = this.history.added;
+            const blocks = this.history.changed;
+
+            const move = moves[moves.length - 1];
+            const n = move >> 8 & 255;
+
+            const removed: block[] = [];
+
+            for (let i = 0; i < n; i++) {
+                const id = blocks[blocks.length - i * 2]
+                const bd = blocks[blocks.length - i * 2 + 1];
+
+                if (bd && !this.blocks[id])
+                    removed.push(bd);
+            }
+
+            return removed;
         }
 
         *range(color = 0) {

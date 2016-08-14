@@ -9,7 +9,7 @@ module tsumego {
     // to map values to [-1, +1] range, but it's
     // considerably faster; it's derivative is
     // dS / dx = (S / x)**2
-    const sigmoid = x => x / (1 + sign(x) * x);
+    export const sigmoid = x => x / (1 + sign(x) * x);
 
     /**
      * Evaluates chances to win for the current player.
@@ -41,28 +41,28 @@ module tsumego {
             const v = values.get(hash_b, hash_w) || ++stat.nodes &&
 
                 // maximize the number of captured stones first
-                + 1e-0 * sigmoid(board.nstones(color) - board.nstones(-color))
+                + sigmoid(board.nstones(color) - board.nstones(-color))
 
                 // minimize the number of own blocks in atari
-                + 1e-1 * sigmoid(board.natari(-color))
+                + 8 ** -1 * sigmoid(board.natari(-color))
 
                 // minimize/maximize the number of libs of the target
-                + 1e-2 * sigmoid(n * color * sign(t))
+                + 8 ** -2 * sigmoid(n * color * sign(t))
 
                 // maximize the number of own liberties
-                - 1e-3 * sigmoid(board.sumlibs(-color))
+                - 8 ** -3 * sigmoid(board.sumlibs(-color))
 
                 // maximize the number of the opponent's blocks in atari
-                - 1e-4 * sigmoid(board.natari(color))
+                - 8 ** -4 * sigmoid(board.natari(color))
 
                 // minimize the number of the opponent's liberties
-                + 1e-5 * sigmoid(board.sumlibs(color))
+                + 8 ** -5 * sigmoid(board.sumlibs(color))
 
                 // if everything above is the same, pick a random move
-                + 1e-6 * sigmoid(random() - 0.5);
+                + 8 ** -6 * sigmoid(random() - 0.5);
 
             values.set(hash_b, hash_w, v);
-            return v / 2; // abs(v) < 1 + 1/10
+            return v * 7 / 8; // abs(v) < 1 + 1/8 + 1/64 + ... = 8/7
         }
     }
 }
