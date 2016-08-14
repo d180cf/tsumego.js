@@ -89,6 +89,7 @@ module tests {
                             time: 1000,
                             log: argv.log && log,
                             eulern: argv.eulern,
+                            npeyes: argv.npeyes,
                             benson: argv.benson,
                         });
 

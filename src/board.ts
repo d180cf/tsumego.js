@@ -810,10 +810,14 @@ module tsumego {
             return removed;
         }
 
-        *range(color = 0) {
+        range(color = 0) {
+            const stones: stone[] = [];
+
             for (let y = 0; y < this.size; y++)
                 for (let x = 0; x < this.size; x++)
-                    yield stone.make(x, y, color);
+                    stones.push(stone.make(x, y, color));
+
+            return stones;
         }
 
         toStringSGF(indent = '') {

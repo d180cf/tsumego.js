@@ -18,6 +18,7 @@
     "ascii-board.ts",
 
     "src/tt.t.ts",
+    "src/eyeness.t.ts",
     "src/solver.t.ts",
     "src/benson.t.ts",
     "src/board.t.ts",

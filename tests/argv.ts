@@ -31,6 +31,7 @@ namespace tests {
         repeat: number;
         log: boolean;
         eulern: boolean;
+        npeyes: boolean;
         benson: boolean;
         logsgf: boolean;
         logfile: string;
@@ -49,6 +50,11 @@ namespace tests {
 
         eulern(s) {
             /// enables the euler number heuristics
+            return s ? !!JSON.parse(s) : false;
+        },
+
+        npeyes(s) {
+            /// enables the npeyes heuristics
             return s ? !!JSON.parse(s) : false;
         },
 

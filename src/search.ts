@@ -8,6 +8,7 @@
 /// <reference path="dcnn.ts" />
 /// <reference path="gf2.ts" />
 /// <reference path="eulern.ts" />
+/// <reference path="eyeness.ts" />
 
 module tsumego.stat {
     export var ttinvalid = 0;
@@ -52,8 +53,9 @@ module tsumego {
         color: number;
         km?: number;
         tt: TT;
-        expand(color: number): stone[];
+        expand: mgen.Generator;
         eulern?: boolean;
+        npeyes?: boolean;
         target: stone;
         alive?(node: Board): boolean;
         debug?: DebugState;
@@ -77,7 +79,7 @@ module tsumego {
 
     export namespace solve {
         export function* start(args: Args) {
-            const {board, tt, log, expand, debug, time, eulern} = args;
+            const {board, tt, log, expand, debug, time, eulern, npeyes} = args;
 
             let {target, alive} = args;
 
@@ -114,6 +116,7 @@ module tsumego {
             const values = new HashMap<number>();
             const evalnode = evaluate(board, target, values);
             const eulerval = new EulerN(board, sign(target));
+            const pec = npeyes && eyeness(board, expand(0), expand.safe);
 
             const path: number[] = []; // path[i] = hash of the i-th position
             const tags: number[] = []; // this is to detect long loops, e.g. the 10,000 year ko
@@ -157,6 +160,7 @@ module tsumego {
 
                     const value = -evalnode(-color);
                     const eulerv = eulern && color * target > 0 && moves.length > 3 ? eulerval.value(move, nres) : 0;
+                    const npeyes = pec ? pec(sign(target)) : 0;
                     const hash_b = board.hash_b;
                     const hash_w = board.hash_w;
                     const hash32 = board.hash;
@@ -203,8 +207,11 @@ module tsumego {
                         // makes the search 3-4x slower
                         + 8 ** -2 * sign(moves.length > 3 ? tt.get(hash_b, hash_w, -color, null) * color : 0)
 
+                        // increase eyeness of the target group
+                        + 8 ** -3 * sigmoid(npeyes * sign(target) * color)
+
                         // now consider the evaluation of this position
-                        + 8 ** -3 * value
+                        + 8 ** -4 * value
 
                         // the euler number is the number of objects
                         // minus the number of holes; it pretty much
@@ -212,7 +219,7 @@ module tsumego {
                         // however as of now this heuristics doesn't
                         // do much; maybe it'll be useful once iterative
                         // deepening search is implemented
-                        + 8 ** -6 * sigmoid(eulerv * color * sign(target))
+                        + 8 ** -7 * sigmoid(eulerv * color * sign(target))
                     ]);
                 }
 

@@ -74,8 +74,11 @@ module tsumego.mgen {
 
         const moves_b: stone[] = [];
         const moves_w: stone[] = [];
+        const moves_0: stone[] = [];
 
         for (const s of rzone) {
+            moves_0.push(s);
+
             const x = stone.x(s);
             const y = stone.y(s);
 
@@ -83,8 +86,11 @@ module tsumego.mgen {
             moves_w.push(stone.make(x, y, -1));
         }
 
-        return function expand(color: number) {
-            return color > 0 ? moves_b : moves_w;
-        };
+        return Object.assign(function expand(color: number) {
+            if (color > 0) return moves_b;
+            if (color < 0) return moves_w;
+
+            return moves_0;
+        }, { safe: safeb });
     }
 }

@@ -82,10 +82,10 @@ task('test', ['lib'], { async: true }, filter => {
     }).then(() => {
         if (/^debug:/.test(filter)) {
             console.log('debugging tests...');
-            return exec('node-debug tests ' + filter.slice(6), { printStdout: true });
+            return exec('node-debug tests.js ' + filter.slice(6), { printStdout: true });
         } else {
             console.log('running tests...');
-            return exec('node tests ' + (filter || ''), { printStdout: true });
+            return exec('node tests.js ' + (filter || ''), { printStdout: true });
         }
     }).then(() => {
         if (!filter)
