@@ -7,7 +7,9 @@
     "colors.ts",
     "pad.ts",
     "argv.ts",
-    "infra.ts",
+    "expect.ts",
+    "runner.ts",
+    "infra.ts",    
     "console.tree.ts",
     "stats.ts",
     "../libs/json-file.ts",
@@ -26,9 +28,7 @@
     "src/gf2.t.ts",
     "src/search.t.ts",
     "src/sgf.t.ts",
-    "src/utils.t.ts",
-
-    "all.ts"
+    "src/utils.t.ts"    
   ],
   "compilerOptions": {
     "out": "tests.js",

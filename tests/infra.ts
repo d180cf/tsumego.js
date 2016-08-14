@@ -28,6 +28,8 @@ namespace tests {
     };
 
     log.stream.write('[\n');
+
+    export const tdir: { [group: string]: { [test: string]: Function } } = {};
 }
 
 namespace tests.ut {
@@ -36,242 +38,17 @@ namespace tests.ut {
     }
 
     const fname = (f: Function) => /\/\/\/ (.+)[\r\n]/.exec(f + '')[1].trim();
-
-    let indent = '';
-
-    export let failed = false;
-    export let ntests = 0;
-
-    declare const process;
-    declare const location;
-
-    const filter = argv[0];
-
-    if (filter)
-        console.warn('tests filtered by: ' + JSON.stringify(filter));
-
     const md5: (text: string) => string = require('md5');
 
     export function group(init: ($: GroupContext) => void, gname = fname(init)) {
-        const _indent = indent;
-        console.log(indent + gname.cyan());
-        indent += '  ';
+        const g = tdir[gname] = {};
 
         init({
             test(test, tname = fname(test)) {
                 tname = md5(tname).slice(0, 6) + ' ' + tname;
-
-                if (filter && tname.indexOf(filter) < 0 && gname.indexOf(filter) < 0)
-                    return;
-
-                ntests++;
-
-                for (let i = 0; i < argv.repeat; i++) {
-                    const logs = [];
-
-                    try {
-                        const _console_log = console.log;
-
-                        console.log = (...args) => {
-                            logs.push(args.map(<any>JSON.stringify));
-                        };
-
-                        const started = new Date;
-                        let comment;
-
-                        if (isNode)
-                            process.title = tname + ' @ ' + started.toLocaleTimeString();
-
-                        try {
-                            debugger;
-                            comment = test(expect);
-                        } finally {
-                            console.log = _console_log;
-                        }
-
-                        const duration = (Date.now() - +started) / 1000;
-
-                        const note = duration < 1 ? '' :
-                            duration < 3 ? duration.toFixed(1).white() + 's' :
-                                duration < 10 ? duration.toFixed(1).yellow() + 's' :
-                                    duration.toFixed(1).magenta() + 's';
-
-                        console.log(indent + tname, note, comment || '');
-                    } catch (err) {
-                        failed = true;
-                        console.log(indent + tname.red());
-
-                        for (const args of logs)
-                            console.log.apply(console, args.map(JSON.parse));
-
-                        while (err) {
-                            console.log(err && err.stack || err);
-                            err = err.reason;
-                        }
-                    }
-                }
+                g[tname] = test;
             }
         });
-
-        indent = _indent;
-    }
-
-    function assert(x: boolean, m = 'assertion failed', f = {}) {
-        if (x) return;
-        const e = new Error(m);
-        for (const i in f)
-            e[i] = f;
-        if (typeof location === 'object' && /^#debug$/.test(location.hash))
-            debugger;
-        throw e;
-    }
-
-    function expect<T>(x: T): ValueContext<T>;
-    function expect<T>(test: (x: T) => boolean, message?: (x: T) => string): (value: T) => void;
-
-    function expect(x, message?): any {
-        return x instanceof Function ?
-            value => assert(x(value), message && message(value)) :
-            new ValueContext(x);
-    }
-
-    module expect {
-        export function error(fn) {
-            try {
-                fn();
-            } catch (e) {
-                return e;
-            }
-
-            throw Error('No error was thrown.');
-        }
-
-        export const ge = (min: number) => expect(x => x >= min, x => `${x} < ${min}`);
-        export const le = (max: number) => expect(x => x <= max, x => `${x} > ${max}`);
-    }
-
-    export class ValueContext<T> {
-        constructor(private value: T) {
-
-        }
-
-        equal(y: T) {
-            match(y)(this.value);
-        }
-
-        matches(pattern) {
-            match(pattern)(this.value);
-        }
-
-        belong(y: T[]) {
-            if (y.indexOf(this.value) < 0)
-                throw Error(`${JSON.stringify(this.value)} cannot be found in ${JSON.stringify(y)}`);
-        }
-    }
-
-    function match(pattern) {
-        if (typeof pattern === 'string')
-            return match.text(pattern);
-
-        if (typeof pattern === 'number' || pattern === null || pattern === undefined || pattern === false || pattern === true)
-            return match.primitive(pattern);
-
-        if (typeof pattern === 'object' && pattern.constructor === Object)
-            return match.dictionary(pattern);
-
-        if (pattern instanceof Array)
-            return match.array(pattern);
-
-        if (pattern instanceof Function)
-            return pattern;
-
-        throw new Error(`Unrecognized pattern: ${pattern}.`);
-    }
-
-    module match {
-        export function text(pattern: string) {
-            return (value: string) => {
-                if (value !== pattern) {
-                    assert(false, 'The two strings do not match:'
-                        + '\n rhs: ' + stringify(value)
-                        + '\n lhs: ' + stringify(pattern)
-                        + '\ndiff: ' + strdiff(value, pattern));
-                }
-            };
-        }
-
-        export function primitive<T extends number | void>(pattern: T) {
-            return (value: T) => {
-                if (value !== pattern)
-                    assert(false, `${value} !== ${pattern}`);
-            };
-        }
-
-        export function dictionary<T extends {}>(pattern: T) {
-            return (value: T) => {
-                for (const key in pattern) {
-                    try {
-                        match(pattern[key])(value[key]);
-                    } catch (err) {
-                        throw MatchError(`[${key}] has a wrong value`, err);
-                    }
-                }
-
-                for (const key in value) {
-                    if (!(key in pattern))
-                        throw Error(`[${key}] should be absent`);
-                }
-            };
-        }
-
-        export function array<T>(pattern: any[]) {
-            return (value: T[]) => {
-                for (let i = 0; i < pattern.length; i++) {
-                    try {
-                        match(pattern[i])(value[i]);
-                    } catch (err) {
-                        throw MatchError(`[${i}] has a wrong value: ${JSON.stringify(pattern)} != ${JSON.stringify(value)}`, err);
-                    }
-                }
-
-                assert(pattern.length == value.length, `.length: ${value.length} > ${pattern.length}`);
-            };
-        }
-    }
-
-    function MatchError(message: string, reason: Error) {
-        const err = new Error(message);
-        err.reason = reason;
-        return err;
-    }
-
-    function stringify(value) {
-        return typeof value === 'string' ? stringifyString(value) :
-            value + '';
-    }
-
-    function stringifyString(string: string) {
-        const escaped = string
-            .replace(/"/gm, '\\"')
-            .replace(/\n/gm, '\\n');
-
-        return '"' + escaped + '"';
-    }
-
-    function strdiff(lhs: string, rhs: string) {
-        for (let i = 0; i < lhs.length || i < rhs.length; i++)
-            if (lhs.charAt(i) !== rhs.charAt(i))
-                return '.slice(' + i + ') = '
-                    + stringify(truncate(lhs, i, i + 5))
-                    + ' vs '
-                    + stringify(truncate(rhs, i, i + 5));
-
-        return '(identical)';
-    }
-
-    function truncate(s: string, i, j: number) {
-        const w = s.slice(i, j);
-        return j < s.length ? w : w + '...';
     }
 }
 
@@ -310,7 +87,39 @@ module tests {
     }
 }
 
-const _dt0 = Date.now();
+module tests {
+    // let the tests load and then run them
+    setTimeout(() => {
+        const filter = argv[0];
 
-tsumego.rand.seed(_dt0 | 0);
-console.log('rand seed:', _dt0 | 0);
+        if (filter)
+            console.warn('tests filtered by: ' + JSON.stringify(filter));
+
+        console.log('running tests...');
+
+        const started = Date.now();
+
+        tsumego.rand.seed(started | 0);
+        console.log('rand seed:', started | 0);
+
+        const {npassed, nfailed} = run(tdir, filter);
+
+        console.log('\nTotal:', npassed + nfailed, 'tests in', ((Date.now() - started) / 1000).toFixed(1) + 's');
+
+        tsumego.profile.log();
+
+        log.stream.end('{}]', () => {
+            console.log('Stats:' + tsumego.stat.summarizxe().map(s => '\n   ' + s).join(''));
+
+            // skip analysis if all tests are selected
+            if (!argv.log) return;
+
+            stats.analyze(log.path);
+
+            // process.exit(0) somehow prevents stream
+            // buffers from being flushed to files
+            if (isNode && nfailed > 0)
+                process.exit(1);
+        });
+    });
+}
