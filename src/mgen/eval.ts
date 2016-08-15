@@ -13,13 +13,12 @@ module tsumego {
 
     /**
      * Evaluates chances to win for the current player.
-     *
      * Returns a number in the [-1, +1] range:
-     * +1 = the current player surely wins,
-     * -1 = the current player surely loses.
      *
+     *  +1 = the current player surely wins,
+     *  -1 = the current player surely loses.
      */
-    export function evaluate(board: Board, target: stone, values = new HashMap<number>()) {
+    export function evaluate(board: Board, target: stone, values: NodeHashMap<number>) {
         // evaluates the node = (board, color) where color
         // tells who is about to play on this board
         return function _eval(color: number) {
@@ -37,7 +36,7 @@ module tsumego {
             // it's surprising, that with this dumb moves ordering
             // and with the cached tt results, the 1-st move appears
             // correct in 98 % cases
-            const v = values.get(hash_b, hash_w) || ++stat.nodes &&
+            const v = values.get(color, hash_b, hash_w) || ++stat.nodes &&
 
                 // maximize the number of captured stones first
                 + sigmoid(board.nstones(color) - board.nstones(-color))
@@ -57,7 +56,7 @@ module tsumego {
                 // maximize the number of own libs
                 + 8 ** -5 * sigmoid(board.sumlibs(color));
 
-            values.set(hash_b, hash_w, v);
+            values.set(color, hash_b, hash_w, v);
 
             // abs(v) < 1 + 1/8 + 1/64 + ... = 8/7
             // v = ±1 should indicate a sure loss/win

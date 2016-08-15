@@ -12,7 +12,7 @@ module tsumego {
     // If a 64 bit key is used, then a collision will appear
     // only once in 2**25 tsumegos. 53 bits give one collision
     // per 2**14 tsumegos, correspondingly.
-    export class HashMap<T extends number> {
+    export class HashMap<T> {
         // max size is 16 x 2**30 x 2**30, however
         // the actual size is  16 x 5000 x N, e.g.
         // if there are 1.6 M entries, then N = 20
@@ -33,10 +33,9 @@ module tsumego {
             const t = this.data[a][b];
 
             // (t && t[c] || 0) would be much slower
-            if (!t) return <any>0;
-            const value = t[c];
-            if (!value) return <any>0;
-            return value;
+            if (!t) return null;
+            if (!(c in t)) return null;
+            return t[c];
         }
 
         set(key_hi: number, key_lo: number, value: T) {

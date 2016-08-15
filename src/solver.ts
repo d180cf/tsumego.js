@@ -55,6 +55,7 @@ module tsumego {
                     color: null,
                     board: board,
                     tt: new TT,
+                    values: new NodeHashMap<number>(),
                     expand: mgen.fixed(board, target),
                     target: target,
                 };

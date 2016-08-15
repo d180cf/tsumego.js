@@ -9,6 +9,7 @@
 /// <reference path="gf2.ts" />
 /// <reference path="eulern.ts" />
 /// <reference path="eyeness.ts" />
+/// <reference path="nhashmap.ts" />
 
 module tsumego.stat {
     export var ttinvalid = 0;
@@ -16,6 +17,9 @@ module tsumego.stat {
 
     export var calls = 0;
     logv.push(() => `calls to solve = ${(calls / 1e6).toFixed(1)} M`);
+
+    export var ucresult = 0;
+    logv.push(() => `uncondtional results = ${ucresult / calls * 100 | 0} %`);
 
     export var expand = 0;
     logv.push(() => `calls to expand = ${expand / calls * 100 | 0} %`);
@@ -42,6 +46,9 @@ module tsumego.stat {
 module tsumego {
     export interface DebugState {
         km?: number;
+        dmax?: number;
+        vmin?: number;
+        vmax?: number;
         path?: number[];
         moves?: stone[];
         color?: number;
@@ -53,6 +60,7 @@ module tsumego {
         color: number;
         km?: number;
         tt: TT;
+        values: NodeHashMap<number>; // that's a cache for eval(...)
         expand: mgen.Generator;
         eulern?: boolean;
         npeyes?: boolean;
@@ -79,7 +87,7 @@ module tsumego {
 
     export namespace solve {
         export function* start(args: Args) {
-            const {board, tt, log, expand, debug, time, eulern, npeyes} = args;
+            const {board, tt, values, log, expand, debug, time, eulern, npeyes} = args;
 
             let {target, alive} = args;
 
@@ -112,8 +120,7 @@ module tsumego {
             if (!stone.color(target))
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
-            const sa = new SortedArray<stone>();
-            const values = new HashMap<number>();
+            const sa = new SortedArray<[stone, number]>();
             const evalnode = evaluate(board, target, values);
             const eulerval = new EulerN(board, sign(target));
             const pec = npeyes && eyeness(board, expand(0), expand.safe);
@@ -131,7 +138,7 @@ module tsumego {
             // profitable to move out this chunk of code into
             // a plain function without yield/yield* stuff, but
             // this gives only a marginal profit
-            function genmoves(color: color, km: color) {
+            function genmoves(color: color, km: color, dmax: number) {
                 stat.expand++;
 
                 const nodes = sa.reset();
@@ -150,7 +157,9 @@ module tsumego {
                 if (eulern && color * target > 0 && moves.length > 3)
                     eulerval.reset();
 
-                const guess = moves.length > 7 ? tt.get(hash_b, hash_w, color, null) : 0;
+                // if tt has a cached result, it often appears correct
+                const guess = moves.length < 8 ? stone.empty :
+                    (tt.get(color, hash_b, hash_w) || TT.empty).move;
 
                 for (const move of moves) {
                     const nres = board.play(move);
@@ -172,7 +181,9 @@ module tsumego {
                         continue;
 
                     // skip moves that are known to be losing
-                    if (tt.get(hash_b, hash_w, -color, km) * color < 0)
+                    const ttres = tt.get(-color, hash_b, hash_w, { dmax: dmax, km: km });
+
+                    if (ttres && ttres.type == 0 && ttres.value == +1)
                         continue;
 
                     let d = depth - 1;
@@ -181,7 +192,6 @@ module tsumego {
                         d = d > 0 && path[d] == path[d - 1] ? -1 : d - 1;
 
                     d = d + 1 || infdepth;
-                    rdmin = min(rdmin, d);
 
                     // there are no ko treats to play this move,
                     // so play a random move elsewhere and yield
@@ -189,10 +199,12 @@ module tsumego {
                     // if the opponent is playing useless ko-like
                     // moves that do not help even if all these
                     // ko fights are won
-                    if (d <= depth && km * color <= 0)
+                    if (d <= depth && km * color <= 0) {
+                        rdmin = min(rdmin, d);
                         continue;
+                    }
 
-                    sa.insert(repd.set(move, d), [
+                    sa.insert([move, d], [
                         // moves that require a ko treat are considered last
                         // that's not just perf optimization: the search depends on this
                         - 1 / d
@@ -205,7 +217,7 @@ module tsumego {
                         // use previously found solution as a hint; this makes
                         // a huge impact on the perf: not using this trick
                         // makes the search 3-4x slower
-                        + 8 ** -2 * sign(moves.length > 3 ? tt.get(hash_b, hash_w, -color, null) * color : 0)
+                        + 8 ** -2 * sign(moves.length > 3 ? -(tt.get(-color, hash_b, hash_w) || TT.empty).value : 0)
 
                         // increase eyeness of the target group
                         + 8 ** -3 * sigmoid(npeyes * sign(target) * color)
@@ -244,12 +256,25 @@ module tsumego {
                 // solved despite the move is yilded to the opponent.
                 // Also, there is no point to pass if the target is in atari.
                 if (block.libs(board.get(target)) > 1)
-                    nodes.push(0);
+                    nodes.push([stone.nocoords(color), infdepth]);
 
-                return { nodes: nodes, rdmin: rdmin };
+                return { moves: nodes, rdmin: rdmin };
             }
 
-            function* solve(color: color, km: color) {
+            // Finds a move with the highest value given the [vmin, vmax] constraints.
+            // The returned value looks like [move, maxv, dmin, dmax] where
+            //
+            //  - move - It's always of the same color, but may have no coords when it's more profitable to pass.
+            //  - maxv - The value of the move where -1 indicates a sure loss, +1 indicates a sure win.
+            //  - dmin - The earliest position in the path that this solution depends on; infdepth for unconditional results.
+            //  - dmax - The move is valid if the search is made with depth <= dmax; infdepth for unconditional results.
+            //
+            // In most cases the the search reaches the given max depth and returns an estimate,
+            // so the result looks like [W[fc], 0.56, 255, 15] which means that the move has
+            // decent chances to win, but is not an exact solution (0.56 < 1), the solution
+            // does not depend on a path leading to the current node (255) and the node values
+            // were estimated at depth 15, meaning that a deeper search may change the result.
+            function* solve(color: color, km: color, dmax: number, vmin: number, vmax: number) {
                 remaining--;
                 stat.calls++;
 
@@ -262,56 +287,95 @@ module tsumego {
                     remaining = yieldin
                 }
 
-                const depth = path.length;
+                const depth = path.length; // does not include the current node
                 const prevb = depth < 1 ? 0 : path[depth - 1];
                 const hash32 = board.hash;
                 const hash_b = board.hash_b;
                 const hash_w = board.hash_w;
-                const ttres = tt.get(hash_b, hash_w, color, km);
+                const ttres = tt.get(color, hash_b, hash_w, { dmax: dmax, km: km });
 
-                debug && (debug.color = color);
-                debug && (debug.depth = depth);
-                debug && (debug.moves = hist);
-                debug && (debug.path = path);
-                debug && (debug.km = km);
-
-                if (ttres) {
-                    // due to collisions, tt may give a result for a different position;
-                    // however with 64 bit hashes, there expected to be just one collision
-                    // per sqrt(2 * 2**64) = 6 billions positions = 12 billion w/b nodes
-                    if (!board.get(ttres))
-                        return repd.set(ttres, infdepth);
-
-                    stat.ttinvalid++;
+                if (debug) {
+                    debug.color = color;
+                    debug.depth = depth;
+                    debug.moves = hist;
+                    debug.path = path;
+                    debug.dmax = dmax;
+                    debug.vmin = vmin;
+                    debug.vmax = vmax;
+                    debug.km = km;
                 }
 
-                if (depth > infdepth / 2)
-                    return repd.set(stone.nocoords(-color), 0);
+                // this result doesn't depend on the path leading to this node
+                if (ttres) {
+                    const move = ttres.move;
+
+                    if (stone.hascoords(move) && board.get(move)) {
+                        // due to collisions, tt may give a result for a different position;
+                        // however with 64 bit hashes, there expected to be one collision
+                        // per several billion nodes
+                        stat.ttinvalid++;
+                    } else {
+                        // this is a lower bound
+                        if (ttres.type < 0)
+                            vmin = max(vmin, ttres.value);
+
+                        // this is an upper bound
+                        if (ttres.type > 0)
+                            vmax = min(vmax, ttres.value);
+
+                        // this is an exact result
+                        if (ttres.value == 0 || vmin >= vmax)
+                            return [move, ttres.value, infdepth, ttres.dmax];
+                    }
+                }
+
+                // once the search horizon is reached, return an estimated value of the node;
+                // here it would be better, actually, to start a quick "quiescence search" that
+                // would check if the target can be put in atari or can avert an atari; this
+                // would be a lambda-1 search
+                if (dmax < 1)
+                    return [0, evalnode(color), infdepth, 0];
 
                 // generate moves and find the earliest repetition;
-                // the move casuing that repetition will not be in this list
-                const {nodes, rdmin} = genmoves(color, km);
+                // moves that cause those repetitions may not be in this list
+                const {moves, rdmin} = genmoves(color, km, dmax);
 
                 stat.maxdepth = max(stat.maxdepth, depth);
                 stat.sdepth += depth;
-                stat.nmoves += nodes.length;
+                stat.nmoves += moves.length;
 
-                let mindepth = rdmin;
-                let result: stone;
-                let trials = 0;
+                const _vmin = vmin;
 
-                while (trials < nodes.length) {
-                    const move = nodes[trials++];
-                    const d = !move ? infdepth : repd.get(move);
+                let best = stone.nocoords(color); // the move with the highest value
+                let dmin = rdmin; // earliest repetition
+                let maxv = -1; // value of the best move
+                let maxd = infdepth;
 
-                    let resp: stone; // the best response
+                let attempt = 0;
+
+                // stop when either a winning move is found or when the last found move
+                // exceeds the upper bound set by the caller; e.g. if the caller
+                // has found a move W[ab] with value = -0.2 and now it's investigating this
+                // move W[cd] in hope that its value > -0.2 and it's appeared that W[cd]
+                // has a continuation B[fe] with value > 0.25, the caller doesn't care
+                // if the actual value of W[cd] is 0.99 or just 0.25, because it already knows
+                // that W[cd] is clearly inferior to W[ab] and it needs to try something else
+                while (attempt < moves.length && vmin < vmax) {
+                    const [move, d] = moves[attempt++];
+
+                    // response from the opponent
+                    let resp: stone;
+                    let rval: number;
+                    let rmin: number;
+                    let rmax: number;
 
                     path.push(hash32);
-                    hist.push(move || stone.nocoords(color));
-                    move && board.play(move);
-                    debug && (yield stone.toString(move || stone.nocoords(color)));
+                    hist.push(move);
+                    stone.hascoords(move) && board.play(move);
+                    debug && (yield `${stone.toString(move)}`);
 
-                    if (!move) {
+                    // handling passes is surprisingly tricky...
+                    if (!stone.hascoords(move)) {
                         const nextkm = prevb == hash32 && color * km < 0 ? 0 : km;
                         const tag = hash32 & ~15 | (-color & 3) << 2 | nextkm & 3; // tells which position, who plays and who is the km
                         const isloop = tags.lastIndexOf(tag) >= 0;
@@ -319,8 +383,10 @@ module tsumego {
                         if (isloop) {
                             // yielding the turn again means that both sides agreed on
                             // the group's status; check the target's status and quit
-                            resp = stone.nocoords(target);
-                            resp = repd.set(resp, depth - 1);
+                            resp = stone.nocoords(-color);
+                            rmin = depth;
+                            rval = color * target > 0 ? -1 : +1;
+                            rmax = infdepth;
                         } else {
                             // play a random move elsewhere and yield
                             // the turn to the opponent; playing a move
@@ -351,79 +417,92 @@ module tsumego {
                             // that if the two last moves were passes, the ko treats
                             // can be voided and the search can be resumed without them.
                             tags.push(tag);
-                            resp = yield* solve(-color, nextkm);
+                            [resp, rval, rmin, rmax] = yield* solve(-color, nextkm, dmax - 1, -vmax, -vmin);
                             tags.pop();
                         }
-                    } else {
+                    }
+
+                    if (stone.hascoords(move)) {
                         if (!board.get(target)) {
-                            resp = stone.nocoords(-target);
-                            resp = repd.set(resp, infdepth);
+                            resp = stone.nocoords(-color);
+                            rval = color * target > 0 ? -1 : +1;
+                            rmin = infdepth;
+                            rmax = infdepth;
                         } else if (color * target > 0 && alive && alive(board)) {
-                            resp = stone.nocoords(target);
-                            resp = repd.set(resp, infdepth);
+                            resp = stone.nocoords(-color);
+                            rval = color * target > 0 ? +1 : -1;
+                            rmin = infdepth;
+                            rmax = infdepth;
                         } else {
-                            resp = yield* solve(-color, km);
+                            [resp, rval, rmin, rmax] = yield* solve(-color, km, dmax - 1, -vmax, -vmin);
                         }
                     }
 
                     path.pop();
                     hist.pop();
-                    move && board.undo();
-                    debug && (yield stone.toString(repd.set(move, 0) || stone.nocoords(color)) + ' \u27f6 ' + stone.toString(resp));
+                    stone.hascoords(move) && board.undo();
+                    debug && (yield `${stone.toString(move)} \u27f6 ${stone.toString(resp)} v = ${rval} d = ${rmax}`);
 
-                    // the min value of repd is counted only for the case
-                    // if all moves result in a loss; if this happens, then
-                    // the current player can say that the loss was caused
-                    // by the absence of ko treats and point to the earliest
-                    // repetition in the path
-                    if (resp * color < 0 && move)
-                        mindepth = min(mindepth, d > depth ? repd.get(resp) : d);
+                    vmin = max(vmin, -rval);
 
-                    // the winning move may depend on a repetition, while
-                    // there can be another move that gives the same result
-                    // uncondtiionally, so it might make sense to continue
-                    // searching in such cases
-                    if (resp * color > 0) {
-                        // if the board b was reached via path p has a winning
-                        // move m that required to spend a ko treat and now b
-                        // is reached via path q with at least one ko treat left,
-                        // that ko treat can be spent to play m if it appears in q
-                        // and then win the position again; this is why such moves
-                        // are stored as unconditional (repd = infty)
-                        result = move || stone.nocoords(color);
-                        result = repd.set(result, d > depth && move ? repd.get(resp) : d);
-
-                        stat.nwins++;
-                        stat.nwmoves += nodes.length;
-                        stat.nm2win += trials;
-                        break;
+                    if (-rval >= maxv) {
+                        maxv = -rval;
+                        best = move;
+                        dmin = min(dmin, rmin);
+                        maxd = min(infdepth, stone.hascoords(move) ? rmax + 1 : rmax);
                     }
-                }
-
-                // if there is no winning move, record a loss
-                if (!result) {
-                    result = stone.nocoords(-color);
-                    result = repd.set(result, mindepth);
                 }
 
                 // if the solution doesn't depend on a ko above the current node,
                 // it can be stored and later used unconditionally as it doesn't
                 // depend on a path that leads to the node; this stands true if all
                 // such solutions are stored and never removed from the table; this
-                // can be proved by trying to construct a path from a node in the
-                // proof tree to the root node
-                tt.set(hash_b, hash_w, color, result, repd.get(result) > depth + 1 ? km : null);
+                // can be proven by trying to construct a path from a node in the
+                // proof tree to the root node; about 97% of the solutions do not
+                // depend on such repetitions
+                if (dmin > depth) {
+                    stat.ucresult++;
 
-                log && log.write({
-                    color: color,
-                    result: result,
-                    target: target,
-                    trials: trials,
-                    board: board.hash,
-                    sgf: log.sgf && board.toStringSGF(),
-                });
+                    let type = 0;
 
-                return result;
+                    // all moves were tried, but the best result didn't even reach vmin;
+                    // since widening the [vmin, vmax] window will only make the result
+                    // worse (since the opponent will have more freedom), the found value
+                    // is the upper bound:
+                    if (maxv <= _vmin && _vmin > -1)
+                        type = +1;
+
+                    // the value of the found move is higher than the upper bound set
+                    // by the caller; other moves may have even higher values, but they
+                    // weren't investigated; hence the found value is the lower bound:
+                    if (maxv >= vmax && vmax < +1)
+                        type = -1;
+
+                    tt.set(color, hash_b, hash_w, {
+                        move: best,
+                        dmax: maxd,
+                        value: maxv,
+                        type: type,
+                        km_b: km,
+                        km_w: km,
+                    });
+                }
+
+                return [best, maxv, dmin, maxd];
+            }
+
+            function* _solve(color: color, km: color) {
+                let move = stone.empty
+                let maxv = 0;
+                let dmin = 0;
+                let maxd = 0;
+
+                for (let dmax = 1; dmax < infdepth / 2 && maxd < infdepth; dmax++) {                    
+                    [move, maxv, dmin, maxd] = yield* solve(color, km, dmax, -1, +1);
+                    debug && console.log( 'km = ' + km + ' d <= ' + dmax + ' -> ' + stone.toString(move) + ' v = ' + maxv + ' d = ' + maxd);
+                }
+
+                return [move, maxv];
             }
 
             // restore the path from the history of moves
@@ -440,29 +519,30 @@ module tsumego {
                 }
             }
 
-            const {color, km} = args;
+            {
+                const {color, km} = args;
 
-            let move = yield* solve(color, km || 0);
+                let [move, value] = yield* _solve(color, km || 0);
 
-            move = stone.km.set(move, km || 0);
+                move = stone.km.set(move, km || 0);
 
-            if (!Number.isFinite(km)) {
-                // if it's a loss, see what happens if there are ko treats;
-                // if it's a win, try to find a stronger move, when the opponent has ko treats
-                const km2 = move * color > 0 ? -color : color;
-                const move2 = yield* solve(color, km2);
+                if (!Number.isFinite(km) && abs(value) == 1) {
+                    // if it's a loss, see what happens if there are ko treats;
+                    // if it's a win, try to find a stronger move, when the opponent has ko treats
+                    const km2 = value > 0 ? -color : color;
+                    const [move2, value2] = yield* _solve(color, km2);
 
-                if (move2 * color > 0 && stone.hascoords(move2)) {
-                    move = move2;
-                    move = stone.km.set(move, km2);
+                    if (value2 == +1 && stone.hascoords(move2)) {
+                        move = move2;
+                        value = value2;
+                        move = stone.km.set(move, km2);
+                    }
                 }
+
+                return typeof args === 'string' ?
+                    stone.toString(move) :
+                    move;
             }
-
-            move = repd.set(move, 0);
-
-            return typeof args === 'string' ?
-                stone.toString(move) :
-                move;
         }
     }
 }

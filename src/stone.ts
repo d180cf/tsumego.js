@@ -18,7 +18,7 @@ module tsumego {
      *  r - depth at which repetition occurs
      *  k - who is the ko master: +1, 0, -1
      */
-    export enum stone { }
+    export enum stone { empty = 0 }
 
     export module stone {
         export function make(x: number, y: number, color: number): stone {
@@ -151,7 +151,7 @@ module tsumego {
      * of positions that proves the solution contains any of
      * b(i), then repd.get(solution) = i.
      */
-    export module repd {
+    export module stone.repd {
         export const get = move => move >> 8 & 255;
         export const set = (move, repd) => move & ~0xFF00 | repd << 8;
     }

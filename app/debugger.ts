@@ -6,6 +6,7 @@ module testbench {
     import benson = tsumego.benson;
     import mgen = tsumego.mgen;
     import TT = tsumego.TT;
+    import NodeHashMap = tsumego.NodeHashMap;
     import hex = tsumego.hex;
 
     export function dbgsolve(board: Board, color: number, km: number, aim: stone, stubs: stone.Set, refresh: () => SVGGobanElement) {
@@ -24,6 +25,7 @@ module testbench {
             color: color,
             km: km,
             tt: new TT,
+            values: new NodeHashMap<number>(),
             expand: mgen.fixed(board, aim),
             target: aim,
             alive: qargs.benson && ((b: Board) => benson.alive(b, aim))

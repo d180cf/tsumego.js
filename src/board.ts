@@ -472,6 +472,14 @@ module tsumego {
          * allocate temporary objects and thus is pretty fast.
          */
         play(move: stone): number {
+            const color = stone.color(move);
+
+            const x = stone.x(move);
+            const y = stone.y(move);
+
+            if (!color || !stone.hascoords(move) || !this._inBounds(x, y) || this.getBlockId(x, y))
+                return 0;
+
             if (this._redo_data && this._redo_hist == this.history.added.length) {
                 const nres = this.redo(move);
 
@@ -480,14 +488,6 @@ module tsumego {
             } else {
                 this._redo_data = null;
             }
-
-            const color = stone.color(move);
-
-            const x = stone.x(move);
-            const y = stone.y(move);
-
-            if (!color || !stone.hascoords(move) || !this._inBounds(x, y) || this.getBlockId(x, y))
-                return 0;
 
             _n_play++;
 
