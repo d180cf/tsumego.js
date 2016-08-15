@@ -26,11 +26,10 @@ module tsumego {
             const t = board.get(target);
             const n = block.libs(t);
 
-            if (!t)
+            // if the target is in atari and it's the attacker's
+            // turn to play, the target is surely captured
+            if (!t || t * color < 0 && n < 2)
                 return -sign(t) * color;
-
-            if (t * color < 0 && n < 2)
-                return +1;
 
             const hash_b = board.hash_b ^ color;
             const hash_w = board.hash_w ^ color;
@@ -43,26 +42,26 @@ module tsumego {
                 // maximize the number of captured stones first
                 + sigmoid(board.nstones(color) - board.nstones(-color))
 
-                // minimize the number of own blocks in atari
+                // atari as many blocks of the opponent as possible
                 + 8 ** -1 * sigmoid(board.natari(-color))
 
-                // minimize/maximize the number of libs of the target
+                // maximize/minimize the number of libs of the target
                 + 8 ** -2 * sigmoid(n * color * sign(t))
 
-                // maximize the number of own liberties
+                // minimize the number of libs of all blocks of the opponent
                 - 8 ** -3 * sigmoid(board.sumlibs(-color))
 
-                // maximize the number of the opponent's blocks in atari
+                // minimize the number of own blocks in atari
                 - 8 ** -4 * sigmoid(board.natari(color))
 
-                // minimize the number of the opponent's liberties
-                + 8 ** -5 * sigmoid(board.sumlibs(color))
-
-                // if everything above is the same, pick a random move
-                + 8 ** -6 * sigmoid(random() - 0.5);
+                // maximize the number of own libs
+                + 8 ** -5 * sigmoid(board.sumlibs(color));
 
             values.set(hash_b, hash_w, v);
-            return v * 7 / 8; // abs(v) < 1 + 1/8 + 1/64 + ... = 8/7
+
+            // abs(v) < 1 + 1/8 + 1/64 + ... = 8/7
+            // v = ±1 should indicate a sure loss/win
+            return v / 2;
         }
     }
 }

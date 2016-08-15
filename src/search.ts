@@ -220,6 +220,18 @@ module tsumego {
                         // do much; maybe it'll be useful once iterative
                         // deepening search is implemented
                         + 8 ** -7 * sigmoid(eulerv * color * sign(target))
+
+                        // if everything above is the same, pick a random move;
+                        // in JS floating point numbers are 64 bit with 53 bits
+                        // in the significant precision; this means that the
+                        // this smallest term can be at most 2**52 times smaller
+                        // then the biggest term (which is -1/d) as otherwise
+                        // this small random addition will be lost; also, the
+                        // number of digits (binary digits) in this random
+                        // addition should be sufficiently large; here the 8**15
+                        // factor leaves it 52 - 3 * 15 = 7 digits, which lets
+                        // the random term have 128 possible values
+                        + 8 ** -15 * (random() - 0.5)
                     ]);
                 }
 
