@@ -1,4 +1,11 @@
 module tsumego {
+    // Filling in a own sure eye is not always a wrong move.
+    // There is a curious example in which the only correct
+    // move is to fill an own sure eye.
+    //
+    // Adrian B. Daniele, A Tsume-Go Life & Death Problem Solver
+    // dspace.mit.edu/bitstream/handle/1721.1/50434/41567232-MIT.pdf
+    //
     const patterns = [
         // a sure eye
         new Pattern([
