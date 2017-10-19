@@ -1,5 +1,6 @@
 ﻿<!doctype html>
 <html>
+
 <head>
     <title>tsumego.js</title>
 
@@ -67,6 +68,7 @@
         });
     </script>
 </head>
+
 <body class="editor">
     <div id="grid" class="ui grid">
         <div class="ui column" style="height:calc(100% - 2em);width:15em">
@@ -138,10 +140,6 @@
                     <button class="ui icon button" id="undo" title="Undo the last move">
                         <i class="right undo icon"></i>
                     </button>
-
-                    <button class="ui icon button" id="flipc" title="Invert stone colors">
-                        <i class="right adjust icon"></i>
-                    </button>
                 </div>
             </div>
 
@@ -169,14 +167,22 @@
                 </div>
             </div>
 
+            <div id="solver-panel">
+                <div class="ui big icon vertical buttons">
+                    <button class="ui icon button" id="flipc" title="Invert stone colors">
+                        <i class="right adjust icon"></i>
+                    </button>
+                </div>
+            </div>
+
             <div id="km">
                 <div class="ui big vertical buttons toggle">
                     <button data-value="-1" class="ui icon button" title="W is the ko master">
                         <i class="ui thin circle icon"></i>
                     </button>
 
-                    <button data-value="0" class="ui icon button" title="Neither W nor B has ko treats">
-                        <i class="ui adjust icon"></i>
+                    <button data-value="0" class="ui icon button" title="Neither side has ko treats">
+                        <i class="ui help circle outline icon"></i>
                     </button>
 
                     <button data-value="+1" class="ui icon button" title="B is the ko master">
@@ -192,4 +198,5 @@
         </div>
     </div>
 </body>
+
 </html>
