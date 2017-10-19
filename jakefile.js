@@ -159,6 +159,8 @@ task('site', ['tb'], () => {
     jake.mkdirP('bin');
     jake.cpR('site', 'bin');
     jake.cpR('libs', 'bin/site/libs');
+    jake.cpR('problems', 'bin/site/problems');
+    jake.rmRf('bin/site/problems/node_modules');
     jake.mkdirP('bin/site/app');
 
     jake.cpR('tsumego.js', 'bin/site');

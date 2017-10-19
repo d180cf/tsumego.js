@@ -13,6 +13,7 @@
     "babel": "5.8.23"
   },
   "scripts": {
+    "build": "jake -f ./jakefile.js site",
     "test": "jake -f ./jakefile.js"
   }
 }
