@@ -192,6 +192,8 @@ module testbench {
             send('GET', '/problems/manifest.json').then(data => {
                 const manifest = JSON.parse(data);
 
+                console.log('manifest time ' + manifest.time);
+
                 for (const dir of manifest.dirs) {
                     for (const path of dir.problems) {
                         send('GET', '/problems/' + path).then(sgf => {
