@@ -14,17 +14,19 @@ cd $HOME
 git config --global user.email "travis@travis-ci.org"
 git config --global user.name "Travis"
 
-#using token clone master branch
-git clone --quiet --branch=master https://${GH_TOKEN}@github.com/${GH_USER}/${GH_REPO}.git repo
+echo "Cloning the repo..."
+git clone https://${GH_TOKEN}@github.com/${GH_USER}/${GH_REPO} repo
 
-#go into directory and copy data we're interested in to that directory
+echo "Copying the site files..."
 cd repo
 cp -Rf $HOME/site/* .
 
-#add, commit and push files
+echo "Creating a new commit..."
 git add -f .
 git commit -m "Travis build $TRAVIS_BUILD_NUMBER"
-git push > /dev/null
+
+echo "Pushing changes..."
+git push
 
 echo "Done updating ${GH_REPO}"
 
