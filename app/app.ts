@@ -112,7 +112,7 @@ module testbench {
         if (!selection)
             return;
 
-        const {xmin, xmax, ymin, ymax} = getSelectedRect();
+        const { xmin, xmax, ymin, ymax } = getSelectedRect();
 
         for (let x = xmin; x <= xmax; x++) {
             for (let y = ymin; y <= ymax; y++) {
@@ -134,7 +134,7 @@ module testbench {
 
         if (ratio < 0.95)
             vm.isVertical = true;
-        
+
         if (ratio > 1.05)
             vm.isVertical = false;
     }
@@ -538,7 +538,7 @@ module testbench {
                     const r = block.join(board.rect(0), stubs.rect);
 
                     let dx = 0;
-                    let dy = 0;                    
+                    let dy = 0;
 
                     if (block.xmax(r) == board.size - 1)
                         dx = ds;
@@ -794,12 +794,38 @@ module testbench {
         let _nodes: number;
         let _time: number;
 
+        let prev = '';
+
+        // it gives an idea what the solver is doing
+        const getSequenceInfo = () => {
+            const s = board.moves.map(stone.toString).join(';');
+
+            let i = 0;
+
+            while (i < 40 && i < prev.length && i < s.length && s[i] == prev[i])
+                i++;
+
+            prev = s;
+
+            let r = s.slice(0, i);
+
+            if (i < s.length) {
+                if (r != '')
+                    r += '... ';
+
+                r += '(' + board.moves.length + ' moves)';
+            }
+
+            return r;
+        };
+
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
 
         const comment = () => elapsed() + ' s'
             + '; calls = ' + ((tsumego.stat.calls - _calls) / (Date.now() - _time) | 0) + 'K/s'
-            + '; nodes = ' + ((tsumego.stat.nodes - _nodes) / (Date.now() - _time) | 0) + 'K/s';
+            + '; nodes = ' + ((tsumego.stat.nodes - _nodes) / (Date.now() - _time) | 0) + 'K/s'
+            + '; moves = ' + getSequenceInfo();
 
         const op = solving = {
             notify() {
@@ -818,6 +844,7 @@ module testbench {
                     stone.label.string(color) + ' cannot capture the group' :
                     stone.label.string(color) + ' cannot save the group';
 
+                console.log(note);
                 vm.note = note + ', searching for treats...';
 
                 return Promise.resolve().then(() => {
