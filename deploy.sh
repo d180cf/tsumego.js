@@ -11,8 +11,8 @@ cp -R bin/site $HOME/site
 
 #go to home and setup git
 cd $HOME
-git config --global user.email "travis@travis-ci.org"
-git config --global user.name "Travis"
+git config --global user.email "d180cf@gmail.com"
+git config --global user.name "d180cf (via Travis CI)"
 
 echo "Cloning the repo..."
 git clone https://${GH_TOKEN}@github.com/${GH_USER}/${GH_REPO} repo
