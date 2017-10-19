@@ -161,16 +161,15 @@ task('site', ['tb'], () => {
     jake.cpR('libs', 'bin/site/libs');
     jake.cpR('problems', 'bin/site/problems');
     jake.rmRf('bin/site/problems/node_modules');
-    jake.mkdirP('bin/site/app');
 
     jake.cpR('tsumego.js', 'bin/site');
     jake.cpR('tsumego.es5.js', 'bin/site');
     jake.cpR('tsumego.es6.js', 'bin/site');
 
-    jake.cpR('app/app.js', 'bin/site/app');
-    jake.cpR('app/index.html', 'bin/site/app');
-    jake.cpR('app/favicon.ico', 'bin/site/app');
-    jake.cpR('app/styles', 'bin/site/app/styles');
+    jake.cpR('app/app.js', 'bin/site');
+    jake.cpR('app/index.html', 'bin/site');
+    jake.cpR('app/favicon.ico', 'bin/site');
+    jake.cpR('app/styles', 'bin/site/styles');
 });
 
 desc('Builds everything and runs the tests.');
