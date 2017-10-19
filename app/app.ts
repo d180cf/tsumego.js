@@ -696,17 +696,17 @@ module testbench {
                         aim = stone.make(x, y, 0);
                 } else if (vm.tool == 'SQ') {
                     stubs.xor(stone.make(x, y, 0));
-                } else if (/AB|AW/.test(vm.tool) || solvingFor) {
+                } else if (/AB|AW/.test(vm.tool) || solvingFor || vm.tool == 'XX') {
                     if (c && !solvingFor)
                         removeStone(x, y);
 
-                    const color = vm.tool == 'AB' ? + 1 :
+                    const color = vm.tool == 'AB' ? +1 :
                         vm.tool == 'AW' ? -1 :
                             -solvingFor;
 
                     board.play(stone.make(x, y, color));
 
-                    if (color == -solvingFor && qargs.autorespond) {
+                    if (color && color == -solvingFor && qargs.autorespond) {
                         if (qargs.check) {
                             vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
 
