@@ -18,8 +18,6 @@ It cannot solve problems with unclear boundaries: if a problem cannot be easily 
 
 ## API
 
-To get this solution first take a [release](https://github.com/d180cf/tsumego.js/releases) of the solver and then invoke `tsumego.solve`:
-
 ```ts
 var sgf4 = '(;FF[4]'
     // board size
