@@ -14,6 +14,6 @@
   },
   "scripts": {
     "build": "jake -f ./jakefile.js site",
-    "xtest": "jake -f ./jakefile.js"
+    "test": "jake -f ./jakefile.js"
   }
 }
