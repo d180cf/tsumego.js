@@ -6,6 +6,9 @@ module testbench {
     type Mode = 'editor' | 'proof-tree' | 'solver' | 'debugger';
 
     export const vm = new class VM {
+        sgfchanged = new Event<() => void>();
+        resized = new Event<() => void>();
+
         constructor() {
             $(() => {
                 $('#sgf').focusout(() => {
@@ -27,7 +30,26 @@ module testbench {
                     if (tool == vm.tool)
                         vm.tool = null;
                 });
+
+                window.addEventListener('resize', event => {
+                    vm.resized.fire();
+                });
             });
+        }
+
+        get width() {
+            return window.innerWidth;
+        }
+
+        get height() {
+            return window.innerHeight;
+        }
+
+        set isVertical(value: boolean) {
+            if (value)
+                $('#grid').addClass('vertical');
+            else
+                $('#grid').removeClass('vertical');
         }
 
         set mode(value: Mode) {
@@ -89,8 +111,6 @@ module testbench {
         set sgf(text: string) {
             $('#sgf').text(text);
         }
-
-        sgfchanged = new Event<() => void>();
 
         set svg(text: string) {
             // better to reformat the entire xml, but this works too

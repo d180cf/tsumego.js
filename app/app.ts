@@ -129,7 +129,21 @@ module testbench {
             && rect.ymin <= y && y <= rect.ymax;
     }
 
+    function updateVerticalLayout() {
+        const ratio = vm.width / vm.height;
+
+        if (ratio < 0.95)
+            vm.isVertical = true;
+        
+        if (ratio > 1.05)
+            vm.isVertical = false;
+    }
+
+    vm.resized.add(updateVerticalLayout);
+
     window.addEventListener('load', () => {
+        updateVerticalLayout();
+
         if (qargs.km) {
             vm.kmVisible = true;
             vm.km = stone.label.color(qargs.km);
