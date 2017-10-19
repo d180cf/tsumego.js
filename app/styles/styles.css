@@ -75,9 +75,26 @@ body.proof-tree #footer {
         outline: none;
     }
 
-#right-panel > * {
-    margin-bottom: 2em;
+#directory-container {
+    height: calc(100% - 2em);
+    width: 15em;
 }
+
+#goban-area {
+    height: calc(100% - 2em);
+    width: calc(100% - 18.6em);
+    padding: 0 2pt;
+}    
+
+#right-panel {
+    background: rgb(224, 225, 226);
+    height: calc(100% - 2em);
+    width: 3.6em;
+}
+
+    #right-panel > * {
+        margin-bottom: 2em;
+    }
 
 #tutorial-hint {
     position: fixed;

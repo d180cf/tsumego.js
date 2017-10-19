@@ -71,7 +71,7 @@
 
 <body class="editor">
     <div id="grid" class="ui grid">
-        <div class="ui column" style="height:calc(100% - 2em);width:15em">
+        <div id="directory-container" class="ui column">
             <div class="ui inverted segment" style="height:100%" id="directory">
                 <div class="ui icon inverted transparent input">
                     <input type="text" placeholder="Search...">
@@ -81,7 +81,8 @@
                 <div class="ui inverted vertical menu"></div>
             </div>
         </div>
-        <div class="workspace ui column" style="height:calc(100% - 2em);width:calc(100% - 18.6em);padding:0 2pt">
+
+        <div id="goban-area" class="workspace ui column">
             <div class="ui pointing secondary menu">
                 <a class="active item" data-tab="board">Board</a>
                 <a class="item" data-tab="sgf">SGF</a>
@@ -100,7 +101,8 @@
                 <pre contenteditable="true" id="svg"></pre>
             </div>
         </div>
-        <div id="right-panel" class="ui column" style="background:rgb(224, 225, 226);height:calc(100% - 2em);width:3.6em">
+
+        <div id="right-panel" class="ui column">
             <div class="ui big icon vertical buttons" id="dbg-panel">
                 <button class="ui icon button" id="dbg-run" title="Run" style="color:#21BA45">
                     <i class="play icon"></i>
