@@ -711,7 +711,7 @@ module testbench {
                         aim = stone.make(x, y, 0);
                         ui.MA.clear();
                         ui.MA.add(x, y);
-                        updateProblemSGF();                        
+                        updateProblemSGF();
                     }
                     return;
                 } else if (vm.tool == 'SQ') { // add a stub to the outer wall
@@ -724,43 +724,52 @@ module testbench {
                         removeStone(x, y);
                         ui.AB.remove(x, y);
                         ui.AW.remove(x, y);
-                        updateProblemSGF();                        
+                        updateProblemSGF();
                     }
                     return;
-                } else if (vm.tool == 'AB' || vm.tool == 'AW' || solvingFor) {
+                } else if (vm.tool == 'AB' || vm.tool == 'AW') {
+                    const color = vm.tool == 'AB' ? +1 : -1;
+
                     // the idea is to remove stone before adding one of the opposite color
-                    if (c && !solvingFor && board.get(x, y) * c < 0)
+                    if (color * c < 0) {
                         removeStone(x, y);
+                        ui.AB.remove(x, y);
+                        ui.AW.remove(x, y);
+                    }
 
-                    const color = vm.tool == 'AB' ? +1 :
-                        vm.tool == 'AW' ? -1 :
-                            -solvingFor;
+                    const taken = board.play(stone.make(x, y, color)) - 1;
 
-                    if (color) {
-                        const n = board.play(stone.make(x, y, color));
+                    (color > 0 ? ui.AB : ui.AW).add(x, y);
 
-                        if (color == -solvingFor && qargs.autorespond) {
-                            if (qargs.check) {
-                                vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
+                    if (taken > 0)
+                        removeTakenStones(-color);
 
-                                setTimeout(() => {
-                                    solve(null, board, color, vm.km).then(move => {
-                                        if (color * move < 0)
-                                            vm.note = stone.label.string(-color) + ' does not need to respond';
-                                        else
-                                            solveAndRender(-color, vm.km);
-                                    });
+                    updateProblemSGF();
+                    return;
+                } else if (vm.mode == 'solver') {
+                    const color = -solvingFor;
+                    board.play(stone.make(x, y, color));
+
+                    if (qargs.autorespond) {
+                        if (qargs.check) {
+                            vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
+
+                            setTimeout(() => {
+                                solve(null, board, color, vm.km).then(move => {
+                                    if (color * move < 0)
+                                        vm.note = stone.label.string(-color) + ' does not need to respond';
+                                    else
+                                        solveAndRender(-color, vm.km);
                                 });
-                            } else {
-                                solveAndRender(-color, vm.km);
-                            }
+                            });
+                        } else {
+                            solveAndRender(-color, vm.km);
                         }
                     }
-                } else {
+
+                    renderBoard();
                     return;
                 }
-
-                renderBoard();
             });
         }
 
@@ -772,6 +781,15 @@ module testbench {
             updateProblemSGF();
 
         return ui;
+    }
+
+    function removeTakenStones(color: number) {
+        const items = color > 0 ? ui.AB : ui.AW;
+
+        for (let x = 0; x < board.size; x++)
+            for (let y = 0; y < board.size; y++)
+                if (items.get(x, y) && !board.get(x, y))
+                    items.remove(x, y);
     }
 
     function updateProblemSGF() {
