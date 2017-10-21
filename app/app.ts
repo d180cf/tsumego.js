@@ -587,7 +587,7 @@ module testbench {
 
         vm.canUndo = !!move;
 
-        console.log('Creating a SVG board...');
+        console.warn('Creating a SVG board...');
         ui = SVGGobanElement.create(board.sgf);
 
         if (stone.hascoords(move) && solvingFor)
@@ -711,17 +711,25 @@ module testbench {
                         aim = stone.make(x, y, 0);
                         ui.MA.clear();
                         ui.MA.add(x, y);
-                        updateProblemSGF();
+                        updateProblemSGF();                        
                     }
-
-                    return; // no need to redraw the board
+                    return;
                 } else if (vm.tool == 'SQ') { // add a stub to the outer wall
                     stubs.xor(stone.make(x, y, 0));
                     ui.SQ.flip(x, y);
                     updateProblemSGF();
                     return;
-                } else if (vm.tool == 'AB' || vm.tool == 'AW' || vm.tool == 'XX' || solvingFor) {
-                    if (c && !solvingFor)
+                } else if (vm.tool == 'XX') { // removes a stone
+                    if (board.get(x, y)) {
+                        removeStone(x, y);
+                        ui.AB.remove(x, y);
+                        ui.AW.remove(x, y);
+                        updateProblemSGF();                        
+                    }
+                    return;
+                } else if (vm.tool == 'AB' || vm.tool == 'AW' || solvingFor) {
+                    // the idea is to remove stone before adding one of the opposite color
+                    if (c && !solvingFor && board.get(x, y) * c < 0)
                         removeStone(x, y);
 
                     const color = vm.tool == 'AB' ? +1 :
