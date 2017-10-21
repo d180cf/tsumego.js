@@ -616,7 +616,7 @@ module testbench {
 
                         selecting = true;
                         selection = { x1: cx, y1: cy, x2: cx, y2: cy, };
-                    } else {
+                    } else if (qargs.dragdrop) {
                         // start drag'n'drop
                         dragging = true;
                         dragged = false;

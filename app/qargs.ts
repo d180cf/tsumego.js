@@ -32,6 +32,9 @@ module testbench {
 
         /** In the auto respond mode checks if a response is needed indeed. */
         check: boolean;
+
+        /** Enables drag & drop for the selected region. */
+        dragdrop: boolean;
     }
 
     export const qargs: QArgs = <any>{};
