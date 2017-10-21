@@ -70,6 +70,13 @@ namespace testbench {
             this.update(x, y);
         }
 
+        flip(x: number, y: number) {
+            if (this.get(x, y))
+                this.remove(x, y);
+            else
+                this.add(x, y);
+        }
+
         clear() {
             for (const ref of this.nodes()) {
                 const x = +ref.getAttribute('x');

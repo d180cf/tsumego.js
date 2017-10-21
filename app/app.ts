@@ -717,6 +717,9 @@ module testbench {
                     return; // no need to redraw the board
                 } else if (vm.tool == 'SQ') { // add a stub to the outer wall
                     stubs.xor(stone.make(x, y, 0));
+                    ui.SQ.flip(x, y);
+                    updateProblemSGF();
+                    return;
                 } else if (/AB|AW|XX/.test(vm.tool) || solvingFor) {
                     if (c && !solvingFor)
                         removeStone(x, y);
