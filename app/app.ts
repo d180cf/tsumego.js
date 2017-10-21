@@ -474,8 +474,10 @@ module testbench {
                     const x = stone.x(s);
                     const y = stone.y(s);
 
-                    if (isSelected(x, y))
+                    if (isSelected(x, y)) {
                         removeStone(x, y);
+                        stubs.remove(s);
+                    }
                 }
 
                 selection = null;
