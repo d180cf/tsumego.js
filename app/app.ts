@@ -695,6 +695,7 @@ module testbench {
 
         if (vm.mode == 'editor' || vm.mode == 'solver') {
             ui.addEventListener('click', event => {
+                const time = Date.now();
                 const [x, y] = [event.cellX, event.cellY];
                 const c = board.get(x, y);
 
@@ -747,6 +748,9 @@ module testbench {
                         }
                     }
                 }
+
+                if (vm.mode == 'editor')
+                    vm.note = 'Done in ' + (Date.now() - time) + ' ms';
             });
         }
 
