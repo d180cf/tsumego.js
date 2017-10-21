@@ -720,7 +720,7 @@ module testbench {
                     ui.SQ.flip(x, y);
                     updateProblemSGF();
                     return;
-                } else if (/AB|AW|XX/.test(vm.tool) || solvingFor) {
+                } else if (vm.tool == 'AB' || vm.tool == 'AW' || vm.tool == 'XX' || solvingFor) {
                     if (c && !solvingFor)
                         removeStone(x, y);
 
