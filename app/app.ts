@@ -581,26 +581,19 @@ module testbench {
         }
     });
 
+    // this is an extremely slow method:
+    // it creates the SVG board, sets up
+    // mouse handlers and so on
     function renderBoard() {
-        const move = board.undo();
-        board.play(move);
-
-        vm.canUndo = !!move;
-
         console.warn('Creating a SVG board...');
-        ui = SVGGobanElement.create(board.sgf);
-
-        if (stone.hascoords(move) && solvingFor)
-            ui.TR.add(stone.x(move), stone.y(move));
+        ui = SVGGobanElement.create('(;SZ[' + board.size + '])');
+        updateBoard();
 
         for (const s of stubs)
             ui.SQ.add(stone.x(s), stone.y(s));
 
         if (stone.hascoords(aim))
             ui.MA.add(stone.x(aim), stone.y(aim));
-
-        for (const [x, y] of listSelectedCoords())
-            ui.SL.add(x, y);
 
         //
         // manages the selection area
@@ -713,12 +706,10 @@ module testbench {
                         ui.MA.add(x, y);
                         updateProblemSGF();
                     }
-                    return;
                 } else if (vm.tool == 'SQ') { // add a stub to the outer wall
                     stubs.xor(stone.make(x, y, 0));
                     ui.SQ.flip(x, y);
                     updateProblemSGF();
-                    return;
                 } else if (vm.tool == 'XX') { // removes a stone
                     if (board.get(x, y)) {
                         removeStone(x, y);
@@ -726,29 +717,19 @@ module testbench {
                         ui.AW.remove(x, y);
                         updateProblemSGF();
                     }
-                    return;
                 } else if (vm.tool == 'AB' || vm.tool == 'AW') {
                     const color = vm.tool == 'AB' ? +1 : -1;
 
                     // the idea is to remove stone before adding one of the opposite color
-                    if (color * c < 0) {
+                    if (color * c < 0)
                         removeStone(x, y);
-                        ui.AB.remove(x, y);
-                        ui.AW.remove(x, y);
-                    }
 
-                    const taken = board.play(stone.make(x, y, color)) - 1;
-
-                    (color > 0 ? ui.AB : ui.AW).add(x, y);
-
-                    if (taken > 0)
-                        removeTakenStones(-color);
-
-                    updateProblemSGF();
-                    return;
+                    board.play(stone.make(x, y, color));
+                    updateBoard();
                 } else if (vm.mode == 'solver') {
                     const color = -solvingFor;
                     board.play(stone.make(x, y, color));
+                    updateBoard();
 
                     if (qargs.autorespond) {
                         if (qargs.check) {
@@ -766,9 +747,6 @@ module testbench {
                             solveAndRender(-color, vm.km);
                         }
                     }
-
-                    renderBoard();
-                    return;
                 }
             });
         }
@@ -783,13 +761,40 @@ module testbench {
         return ui;
     }
 
-    function removeTakenStones(color: number) {
-        const items = color > 0 ? ui.AB : ui.AW;
+    // finds the diff between what's on the screen
+    // and what's in the app state and updates the UI;
+    // this updates the local storage too in the editor mode
+    function updateBoard() {
+        for (let x = 0; x < board.size; x++) {
+            for (let y = 0; y < board.size; y++) {
+                const color = board.get(x, y);
 
-        for (let x = 0; x < board.size; x++)
-            for (let y = 0; y < board.size; y++)
-                if (items.get(x, y) && !board.get(x, y))
-                    items.remove(x, y);
+                if (color > 0)
+                    ui.AB.add(x, y);
+
+                if (color < 0)
+                    ui.AW.add(x, y);
+
+                if (!color) {
+                    ui.AB.remove(x, y);
+                    ui.AW.remove(x, y);
+                }
+            }
+        }
+
+        // mark the last played move
+        if (vm.mode == 'solver') {
+            const move = board.undo();
+            board.play(move);
+            vm.canUndo = !!move;
+
+            if (stone.hascoords(move)) {
+                ui.TR.clear();
+                ui.TR.add(stone.x(move), stone.y(move));
+            }
+        }
+
+        updateProblemSGF();
     }
 
     function updateProblemSGF() {
@@ -839,7 +844,7 @@ module testbench {
         let prev = '';
 
         // it gives an idea what the solver is doing
-        const getSequenceInfo = () => {
+        function getSequenceInfo() {
             const s = board.moves.map(stone.toString).join(';');
 
             let i = 0;
@@ -859,7 +864,7 @@ module testbench {
             }
 
             return r;
-        };
+        }
 
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
@@ -911,7 +916,7 @@ module testbench {
                 vm.note = stone.label.string(color) + ' passes';
             } else {
                 problem.play(move);
-                renderBoard();
+                updateBoard();
                 vm.note = stone.toString(move) + ' in ' + elapsed() + 's';
                 console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
                 console.log(comment());
