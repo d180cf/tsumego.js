@@ -451,7 +451,7 @@ module testbench {
                 b.play(stone.make(sx, sy, c));
         }
 
-        board = b.fork(); // drop history
+        board = b.fork(); // drop history        
     }
 
     const enum KeyCode {
@@ -470,14 +470,11 @@ module testbench {
 
         switch (event.keyCode) {
             case KeyCode.Delete:
-                for (const s of board.stones()) {
-                    const x = stone.x(s);
-                    const y = stone.y(s);
-
-                    if (isSelected(x, y)) {
+                for (const [x, y] of listSelectedCoords()) {
+                    if (board.get(x, y))
                         removeStone(x, y);
-                        stubs.remove(s);
-                    }
+
+                    stubs.remove(stone.make(x, y, 0));
                 }
 
                 selection = null;
