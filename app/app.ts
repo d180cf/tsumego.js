@@ -129,6 +129,15 @@ module testbench {
             && rect.ymin <= y && y <= rect.ymax;
     }
 
+    function getSelectedAreaSize() {
+        if (!selection)
+            return 0;
+
+        const { xmin, xmax, ymin, ymax } = getSelectedRect();
+
+        return (xmax - xmin + 1) * (ymax - ymin + 1);
+    }
+
     function updateVerticalLayout() {
         const ratio = vm.width / vm.height;
 
@@ -451,7 +460,7 @@ module testbench {
                 b.play(stone.make(sx, sy, c));
         }
 
-        board = b.fork(); // drop history
+        board = b.fork(); // drop history        
     }
 
     const enum KeyCode {
@@ -465,22 +474,18 @@ module testbench {
 
     // removes all the stones in the selection
     $(document).on('keyup', event => {
-        if (!selection)
+        if (event.keyCode != KeyCode.Delete || getSelectedAreaSize() < 2)
             return;
 
-        switch (event.keyCode) {
-            case KeyCode.Delete:
-                for (const s of board.stones()) {
-                    const x = stone.x(s);
-                    const y = stone.y(s);
+        for (const [x, y] of listSelectedCoords()) {
+            if (board.get(x, y))
+                removeStone(x, y);
 
-                    if (isSelected(x, y))
-                        removeStone(x, y);
-                }
-
-                selection = null;
-                renderBoard();
+            stubs.remove(stone.make(x, y, 0));
         }
+
+        selection = null;
+        renderBoard();
     });
 
     // moves all the stones in the given direction
@@ -581,25 +586,19 @@ module testbench {
         }
     });
 
+    // this is an extremely slow method:
+    // it creates the SVG board, sets up
+    // mouse handlers and so on
     function renderBoard() {
-        const move = board.undo();
-        board.play(move);
-
-        vm.canUndo = !!move;
-
-        ui = SVGGobanElement.create(board.sgf);
-
-        if (stone.hascoords(move) && solvingFor)
-            ui.TR.add(stone.x(move), stone.y(move));
+        console.warn('Creating a SVG board...');
+        ui = SVGGobanElement.create(board.size);
+        updateBoard();
 
         for (const s of stubs)
             ui.SQ.add(stone.x(s), stone.y(s));
 
         if (stone.hascoords(aim))
             ui.MA.add(stone.x(aim), stone.y(aim));
-
-        for (const [x, y] of listSelectedCoords())
-            ui.SL.add(x, y);
 
         //
         // manages the selection area
@@ -616,14 +615,14 @@ module testbench {
                 const cy = event.cellY;
 
                 if (!solvingFor && !vm.tool && cx >= 0 && cy >= 0) {
-                    if (!isSelected(cx, cy)) {
+                    if (!isSelected(cx, cy) || !qargs.dragdrop) {
                         // start selection
                         if (selection)
                             ui.SL.clear();
 
                         selecting = true;
                         selection = { x1: cx, y1: cy, x2: cx, y2: cy, };
-                    } else {
+                    } else if (qargs.dragdrop) {
                         // start drag'n'drop
                         dragging = true;
                         dragged = false;
@@ -643,8 +642,9 @@ module testbench {
 
                     ui.SL.clear();
 
-                    for (const [x, y] of listSelectedCoords())
-                        ui.SL.add(x, y);
+                    if (getSelectedAreaSize() > 1)
+                        for (const [x, y] of listSelectedCoords())
+                            ui.SL.add(x, y);
                 }
 
                 if (dragging) {
@@ -662,8 +662,9 @@ module testbench {
 
                         ui.SL.clear();
 
-                        for (const [x, y] of listSelectedCoords())
-                            ui.SL.add(x, y);
+                        if (getSelectedAreaSize() > 1)
+                            for (const [x, y] of listSelectedCoords())
+                                ui.SL.add(x, y);
 
                         dragged = true;
                     }
@@ -702,25 +703,43 @@ module testbench {
 
         if (vm.mode == 'editor' || vm.mode == 'solver') {
             ui.addEventListener('click', event => {
+                const time = Date.now();
                 const [x, y] = [event.cellX, event.cellY];
                 const c = board.get(x, y);
 
-                if (vm.tool == 'MA') {
-                    if (!solvingFor)
+                if (vm.tool == 'MA') { // mark the target
+                    if (!solvingFor) {
                         aim = stone.make(x, y, 0);
-                } else if (vm.tool == 'SQ') {
+                        ui.MA.clear();
+                        ui.MA.add(x, y);
+                        updateProblemSGF();
+                    }
+                } else if (vm.tool == 'SQ') { // add a stub to the outer wall
                     stubs.xor(stone.make(x, y, 0));
-                } else if (/AB|AW/.test(vm.tool) || solvingFor || vm.tool == 'XX') {
-                    if (c && !solvingFor)
+                    ui.SQ.flip(x, y);
+                    updateProblemSGF();
+                } else if (vm.tool == 'XX') { // removes a stone
+                    if (board.get(x, y)) {
+                        removeStone(x, y);
+                        ui.AB.remove(x, y);
+                        ui.AW.remove(x, y);
+                        updateProblemSGF();
+                    }
+                } else if (vm.tool == 'AB' || vm.tool == 'AW') {
+                    const color = vm.tool == 'AB' ? +1 : -1;
+
+                    // the idea is to remove stone before adding one of the opposite color
+                    if (color * c < 0)
                         removeStone(x, y);
 
-                    const color = vm.tool == 'AB' ? +1 :
-                        vm.tool == 'AW' ? -1 :
-                            -solvingFor;
-
                     board.play(stone.make(x, y, color));
+                    updateBoard();
+                } else if (vm.mode == 'solver') {
+                    const color = -solvingFor;
+                    board.play(stone.make(x, y, color));
+                    updateBoard();
 
-                    if (color && color == -solvingFor && qargs.autorespond) {
+                    if (qargs.autorespond) {
                         if (qargs.check) {
                             vm.note = `Checking if ${stone.label.string(-color)} needs to respond...`;
 
@@ -736,11 +755,10 @@ module testbench {
                             solveAndRender(-color, vm.km);
                         }
                     }
-                } else {
-                    return;
                 }
 
-                renderBoard();
+                if (vm.mode == 'editor')
+                    vm.note = 'Done in ' + (Date.now() - time) + ' ms';
             });
         }
 
@@ -748,24 +766,64 @@ module testbench {
         wrapper.innerHTML = '';
         wrapper.appendChild(ui);
 
-        if (vm.mode == 'editor') {
-            const sgf = getProblemSGF();
+        if (vm.mode == 'editor')
+            updateProblemSGF();
 
-            try {
-                SGF.parse(sgf);
+        return ui;
+    }
 
-                vm.sgf = sgf;
-                vm.svg = wrapper.innerHTML;
+    // finds the diff between what's on the screen
+    // and what's in the app state and updates the UI;
+    // this updates the local storage too in the editor mode
+    function updateBoard() {
+        for (let x = 0; x < board.size; x++) {
+            for (let y = 0; y < board.size; y++) {
+                const color = board.get(x, y);
 
-                if (lspath && vm.mode == 'editor')
-                    ls.set(lspath, sgf);
-            } catch (err) {
-                vm.note = err;
-                console.warn(err);
+                if (color > 0)
+                    ui.AB.add(x, y);
+
+                if (color < 0)
+                    ui.AW.add(x, y);
+
+                if (!color) {
+                    ui.AB.remove(x, y);
+                    ui.AW.remove(x, y);
+                }
             }
         }
 
-        return ui;
+        // mark the last played move
+        if (vm.mode == 'solver') {
+            const move = board.undo();
+            board.play(move);
+            vm.canUndo = !!move;
+
+            if (stone.hascoords(move)) {
+                ui.TR.clear();
+                ui.TR.add(stone.x(move), stone.y(move));
+            }
+        }
+
+        updateProblemSGF();
+    }
+
+    function updateProblemSGF() {
+        const wrapper = document.querySelector('.tsumego') as HTMLElement;
+        const sgf = getProblemSGF();
+
+        try {
+            SGF.parse(sgf);
+
+            vm.sgf = sgf;
+            vm.svg = wrapper.innerHTML;
+
+            if (lspath && vm.mode == 'editor')
+                ls.set(lspath, sgf);
+        } catch (err) {
+            vm.note = err;
+            console.warn(err);
+        }
     }
 
     function getProblemSGF() {
@@ -797,7 +855,7 @@ module testbench {
         let prev = '';
 
         // it gives an idea what the solver is doing
-        const getSequenceInfo = () => {
+        function getSequenceInfo() {
             const s = board.moves.map(stone.toString).join(';');
 
             let i = 0;
@@ -817,7 +875,7 @@ module testbench {
             }
 
             return r;
-        };
+        }
 
         const started = Date.now();
         const elapsed = () => (Date.now() - started) / 1000 | 0;
@@ -869,7 +927,7 @@ module testbench {
                 vm.note = stone.label.string(color) + ' passes';
             } else {
                 problem.play(move);
-                renderBoard();
+                updateBoard();
                 vm.note = stone.toString(move) + ' in ' + elapsed() + 's';
                 console.log('(;' + board.moves.map(stone.toString).join(';') + ')');
                 console.log(comment());

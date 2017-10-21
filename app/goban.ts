@@ -1,6 +1,5 @@
 namespace testbench {
     import stone = tsumego.stone;
-    import SGF = tsumego.SGF;
 
     class Marks {
         private tag: string; // can be null; the "id" attribute for <use xlink:href="#ID">
@@ -70,6 +69,13 @@ namespace testbench {
             this.update(x, y);
         }
 
+        flip(x: number, y: number) {
+            if (this.get(x, y))
+                this.remove(x, y);
+            else
+                this.add(x, y);
+        }
+
         clear() {
             for (const ref of this.nodes()) {
                 const x = +ref.getAttribute('x');
@@ -107,9 +113,7 @@ namespace testbench {
     }
 
     export module SVGGobanElement {
-        export function create(sgf: string): SVGGobanElement {
-            const root = SGF.parse(sgf).steps[0];
-            const n = +root['SZ'][0];
+        export function create(n: number): SVGGobanElement {
             const div = document.createElement('div');
 
             div.innerHTML = `
@@ -158,21 +162,6 @@ namespace testbench {
                             console.log(mark, x, y, err);
                         }
                     }
-                }
-            }
-
-            for (const mark in root) {
-                const marks: Marks = svg[mark];
-
-                if (!marks)
-                    continue;
-
-                for (const text of root[mark]) {
-                    const s = stone.fromString(text.slice(0, 2));
-                    const m = marks.add(stone.x(s), stone.y(s));
-
-                    if (/:/.test(text))
-                        m.textContent = /:(.+)$/.exec(text)[1];
                 }
             }
 

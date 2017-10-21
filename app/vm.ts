@@ -2,8 +2,10 @@
 
 module testbench {
     // "editor" is the initial state; from there it can go to
-    // eitehr of the three states and cannot go back
+    // either of the three states and cannot go back
     type Mode = 'editor' | 'proof-tree' | 'solver' | 'debugger';
+
+    type Tool = 'SQ' | 'MA' | 'AB' | 'AW' | 'XX';
 
     export const vm = new class VM {
         sgfchanged = new Event<() => void>();
@@ -17,7 +19,7 @@ module testbench {
 
                 document.addEventListener('keydown', event => {
                     const key = event.key.toUpperCase();
-                    const tool = $('button[data-key=' + key + ']').attr('data-value');
+                    const tool = $('button[data-key=' + key + ']').attr('data-value') as Tool;
 
                     if (tool)
                         vm.tool = tool;
@@ -61,12 +63,12 @@ module testbench {
         }
 
         /** The currently selected editor tool: MA, AB, AW, etc. */
-        get tool(): string {
+        get tool(): Tool {
             const button = document.querySelector('#tool button.active');
-            return button && button.getAttribute('data-value');
+            return (button && button.getAttribute('data-value')) as Tool;
         }
 
-        set tool(value: string) {
+        set tool(value: Tool) {
             for (const button of $('#tool button').toArray()) {
                 if (button.getAttribute('data-value') == value)
                     button.classList.add('active');
