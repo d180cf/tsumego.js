@@ -129,6 +129,15 @@ module testbench {
             && rect.ymin <= y && y <= rect.ymax;
     }
 
+    function getSelectedAreaSize() {
+        if (!selection)
+            return 0;
+
+        const { xmin, xmax, ymin, ymax } = getSelectedRect();
+
+        return (xmax - xmin + 1) * (ymax - ymin + 1);
+    }
+
     function updateVerticalLayout() {
         const ratio = vm.width / vm.height;
 
@@ -465,21 +474,18 @@ module testbench {
 
     // removes all the stones in the selection
     $(document).on('keyup', event => {
-        if (!selection)
+        if (event.keyCode != KeyCode.Delete || getSelectedAreaSize() < 2)
             return;
 
-        switch (event.keyCode) {
-            case KeyCode.Delete:
-                for (const [x, y] of listSelectedCoords()) {
-                    if (board.get(x, y))
-                        removeStone(x, y);
+        for (const [x, y] of listSelectedCoords()) {
+            if (board.get(x, y))
+                removeStone(x, y);
 
-                    stubs.remove(stone.make(x, y, 0));
-                }
-
-                selection = null;
-                renderBoard();
+            stubs.remove(stone.make(x, y, 0));
         }
+
+        selection = null;
+        renderBoard();
     });
 
     // moves all the stones in the given direction
@@ -636,8 +642,9 @@ module testbench {
 
                     ui.SL.clear();
 
-                    for (const [x, y] of listSelectedCoords())
-                        ui.SL.add(x, y);
+                    if (getSelectedAreaSize() > 1)
+                        for (const [x, y] of listSelectedCoords())
+                            ui.SL.add(x, y);
                 }
 
                 if (dragging) {
@@ -655,8 +662,9 @@ module testbench {
 
                         ui.SL.clear();
 
-                        for (const [x, y] of listSelectedCoords())
-                            ui.SL.add(x, y);
+                        if (getSelectedAreaSize() > 1)
+                            for (const [x, y] of listSelectedCoords())
+                                ui.SL.add(x, y);
 
                         dragged = true;
                     }
