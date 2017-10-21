@@ -585,7 +585,7 @@ module testbench {
     // mouse handlers and so on
     function renderBoard() {
         console.warn('Creating a SVG board...');
-        ui = SVGGobanElement.create('(;SZ[' + board.size + '])');
+        ui = SVGGobanElement.create(board.size);
         updateBoard();
 
         for (const s of stubs)
