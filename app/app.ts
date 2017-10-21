@@ -615,7 +615,7 @@ module testbench {
                 const cy = event.cellY;
 
                 if (!solvingFor && !vm.tool && cx >= 0 && cy >= 0) {
-                    if (!isSelected(cx, cy)) {
+                    if (!isSelected(cx, cy) || !qargs.dragdrop) {
                         // start selection
                         if (selection)
                             ui.SL.clear();
