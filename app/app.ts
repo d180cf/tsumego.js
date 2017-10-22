@@ -780,11 +780,15 @@ module testbench {
             for (let y = 0; y < board.size; y++) {
                 const color = board.get(x, y);
 
-                if (color > 0)
+                if (color > 0) {
+                    ui.AW.remove(x, y);
                     ui.AB.add(x, y);
+                }
 
-                if (color < 0)
+                if (color < 0) {
+                    ui.AB.remove(x, y);
                     ui.AW.add(x, y);
+                }
 
                 if (!color) {
                     ui.AB.remove(x, y);
