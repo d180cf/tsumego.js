@@ -10,7 +10,8 @@
   "devDependencies": {
     "typescript": "2.0.0",
     "jake": "8.0.12",
-    "babel": "5.8.23"
+    "babel": "5.8.23",
+    "problems": "https://github.com/d180cf/problems"
   },
   "scripts": {
     "build": "jake -f ./jakefile.js site",
