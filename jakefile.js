@@ -125,18 +125,6 @@ task('tb', ['lib'], { async: true }, mode => {
     }).then(complete);
 });
 
-desc('Builds the console app.');
-task('tgs', { async: true }, () => {
-    console.log('building the console app...');
-    process.chdir('console');
-
-    exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
-        return babel();
-    }).then(() => {
-        process.chdir('..');
-    }).then(complete);
-});
-
 desc('Prepares a release package.');
 task('release', ['lib'], () => {
     console.log('prepairing a release package...');
@@ -175,8 +163,6 @@ task('site', ['tb'], () => {
 desc('Builds everything and runs the tests.');
 task('default', { async: true }, () => {
     invoke('tb').then(() => {
-        return invoke('tgs');
-    }).then(() => {
         return invoke('lib');
     }).then(() => {
         return invoke('release');
