@@ -14,11 +14,3 @@ before_script:
 - npm prune
 script:
 - npm test
-- npm run build
-after_success:
-- bash ./deploy.sh
-env:
-  global:
-  - GH_USER: d180cf
-  - GH_REPO: d180cf.github.io
-  - secure: hFNgVVla/6p8k6XvieUI8F3rx/kizY3y9wr/Rc86zJf6KsuW4p5jo/t6QUhzy9aFPpo1aB3Wm2SBzgnmKkepKVwiOzH4nWhBePuQYhkJl2RchlV8tjs9ajdphIVoL+waX/NDfL6SaLT8cfjVqSO0N9ifwdfio4uKZqGXmJdgotzgPvG3S6k3SOCS97sSOLfpga9okIQ9/VFQPcnR0sG0DF42vdMpDfO4B9eeuq58AYtRX0AsR9ph358WESPwBlqngv/hWfnITaB1x1/kVhoQBTvlrv2tFq0p8mDCpeE8T7l179XaEm8UYqOr3tkClqHVj9glxwoncw4Tt0RpdhYdEX2MaU6WcjuOzYjvS85VbQZGmZZX2SUVI6EIpujeAexlWEEFMg1m4ed+ndDRE4ImT0Z/JWc6DiM8o4vg4j4zIX9QRHLdh6CHQYVKAGG0nZAAzmwJVVQX0eoRyoptGd9ZN7Uz23Gjv+K/49AK3+FuNYrXus8uKPlrwcKqvZWf00xbJ5Nm/heg+ap0xVOxOPikb99pd9kEUq2JpxruYYwZis55N1i7SXWOh3cXbACHbyB+gC91q8qj5fCgKbHLw72wvfdP2dpJ43oFVYhlwpGYQjyALb6ruZxu+1LEJbO05JI/orFxJj6f/IZ90jC3SOxg/xL+KJcoHqCPUD/6M5/rkUc=

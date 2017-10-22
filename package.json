@@ -11,15 +11,15 @@
     "typescript": "2.0.0",
     "jake": "8.0.12",
     "babel": "5.8.23",
-    "svg-goban": "https://github.com/d180cf/svg-goban#30bb711",
     "problems": "https://github.com/d180cf/problems#fff3a2d"
   },
   "scripts": {
     "prepublish": "jake -f ./jakefile.js lib",
-    "build": "jake -f ./jakefile.js site",
+    "build": "jake -f ./jakefile.js lib",
     "test": "jake -f ./jakefile.js"
   },
   "main": "bin/tsumego.js",
+  "types": "bin/tsumego.d.ts",
   "files": [
     "bin/tsumego.*"
   ]

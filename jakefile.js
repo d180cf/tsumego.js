@@ -95,36 +95,6 @@ task('test', ['lib'], { async: true }, filter => {
     }).then(complete);
 });
 
-desc('Builds the testbench app.');
-task('tb', ['lib'], { async: true }, mode => {
-    console.log('building the testbench app...');
-    process.chdir('app');
-
-    exec('node ../node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
-        if (mode == 'dev') {
-            // TODO: babel screws source maps
-            console.log('skipping babel in the dev mode...');
-        } else {
-            return babel({
-                loose: false,
-                blacklist: [
-                    //'regenerator', // doesn't work in IE/Edge
-                    //'es6.forOf', // doesn't work in IE/Edge
-                    //'es6.blockScoping', // otheriwse const/let variables won't be bound in loops with callbacks
-                ]
-            });
-        }
-    }).then(() => {
-        console.log('rebuilding problems/manifest.json...');
-        process.chdir('../node_modules/problems');
-        return exec('npm i');
-    }).then(() => {
-        return exec('node sgf > manifest.json');
-    }).then(() => {
-        process.chdir('../..');
-    }).then(complete);
-});
-
 desc('Prepares a release package.');
 task('release', ['lib'], () => {
     console.log('prepairing a release package...');
@@ -137,37 +107,15 @@ task('release', ['lib'], () => {
     
     copy('tsumego.es5.js');
     copy('tsumego.es6.js');
-    copy('tsumego.d.ts');
-});
-
-desc('Builds the site contents.');
-task('site', ['tb'], () => {
-    console.log('building the site...');
-    jake.rmRf('bin/site');
-    jake.mkdirP('bin');
-    jake.mkdirP('bin/site');
-    jake.cpR('libs', 'bin/site/libs');
-    jake.cpR('node_modules/problems', 'bin/site/problems');
-    jake.rmRf('bin/site/problems/node_modules');
-
-    jake.cpR('bin/tsumego.js', 'bin/site');
-    jake.cpR('bin/tsumego.es5.js', 'bin/site');
-    jake.cpR('bin/tsumego.es6.js', 'bin/site');
-
-    jake.cpR('app/app.js', 'bin/site');
-    jake.cpR('app/index.html', 'bin/site');
-    jake.cpR('app/favicon.ico', 'bin/site');
-    jake.cpR('app/styles', 'bin/site/styles');
+    copy('tsumego.d.ts');    
 });
 
 desc('Builds everything and runs the tests.');
 task('default', { async: true }, () => {
-    invoke('tb').then(() => {
-        return invoke('lib');
-    }).then(() => {
+    jake.rmRf('bin');
+
+    invoke('lib').then(() => {
         return invoke('release');
-    }).then(() => {
-        return invoke('site');
     }).then(() => {
         return invoke('test');
     }).then(complete);
