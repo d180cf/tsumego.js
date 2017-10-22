@@ -597,6 +597,14 @@ module testbench {
         }
     });
 
+    $(() => {
+        // display the SVG only if the user can see it
+        $('#tab-svg-header').click(() => {
+            const wrapper = document.querySelector('.tsumego') as HTMLElement;
+            vm.svg = wrapper.innerHTML;
+        });
+    });
+
     // this is an extremely slow method:
     // it creates the SVG board, sets up
     // mouse handlers and so on
@@ -824,14 +832,11 @@ module testbench {
     }
 
     function updateProblemSGF() {
-        const wrapper = document.querySelector('.tsumego') as HTMLElement;
         const sgf = getProblemSGF();
 
         try {
             SGF.parse(sgf);
-
             vm.sgf = sgf;
-            vm.svg = wrapper.innerHTML;
 
             if (lspath && vm.mode == 'editor')
                 ls.set(lspath, sgf);
