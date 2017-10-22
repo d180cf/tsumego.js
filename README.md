@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/d180cf/tsumego.js.svg?branch=master)](https://travis-ci.org/d180cf/tsumego.js)
+[![npm version](https://badge.fury.io/js/tsumego.js.svg)](https://www.npmjs.com/package/tsumego.js)
+[![Downloads](https://img.shields.io/npm/dm/tsumego.js.svg)](https://www.npmjs.com/package/tsumego.js)
 
 It's a simple tsumego solver in JS that I write in my spare time. At the moment this solver doesn't implement any advanced algorithms and is able to solve only basic problems in which the target is surrounded by a thick wall and the surrounded area is up to 15 intersections. Some of these basic problems are rated as 9 dan on goproblems, though. The plan is to implement the [lambda](http://www.t-t.dk/publications/lambda_lncs.pdf) [df-pn](http://www.ijcai.org/papers07/Papers/IJCAI07-387.pdf) search, various [static analysis](https://webdocs.cs.ualberta.ca/~mmueller/ps/gpw97.pdf) algorithms and, perhaps, some [machine learning](http://arxiv.org/abs/1412.3409) techniques.
 
