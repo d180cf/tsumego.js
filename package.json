@@ -11,7 +11,7 @@
     "typescript": "2.0.0",
     "jake": "8.0.12",
     "babel": "5.8.23",
-    "svg-goban": "https://github.com/d180cf/svg-goban#c19eac5",
+    "svg-goban": "https://github.com/d180cf/svg-goban#30bb711",
     "problems": "https://github.com/d180cf/problems#fff3a2d"
   },
   "scripts": {
