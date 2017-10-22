@@ -597,8 +597,8 @@ module testbench {
         }
     });
 
+    // display the SVG only if the user can see it
     $(() => {
-        // display the SVG only if the user can see it
         $('#tab-svg-header').click(() => {
             const wrapper = document.querySelector('.tsumego') as HTMLElement;
             vm.svg = wrapper.innerHTML;
@@ -727,10 +727,16 @@ module testbench {
                 const c = board.get(x, y);
 
                 if (vm.tool == 'MA') { // mark the target
-                    if (!solvingFor) {
-                        aim = stone.make(x, y, 0);
+                    if (vm.mode == 'editor') {
                         ui.MA.clear();
-                        ui.MA.add(x, y);
+                        const newaim = stone.make(x, y, 0);
+
+                        if (newaim == aim) {
+                            aim = 0; // allow to clear the marker
+                        } else {
+                            aim = newaim;
+                            ui.MA.add(x, y);
+                        }
                         updateProblemSGF();
                     }
                 } else if (vm.tool == 'SQ') { // add a stub to the outer wall
