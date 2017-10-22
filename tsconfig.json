@@ -2,7 +2,7 @@
   "files": [ "src/main.ts" ],
   "compilerOptions": {
     "declaration": true,
-    "out": "tsumego.js",
+    "out": "bin/tsumego.js",
     "target": "es6",
     "noImplicitThis": true,
     "experimentalDecorators": true,

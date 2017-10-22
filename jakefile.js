@@ -58,13 +58,13 @@ task('lib', { async: true }, () => {
     exec('node ./node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
         babel({
             sourceMaps: false, // babel 5.8.23 screws source maps
-            outPath: 'tsumego.es5.js',
+            outPath: 'bin/tsumego.es5.js',
             blacklist: []
         });
 
         babel({
             sourceMaps: false, // babel 5.8.23 screws source maps
-            outPath: 'tsumego.es6.js'
+            outPath: 'bin/tsumego.es6.js'
         });
     }).then(complete);
 });
@@ -133,8 +133,8 @@ task('release', ['lib'], () => {
     jake.cpR('release', 'bin');
     jake.cpR('libs/regenerator-runtime.js', 'bin/release/regenerator-runtime.js');
 
-    var copy = path => jake.cpR(path, 'bin/release/' + path);
-
+    var copy = path => jake.cpR('bin/' + path, 'bin/release/' + path);
+    
     copy('tsumego.es5.js');
     copy('tsumego.es6.js');
     copy('tsumego.d.ts');
@@ -150,9 +150,9 @@ task('site', ['tb'], () => {
     jake.cpR('node_modules/problems', 'bin/site/problems');
     jake.rmRf('bin/site/problems/node_modules');
 
-    jake.cpR('tsumego.js', 'bin/site');
-    jake.cpR('tsumego.es5.js', 'bin/site');
-    jake.cpR('tsumego.es6.js', 'bin/site');
+    jake.cpR('bin/tsumego.js', 'bin/site');
+    jake.cpR('bin/tsumego.es5.js', 'bin/site');
+    jake.cpR('bin/tsumego.es6.js', 'bin/site');
 
     jake.cpR('app/app.js', 'bin/site');
     jake.cpR('app/index.html', 'bin/site');

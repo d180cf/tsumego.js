@@ -81,9 +81,9 @@ module tests {
     if (argv.mode == 'es5') {
         console.log('loading the regenerator runtime...');
         global.regeneratorRuntime = require('../libs/regenerator-runtime');
-        global.tsumego = require('../tsumego.es5');
+        global.tsumego = require('../bin/tsumego.es5');
     } else {
-        global.tsumego = require('../tsumego.es6');
+        global.tsumego = require('../bin/tsumego.es6');
     }
 }
 
