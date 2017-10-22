@@ -132,11 +132,11 @@
             <div id="solver-panel">
                 <div class="ui big icon vertical buttons">
                     <button class="ui icon button" id="solve-b" title="Solve for black&#10;Shift+Click finds all correct moves&#10;Ctrl+Click builds a proof tree">
-                        <i class="play icon"></i>
+                        <i class="play icon" style="color:black"></i>
                     </button>
 
                     <button class="ui icon button" id="solve-w" title="Solve for white&#10;Shift+Click finds all correct moves&#10;Ctrl+Click builds a proof tree">
-                        <i class="play video icon"></i>
+                        <i class="play icon" style="color:white"></i>
                     </button>
 
                     <button class="ui icon button" id="undo" title="Undo the last move">
@@ -148,15 +148,15 @@
             <div id="tool">
                 <div class="ui big icon vertical buttons toggle">
                     <button data-value="AB" data-key="B" class="ui icon button" title="Add a black stone (B + Click)">
-                        <i class="ui circle icon"></i>
+                        <i class="ui circle icon" style="color:black"></i>
                     </button>
 
                     <button data-value="AW" data-key="W" class="ui icon button" title="Add a white stone (W + Click)">
-                        <i class="ui thin circle icon"></i>
+                        <i class="ui circle icon" style="color:white"></i>
                     </button>
 
                     <button data-value="XX" data-key="X" class="ui icon button" title="Remove a stone (X + Click)">
-                        <i class="ui delete icon"></i>
+                        <i class="ui erase icon"></i>
                     </button>
 
                     <button data-value="MA" data-key="T" class="ui icon button" title="Select the target to capture or save (T + Click)">
@@ -172,11 +172,11 @@
             <div>
                 <div class="ui big icon vertical buttons">
                     <button class="ui icon button" id="flipc" title="Invert stone colors">
-                        <i class="right adjust icon"></i>
+                        <i class="right refresh icon"></i>
                     </button>
 
                     <button class="ui icon button" id="erase" title="Erase board">
-                        <i class="recycle icon"></i>
+                        <i class="recycle icon" style="color:red"></i>
                     </button>
                 </div>
             </div>
@@ -188,7 +188,7 @@
                     </button>
 
                     <button data-value="0" class="ui icon button" title="Neither side has ko treats">
-                        <i class="ui help circle outline icon"></i>
+                        <i class="ui adjust icon"></i>
                     </button>
 
                     <button data-value="+1" class="ui icon button" title="B is the ko master">
