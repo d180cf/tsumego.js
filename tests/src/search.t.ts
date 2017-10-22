@@ -15,7 +15,7 @@ module tests {
         const ls = require('glob').sync;
         const cat = require('fs').readFileSync;
 
-        for (const path of ls('../problems/**/*.sgf')) {
+        for (const path of ls('../node_modules/problems/**/*.sgf')) {
             const data = cat(path, 'utf8');
             const sgf = SGF.parse(data);
 
