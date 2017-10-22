@@ -375,6 +375,15 @@ module testbench {
                     renderBoard();
                 });
 
+                document.querySelector('#erase').addEventListener('click', e => {
+                    board = new Board(board.size);
+                    aim = null;
+                    stubs.empty();
+                    selection = null;
+
+                    renderBoard();
+                });
+
                 document.querySelector('#undo').addEventListener('click', () => {
                     const move = board.undo();
 
