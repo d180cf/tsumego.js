@@ -116,12 +116,12 @@ task('tb', ['lib'], { async: true }, mode => {
         }
     }).then(() => {
         console.log('rebuilding problems/manifest.json...');
-        process.chdir('../problems');
+        process.chdir('../node_modules/problems');
         return exec('npm i');
     }).then(() => {
         return exec('node sgf > manifest.json');
     }).then(() => {
-        process.chdir('..');
+        process.chdir('../..');
     }).then(complete);
 });
 
@@ -159,7 +159,7 @@ task('site', ['tb'], () => {
     jake.mkdirP('bin');
     jake.cpR('site', 'bin');
     jake.cpR('libs', 'bin/site/libs');
-    jake.cpR('problems', 'bin/site/problems');
+    jake.cpR('node_modules/problems', 'bin/site/problems');
     jake.rmRf('bin/site/problems/node_modules');
 
     jake.cpR('tsumego.js', 'bin/site');

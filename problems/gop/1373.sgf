@@ -1,9 +1,0 @@
-(;FF[4]SZ[9]PL[B]
-  AB[ba][bb][gb][cc][dc][ec][fc][gc][gd]
-  AW[aa][ab][cb][fb][hb][ib][ac][hc][ad][bd][cd][dd][ed][hd][ee][fe][ge][he]
-  MA[fc]
-  (;B[ca];W[ga]
-    (;B[ea];W[fa]
-      (;B[db];W[ha];B[eb])
-      (;B[eb];W[ha];B[db]))
-    (;B[eb];W[fa];B[ea];W[ha];B[db])))
