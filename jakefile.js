@@ -157,6 +157,7 @@ task('site', ['tb'], () => {
     console.log('building the site...');
     jake.rmRf('bin/site');
     jake.mkdirP('bin');
+    jake.mkdirP('bin/site');
     jake.cpR('libs', 'bin/site/libs');
     jake.cpR('node_modules/problems', 'bin/site/problems');
     jake.rmRf('bin/site/problems/node_modules');
