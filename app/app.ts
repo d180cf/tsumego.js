@@ -156,6 +156,8 @@ module testbench {
         if (qargs.km) {
             vm.kmVisible = true;
             vm.km = stone.label.color(qargs.km);
+        } else {
+            vm.kmVisible = false;
         }
 
         Promise.resolve().then(() => {
