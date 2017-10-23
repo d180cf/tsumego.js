@@ -14,7 +14,7 @@
     "problems": "https://github.com/d180cf/problems#fff3a2d"
   },
   "scripts": {
-    "prepublish": "jake -f ./jakefile.js lib",
+    "prepublish": "npm run build",
     "build": "jake -f ./jakefile.js lib",
     "test": "jake -f ./jakefile.js"
   },
