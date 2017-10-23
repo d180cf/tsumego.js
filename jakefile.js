@@ -61,7 +61,7 @@ task('lib', { async: true }, () => {
         console.log('amending the .d.ts file...');
         const fs = require('fs');
         const dts = 'bin/tsumego.d.ts';
-        const data = fs.readFileSync(dts, 'utf8') + '\nmodule.exports = tsumego;';
+        const data = fs.readFileSync(dts, 'utf8') + '\nexport = tsumego;';
         fs.writeFileSync(dts, data, 'utf8');
 
         console.log('generating the es5 version...');
