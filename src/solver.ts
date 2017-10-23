@@ -24,6 +24,10 @@ module tsumego {
             return this.args.board;
         }
 
+        get target() {
+            return this.args.target;
+        }
+
         constructor(args: string | Args) {
             if (typeof args === 'string') {
                 const sgf = SGF.parse(args);
