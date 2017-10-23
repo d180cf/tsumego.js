@@ -1,8 +1,6 @@
 ﻿/// <reference path="sorted.ts" />
 
 module tsumego {
-    export const version = '1.0.0';
-
     export const min = (a, b: number) => a < b ? a : b;
     export const max = (a, b: number) => a > b ? a : b;
     export const abs = (a: number) => a < 0 ? -a : a;
