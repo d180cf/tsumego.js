@@ -1,6 +1,6 @@
 {
   "files": [
-    "../bin/tsumego.d.ts",
+    "../bin/tsumego.npm.d.ts",
     "../libs/node.d.ts",
 
     "isnode.ts",

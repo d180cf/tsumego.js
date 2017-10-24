@@ -2,7 +2,7 @@
   "name": "tsumego.js",
   "license": "Apache-2.0",
   "description": "Tsumego solver in JS",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/d180cf/tsumego.js"
@@ -19,7 +19,7 @@
     "test": "jake -f ./jakefile.js"
   },
   "main": "bin/tsumego.js",
-  "types": "bin/tsumego.d.ts",
+  "types": "bin/tsumego.npm.d.ts",
   "files": [
     "bin/tsumego.*"
   ]

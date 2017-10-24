@@ -56,13 +56,10 @@ desc('Builds the tsumego.js library.');
 task('lib', { async: true }, () => {
     console.log('building tsumego.js...');
     exec('node ./node_modules/typescript/lib/tsc', { printStdout: true }).then(() => {
-        // the js file does module.exports = tsumego;
-        // so it's just a matter of fixing the .d.ts file
-        console.log('amending the .d.ts file...');
-        const fs = require('fs');
-        const dts = 'bin/tsumego.d.ts';
-        const data = fs.readFileSync(dts, 'utf8') + '\nexport = tsumego;';
-        fs.writeFileSync(dts, data, 'utf8');
+        require('fs').writeFileSync(
+            'bin/tsumego.npm.d.ts',
+            '/// <reference path="tsumego.d.ts" />\nexport = tsumego;',
+            'utf8');
 
         console.log('generating the es5 version...');
         babel({
