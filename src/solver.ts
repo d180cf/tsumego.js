@@ -158,6 +158,21 @@ module tsumego {
         }
 
         /**
+         * Returns valid moves for the given player.
+         * This function does not take repetitions
+         * into account as this depends on who is
+         * the ko master.
+         */
+        *getValidMovesFor(color: color): Iterable<stone> {
+            for (const move of this.args.expand(color)) {
+                if (this.board.play(move)) {                    
+                    this.board.undo();
+                    yield move;
+                }
+            }
+        }
+
+        /**
          * Finds all possible threats for the specified player.
          * A threat is a move that doesn't work by itself, but
          * if the opponent ignores it, the next move does work.
