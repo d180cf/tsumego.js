@@ -20,20 +20,17 @@ It cannot solve problems with unclear boundaries: if a problem cannot be easily 
 
 ## API
 
-```ts
-var sgf4 = '(;FF[4]'
-    // board size
-    + 'SZ[9]'
-    // black stones
-    + 'AB[ae][be][ce][de][ee][ef][cg][eg][fg][fh][gh][hh][ai][ei][hi]'
-    // white stones
-    + 'AW[dg][ah][bh][ch][eh][di]'
-    // what needs to be saved
-    + 'MA[ch]'
-    // white plays first
-    + 'PL[W])';
+```js
+const tsumego = require('tsumego.js');
 
-var move = tsumego.solve(sgf4); // "W[bf]"
+const sgf4 = '(;FF[4]'    
++ 'SZ[9]' // board size    
++ 'AB[ae][be][ce][de][ee][ef][cg][eg][fg][fh][gh][hh][ai][ei][hi]'
++ 'AW[dg][ah][bh][ch][eh][di]'
++ 'MA[ch]' // what needs to be saved
++ 'PL[W])'; // white plays first
+
+const move = tsumego.solve(sgf4); // "W[bf]"
 ```
 
 ## Prepairing a tsumego
