@@ -1024,6 +1024,16 @@ module tsumego {
             return n;
         }
 
+        getBlockInfo(x: number, y: number) {
+            const b = this.get(x, y);
+
+            return {
+                color: sign(b),
+                libs: block.libs(b),
+                size: block.size(b)
+            };
+        }
+
         /** the sequence of moves that was given to .play(...) to get this position */
         get moves() {
             const moves: stone[] = [];

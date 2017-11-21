@@ -5,3 +5,4 @@ node_modules/
 .vs/
 app/*.js
 tests/*.js
+package-lock.json
