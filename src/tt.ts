@@ -63,8 +63,8 @@ module tsumego {
         size = 0;
 
         private data = [
-            new HashMap<entry>(), // node -> entry, if b plays first
-            new HashMap<entry>(), // node -> entry, if w plays first
+            new HashMap<entry>(1e6), // node -> entry, if b plays first
+            new HashMap<entry>(1e6), // node -> entry, if w plays first
         ];
 
         get(hash_0: number, hash_1: number, color: number, km: number) {

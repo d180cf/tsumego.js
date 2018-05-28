@@ -19,7 +19,7 @@ module tsumego {
      * -1 = the current player surely loses.
      *
      */
-    export function evaluate(board: Board, target: stone, values = new HashMap<number>()) {
+    export function evaluate(board: Board, target: stone, values = new HashMap<number>(1e6)) {
         // evaluates the node = (board, color) where color
         // tells who is about to play on this board
         return function _eval(color: number) {
@@ -60,7 +60,7 @@ module tsumego {
             values.set(hash_b, hash_w, v);
 
             // abs(v) < 1 + 1/8 + 1/64 + ... = 8/7
-            // v = ±1 should indicate a sure loss/win
+            // v = ï¿½1 should indicate a sure loss/win
             return v / 2;
         }
     }

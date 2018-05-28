@@ -13,43 +13,60 @@ module tsumego {
     // only once in 2**25 tsumegos. 53 bits give one collision
     // per 2**14 tsumegos, correspondingly.
     export class HashMap<T extends number> {
-        // max size is 16 x 2**30 x 2**30, however
-        // the actual size is  16 x 5000 x N, e.g.
-        // if there are 1.6 M entries, then N = 20
-        private data = [];
+        private _size = 0;
+        private _indx = [];
+        private _next = [];
+        private _keys = [];
+        private _data = [];
 
-        constructor() {
-            // this is a bit faster than a plain [] or {},
-            // probably because negative keys are stringified
-            for (let i = 0; i < 16; i++)
-                this.data[i] = [];
+        constructor(size: number) {
+            this._indx.length = size * 2;
+            this._next.length = size + 1;
+            this._keys.length = size + 1;
+            this._data.length = size + 1;
         }
 
-        get(key_hi: number, key_lo: number): T {
-            const a = key_hi & 3 | key_lo << 2 & 12;
-            const b = key_hi >>> 2;
-            const c = key_lo >>> 2;
+        get(hi: number, lo: number): T {
+            let hash = this._hash(hi, lo);
+            let node = this._indx[hash] || 0;
 
-            const t = this.data[a][b];
+            while (node > 0 && !this._test(node, hi, lo))
+                node = this._next[node];
 
-            // (t && t[c] || 0) would be much slower
-            if (!t) return <any>0;
-            const value = t[c];
-            if (!value) return <any>0;
-            return value;
+            return this._data[node];
         }
 
-        set(key_hi: number, key_lo: number, value: T) {
-            const a = key_hi & 3 | key_lo << 2 & 12;
-            const b = key_hi >>> 2;
-            const c = key_lo >>> 2;
+        set(hi: number, lo: number, value: T) {
+            let hash = this._hash(hi, lo);
+            let node = this._indx[hash] || 0, prev = 0;
 
-            const q = this.data[a];
+            while (node > 0 && !this._test(node, hi, lo))
+                node = this._next[prev = node];
 
-            if (!q[b])
-                q[b] = [];
+            if (node > 0) {
+                this._data[node] = value;
+            } else {
+                node = ++this._size;
 
-            q[b][c] = value;
+                this._data[node] = value;
+                this._keys[node] = [hi, lo];
+
+                if (prev > 0)
+                    this._next[prev] = node;
+                else
+                    this._indx[hash] = node;
+            }
+        }
+
+        _hash(hi, lo) {
+            let n = this._indx.length;
+            let h = (hi ^ lo) % n;
+            return h < 0 ? h + n : h;
+        }
+
+        _test(node, hi, lo) {
+            let k = this._keys[node];
+            return k[0] == hi && k[1] == lo;
         }
     }
 }

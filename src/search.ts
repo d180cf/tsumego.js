@@ -113,7 +113,7 @@ module tsumego {
                 throw Error('The target points to an empty point: ' + stone.toString(target));
 
             const sa = new SortedArray<stone>();
-            const values = new HashMap<number>();
+            const values = new HashMap<number>(1e6);
             const evalnode = evaluate(board, target, values);
             const eulerval = new EulerN(board, sign(target));
             const pec = npeyes && eyeness(board, expand(0), expand.safe);
